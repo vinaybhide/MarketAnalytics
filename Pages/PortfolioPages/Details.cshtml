@@ -1,0 +1,54 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h3>Details - @Model.portfolio.StockMaster.CompName (@Model.portfolio.StockMaster.Symbol)</h3>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.PURCHASE_DATE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.PURCHASE_DATE)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.QUANTITY)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.QUANTITY)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.COST_PER_SHARE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.COST_PER_SHARE)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.TOTAL_COST)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.TOTAL_COST)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.CMP)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.CMP)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolio.VALUE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolio.VALUE)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.portfolio?.PORTFOLIO_ID">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

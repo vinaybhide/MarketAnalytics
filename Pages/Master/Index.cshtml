@@ -1,0 +1,147 @@
+﻿@page
+@model MarketAnalytics.Pages.Master.IndexModel
+
+@{
+    ViewData["Title"] = "StockMaster";
+}
+
+<h1>Stock Master</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+
+<form asp-page="./Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by symbol or company name:
+            <input type="text" name="SearchString" value="@Model.CurrentFilter" />
+            <input type="submit" value="Search" class="btn btn-primary" /> |
+            <a asp-page="./Index">Back to full List</a>
+        </p>
+    </div>
+</form>
+<form asp-page="./Index" method="get">
+    <div class="form-actions no-color">
+        <div class="form-actions no-color">
+            <p>
+                <input type="hidden" name="RefreshAll" value="true" />
+                <input type="submit" value="Refresh All" class="btn btn-primary" />
+            </p>
+        </div>
+    </div>
+</form>
+<a asp-page="/BuySell/smav40" class="btn btn-primary">SMA V40</a> |
+<a asp-page="/BuySell/v20BuySell" class="btn btn-primary">V20 Candle</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].Symbol)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].CompName)
+                </a>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].QuoteDateTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].Open)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].High)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].Low)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].Close)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].Volume)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].Change)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].ChangePercent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.StockMaster)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Exchange)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Symbol)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CompName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.QuoteDateTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Open)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.High)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Low)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Close)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Volume)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Change)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ChangePercent)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PrevClose)
+                </td>
+
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.StockMaster.PageIndex">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.StockMasterID">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.StockMasterID">Delete</a> |
+                    <a asp-page="./Index" asp-route-id="@item.StockMasterID"
+                   asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                   asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
+                    <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
+                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID" >Add to Portfolio</a>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@{
+    var prevDisabled = !Model.StockMaster.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.StockMaster.HasNextPage ? "disabled" : "";
+}
+<a asp-page="./Index" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+<a asp-page="./Index" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>

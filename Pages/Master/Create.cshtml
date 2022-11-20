@@ -1,0 +1,92 @@
+﻿@page
+@model MarketAnalytics.Pages.Master.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>StockMaster</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Exchange" class="control-label"></label>
+                <input asp-for="StockMaster.Exchange" class="form-control" />
+                <span asp-validation-for="StockMaster.Exchange" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Symbol" class="control-label"></label>
+                <input asp-for="StockMaster.Symbol" class="form-control" />
+                <span asp-validation-for="StockMaster.Symbol" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.CompName" class="control-label"></label>
+                <input asp-for="StockMaster.CompName" class="form-control" />
+                <span asp-validation-for="StockMaster.CompName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.QuoteDateTime" class="control-label"></label>
+                <input asp-for="StockMaster.QuoteDateTime" class="form-control" />
+                <span asp-validation-for="StockMaster.QuoteDateTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Open" class="control-label"></label>
+                <input asp-for="StockMaster.Open" class="form-control" />
+                <span asp-validation-for="StockMaster.Open" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.High" class="control-label"></label>
+                <input asp-for="StockMaster.High" class="form-control" />
+                <span asp-validation-for="StockMaster.High" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Low" class="control-label"></label>
+                <input asp-for="StockMaster.Low" class="form-control" />
+                <span asp-validation-for="StockMaster.Low" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Close" class="control-label"></label>
+                <input asp-for="StockMaster.Close" class="form-control" />
+                <span asp-validation-for="StockMaster.Close" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Volume" class="control-label"></label>
+                <input asp-for="StockMaster.Volume" class="form-control" />
+                <span asp-validation-for="StockMaster.Volume" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.Change" class="control-label"></label>
+                <input asp-for="StockMaster.Change" class="form-control" />
+                <span asp-validation-for="StockMaster.Change" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.ChangePercent" class="control-label"></label>
+                <input asp-for="StockMaster.ChangePercent" class="form-control" />
+                <span asp-validation-for="StockMaster.ChangePercent" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockMaster.PrevClose" class="control-label"></label>
+                <input asp-for="StockMaster.PrevClose" class="form-control" />
+                <span asp-validation-for="StockMaster.PrevClose" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

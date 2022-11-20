@@ -1,0 +1,96 @@
+﻿@page
+@model MarketAnalytics.Pages.StandardIndicators.chartRSIModel
+@{
+    ViewData["Title"] = "History Chart";
+    string chartTitleLine = "Line chart";
+    string chartTitleCandle = "Candle chart";
+    string chartUnit1 = "Close";
+    string chartUnit2 = "RSI";
+
+}
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['line','corechart', 'controls', 'annotationchart'] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+        //var button = document.getElementById('change-chart');
+        var chartDiv = document.getElementById('dualchart_div');
+
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Close', 'RSI'],
+            @foreach (var data in Model.listRSI)
+            {
+                <text>['@data.PriceDate', @data.Close, @data.RSI_CLOSE], </text>
+            }
+            ]);
+        var dualChartOptions = {
+            chart: {
+                title: 'Daily Close Vs 14-RSI'
+            },
+            width: 900,
+            height: 500,
+            series: {
+                // Gives each series an axis name that matches the Y-axis below.
+                0: { axis: 'Close' },
+                1: { axis: 'RSI' }
+            },
+            axes: {
+                // Adds labels to each axis; they don't have to match the axis names.
+                y: {
+                    Close: { label: 'Daily Close' },
+                    RSI: { label: '14-RSI' }
+                }
+            }
+        };
+
+        //var chart = new google.visualization.LineChart(document.getElementById('dualchart_div'));
+        //chart.draw(data, dualChartOptions);
+
+        function drawDualChart() {
+        var dualChart = new google.charts.Line(chartDiv);
+        dualChart.draw(data, dualChartOptions);
+        }
+        drawDualChart();
+    }
+
+</script>
+
+<!--<form asp-page="./historyChart" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Reset dates:
+            <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
+            <input id="fromDt" type="date" name="fromDate" value="@Model.FromDate" />
+            <input id="toDt" type="date" name="toDate" value="@Model.ToDate" />
+            <input type="submit" value="Search" class="btn btn-primary" />
+        </p>
+    </div>
+</form>
+-->
+
+<!--<<div id="dashboard_div">
+    <div id="filter_div"></div>
+    <div id="dashboard_candle_chart_div"></div>
+    <div id="dashboard_line_chart_div"></div>
+</div>
+div class="text-center">
+    <h1 class="display-4">Candlestick Chart</h1>
+    <div id="candle_chart" style="width: 800px; height: 600px"></div>
+</div>
+
+<div class="text-center">
+    <h1 class="display-4">Line Chart</h1>
+    <div id="line_chart" style="width: 800px; height: 600px"></div>
+</div>
+-->
+
+<div class="text-center">
+    <h1 class="display-4">Dual Line Chart</h1>
+    <div id="dualchart_div" style="width: 800px; height: 600px"></div>
+</div>
+
+@*<div class="container-fluid lead">
+</div>*@

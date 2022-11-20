@@ -1,0 +1,79 @@
+﻿@page
+@model MarketAnalytics.Pages.History.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>StockPriceHistory</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.PriceDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.PriceDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.Open)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.Open)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.High)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.High)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.Low)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.Low)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.Close)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.Close)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.Volume)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.Volume)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.Change)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.Change)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.ChangePercent)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.ChangePercent)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.PrevClose)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.PrevClose)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockPriceHistory.StockMaster)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockPriceHistory.StockMaster.CompName)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.StockPriceHistory?.StockPriceHistoryID">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

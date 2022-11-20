@@ -1,0 +1,112 @@
+﻿@page
+@model MarketAnalytics.Pages.StandardIndicators.chartSMAModel
+@{
+    ViewData["Title"] = "Daily Price Vs SMA";
+    string chartTitleLine = "Line chart";
+    string chartTitleCandle = "Candle chart";
+    string chartUnit1 = "Close";
+    string chartUnit2 = "RSI";
+
+}
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['line', 'corechart', 'controls', 'annotationchart'] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+        //var button = document.getElementById('change-chart');
+        var chartDiv = document.getElementById('dualchart_div');
+
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Low', 'Open', 'Close', 'High', 'SMA_FAST', 'SMA_MID', 'SMA_SLOW'],
+
+    @foreach (var data in Model.listSMA)
+    @*@for (int i = Int32.Parse(Model.SMAPeriod); i < Model.listSMA.Count; i++)*@
+    {
+        <text>[new Date('@data.PriceDate.ToShortDateString()'), @data.Low, @data.Open, @data.Close, @data.High, @data.SMA_SMALL, @data.SMA_MID, @data.SMA_LONG], </text>
+        //<text>[new Date('@Model.listSMA[i].PriceDate.ToString("yyyy-MM-dd")'), @Model.listSMA[i].Low, @Model.listSMA[i].Open, @Model.listSMA[i].Close, @Model.listSMA[i].High, @Model.listSMA[i].SMA_SMALL], @Model.listSMA[i].SMA_MID], @Model.listSMA[i].SMA_LONG], </text>
+    }
+            ]);
+        var dualChartOptions = {
+            chart: {
+                title: 'Daily Candle Vs SMA'
+            },
+            hAxis: {
+                title: 'Date',
+                textStyle: {
+                    fontSize: 9,
+                },
+                format: 'd-MMM-y'
+                ,
+                gridlines: { count: 6 }
+            },
+            vAxis: {
+                textStyle: { fontSize: 9 }
+            },
+            //width: 1200,
+            //height: 1000,
+            chartArea: { left: 50, top: 20, width: "80%", height: "80%" },
+            seriesType: 'candlesticks',
+            candlestick: {
+
+                fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+                risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+            },
+            series: {
+                // Gives each series an axis name that matches the Y-axis below.
+                0: { labelInLegend: 'Candlestick', colors: ['black'] },
+                1: { type: 'line', curveType: 'function', view: { columns: [0, 5] }, labelInLegend: 'SMA  @Model.SMAFastPeriod' },
+                2: { type: 'line', curveType: 'function', view: { columns: [0, 6] }, labelInLegend: 'SMA  @Model.SMAMidPeriod' },
+                3: { type: 'line', curveType: 'function', view: { columns: [0, 7] }, labelInLegend: 'SMA  @Model.SMASlowPeriod' },
+            }
+        };
+
+        var chart = new google.visualization.ComboChart(document.getElementById('dualchart_div'));
+        chart.draw(data, dualChartOptions);
+    }
+</script>
+
+<form asp-page="./chartSMA" method="get">
+    <div class="form-actions no-color">
+        <p>
+            <h3>Dual Line Chart</h3>
+            <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
+            From date:
+            <input id="fromDt" type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+            SMA Fast Period:
+            <input id="smaFastPeriod" type="text" name="inputFastPeriod" value="@Model.SMAFastPeriod" />
+
+            SMA Mid Period:
+            <input id="smaMidPeriod" type="text" name="inputMidPeriod" value="@Model.SMAMidPeriod" />
+
+            SMA Slow Period:
+            <input id="smaSlowPeriod" type="text" name="inputSlowPeriod" value="@Model.SMASlowPeriod" />
+
+            <input type="submit" value="Get SMA" class="btn btn-primary" />
+        </p>
+    </div>
+</form>
+<!--<<div id="dashboard_div">
+    <div id="filter_div"></div>
+    <div id="dashboard_candle_chart_div"></div>
+    <div id="dashboard_line_chart_div"></div>
+</div>
+div class="text-center">
+    <h1 class="display-4">Candlestick Chart</h1>
+    <div id="candle_chart" style="width: 800px; height: 600px"></div>
+</div>
+
+<div class="text-center">
+    <h1 class="display-4">Line Chart</h1>
+    <div id="line_chart" style="width: 800px; height: 600px"></div>
+</div>
+-->
+
+<div class="text-center">
+    <div id="dualchart_div" style="width: 1200px; height: 1000px"></div>
+</div>
+
+@*<div class="container-fluid lead">
+</div>*@

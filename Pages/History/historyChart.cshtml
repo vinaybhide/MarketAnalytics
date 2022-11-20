@@ -1,0 +1,151 @@
+﻿@page
+@model MarketAnalytics.Pages.History.historyChartModel
+@{
+    ViewData["Title"] = "History Chart";
+    string chartTitleLine = "Line chart";
+    string chartTitleCandle = "Candle chart";
+    string chartUnit = "Currency";
+}
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['corechart', 'controls', 'annotationchart'] });
+    google.charts.setOnLoadCallback(drawDashboard);
+    google.charts.setOnLoadCallback(drawLineChart);
+    google.charts.setOnLoadCallback(drawCandleChart);
+    function drawLineChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Close'],
+    @foreach (var data in Model.stockPriceHistories)
+    {
+        <text>['@data.PriceDate', @data.Close], </text>
+    }
+                                            ]);
+        var options = {
+            title: '@chartTitleLine',
+            curveType: 'function',
+            pointsVisible: true,
+            lineWidth: 3,
+            legend: 'none',
+            hAxis: { title: 'Date' },
+            vAxis: { title: '@chartUnit' },
+            width: '100%',
+            height: '100%',
+            chartArea: { width: '85%', height: '75%' }
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+        chart.draw(data, options);
+    }
+
+    function drawCandleChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Low', 'Open', 'Close', 'High'],
+    @foreach (var data in Model.stockPriceHistories)
+    {
+        <text>['@data.PriceDate', @data.Low, @data.Open, @data.Close, @data.High], </text>
+    }
+                                                ]);
+        var options = {
+            title: '@chartTitleCandle',
+            curveType: 'function',
+            pointsVisible: true,
+            lineWidth: 3,
+            legend: 'none',
+            hAxis: { title: 'Date' },
+            vAxis: { title: '@chartUnit' },
+            width: '100%',
+            height: '100%',
+            chartArea: { width: '85%', height: '75%' }
+        };
+        var chart = new google.visualization.CandlestickChart(document.getElementById('candle_chart'));
+
+        function selectHandler() {
+            var selectedItem = chart.getSelection()[0];
+            if (selectedItem) {
+                var date = data.getValue(selectedItem.row, 0);
+                var low = data.getValue(selectedItem.row, 1);
+                var open = data.getValue(selectedItem.row, 2);
+                var close = data.getValue(selectedItem.row, 3);
+                var high = data.getValue(selectedItem.row, 4);
+                alert("Date: " + date + "\n low: " + low + "\n open: " + open + "\n close: " + close + "\n high: " + high);
+            }
+        }
+        google.visualization.events.addListener(chart, 'select', selectHandler);
+        chart.draw(data, options);
+    }
+
+    function drawDashboard() {
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Low', 'Open', 'Close', 'High'],
+    @foreach (var data in Model.stockPriceHistories)
+    {
+        <text>[new Date('@data.PriceDate.ToString("yyyy-MM-dd")'), @data.Low, @data.Open, @data.Close, @data.High], </text>
+    }]);
+        var dashboard = new google.visualization.Dashboard(document.getElementById('dashboard_div'));
+
+        var dateRangeSlider = new google.visualization.ControlWrapper({
+            'controlType': 'ChartRangeFilter',
+            'containerId': 'filter_div',
+            'options': {
+                'filterColumnLabel': 'Date'
+            }
+        });
+        var candleChart = new google.visualization.ChartWrapper({
+            chartType: 'CandlestickChart',
+            containerId: 'dashboard_candle_chart_div',
+            options: {
+                candlestick: {
+                    fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+                    risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+                },
+            }
+    @*,
+            view:{ columns:[0, 3]}*@
+                    });
+    var lineChart = new google.visualization.ChartWrapper({
+        chartType: 'AnnotationChart',
+        containerId: 'dashboard_line_chart_div',
+        options: {
+            annotations:{
+            displayAnnotations: true
+            }
+        },
+        view: { columns: [0, 3] }
+    });
+
+    dashboard.bind(dateRangeSlider, [candleChart, lineChart]);
+    dashboard.draw(data);
+
+                }
+
+</script>
+
+<form asp-page="./historyChart" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Reset dates:
+            <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
+            <input id="fromDt" type="date" name="fromDate" value="@Model.FromDate" />
+            <input id="toDt" type="date" name="toDate" value="@Model.ToDate" />
+            <input type="submit" value="Search" class="btn btn-primary" />
+        </p>
+    </div>
+</form>
+
+<div id="dashboard_div">
+    <div id="filter_div"></div>
+    <div id="dashboard_candle_chart_div"></div>
+    <div id="dashboard_line_chart_div"></div>
+</div>
+<!--<div class="text-center">
+    <h1 class="display-4">Candlestick Chart</h1>
+    <div id="candle_chart" style="width: 800px; height: 600px"></div>
+</div>
+
+
+<div class="text-center">
+    <h1 class="display-4">Line Chart</h1>
+    <div id="line_chart" style="width: 800px; height: 600px"></div>
+</div>-->
+@*<div class="container-fluid lead">
+</div>*@
