@@ -20,6 +20,7 @@ namespace MarketAnalytics.Pages.BuySell
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public List<SelectListItem> symbolList { get; set; }
 
         public V20BuySell(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
@@ -27,8 +28,6 @@ namespace MarketAnalytics.Pages.BuySell
             Configuration = configuration;
             symbolList = new List<SelectListItem>();
         }
-        public List<SelectListItem> symbolList { get; set; }
-
         public string BuySignalSort { get; set; }
         public string SymbolSort { get; set; }
         public string SellSignalSort { get; set; }
@@ -38,16 +37,22 @@ namespace MarketAnalytics.Pages.BuySell
         public bool RefreshAllStocks { get; set; } = false;
         public int CurrentID { get; set; }
         public PaginatedList<V20_CANDLE_STRATEGY> V20_CANDLE_STRATEGies { get; set; } = default!;
-        
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell)
+
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Select(a =>
-                                              new SelectListItem
-                                              {
-                                                  Value = a.StockMasterID.ToString(),
-                                                  Text = a.Symbol
-                                              }).ToList();
+            symbolList = _context.StockMaster.Where(x => x.V200 == true).Select(a =>
+                                                          new SelectListItem
+                                                          {
+                                                              Value = a.StockMasterID.ToString(),
+                                                              Text = a.Symbol
+                                                          }).ToList();
+            //symbolList = _context.StockMaster.Select(a =>
+            //                                  new SelectListItem 
+            //                                  {
+            //                                      Value = a.StockMasterID.ToString(),
+            //                                      Text = a.Symbol
+            //                                  }).ToList();
 
             if (_context.V20_CANDLE_STRATEGY != null)
             {
@@ -55,7 +60,7 @@ namespace MarketAnalytics.Pages.BuySell
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
                 BuySignalSort = sortOrder == "BUY_PRICE" ? "buyprice_desc" : "BUY_PRICE";
                 SellSignalSort = sortOrder == "SELL_PRICE" ? "sellprice_desc" : "SELL_PRICE";
-                if(searchString != null)
+                if (searchString != null)
                 {
                     pageIndex = 1;
                 }
@@ -64,19 +69,23 @@ namespace MarketAnalytics.Pages.BuySell
                     searchString = currentFilter;
                 }
 
-                if(refreshAll == true)
+                if (refreshAll == true)
                 {
                     RefreshAllBuySellIndicators();
                     RefreshAllStocks = false;
                     refreshAll = false;
                 }
 
-                if(id != null)
+                if ((id != null) || (symbolToUpdate != null))
                 {
+                    if ((id == null) && (symbolToUpdate != null))
+                    {
+                        id = symbolToUpdate;
+                    }
                     var selectedRecord = await _context.V20_CANDLE_STRATEGY.FirstOrDefaultAsync(m => m.StockMaster.StockMasterID == id);
                     if (selectedRecord != null)
                     {
-                        if (getQuote == true)
+                        if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
                         {
                             //DateTime quoteDate;
                             //double open, high, low, close, volume, change, changepercent, prevclose;
@@ -101,9 +110,13 @@ namespace MarketAnalytics.Pages.BuySell
                                 _context.SaveChanges();
                             }
                         }
-                        if (updateBuySell == true)
+                        if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
                             DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord.StockMaster);
+                            if(symbolToUpdate != null)
+                            {
+                                searchString = selectedRecord.StockMaster.Symbol;
+                            }
                         }
                     }
                 }
@@ -155,7 +168,7 @@ namespace MarketAnalytics.Pages.BuySell
                     DbInitializer.V20CandlesticPatternFinder(_context, item);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }

@@ -5,26 +5,63 @@
     ViewData["Title"] = "V20BuySell";
 }
 
-<h3>V20 Candle Strategy</h3>
+<h4>V20 Candle Strategy</h4>
 
 @*<p>
     <a asp-page="Create">Create New</a>
 </p>*@
-
-<form asp-page="./v20BuySell" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by symbol or company name:
-            <input type="text" name="SearchString" value="@Model.CurrentFilter" />
-            <input type="submit" value="Search" class="btn btn-primary" /> |
-            <a asp-page="./v20BuySell">Back to full List</a>
-        </p>
-    </div>
-</form>
-<a asp-page="./v20BuySell" asp-route-refreshAll="true" class="btn btn-primary">Refresh Buy/Sell for All</a>
 <table class="table">
     <thead>
         <tr>
+            <th>
+
+                <form asp-page="./v20BuySell" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*|
+                            <a asp-page="./v20BuySell">Back to full List</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <form asp-page="./v20BuySell" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
+                                <option value="">Select Symbol</option>
+                            </select>
+
+                            <input type="submit" value="Update buy-sell for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*|
+                            <a asp-page="./v20BuySell">Back to full List</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./v20BuySell" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+                    </p>
+                </div>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./v20BuySell" style="font-size:small">Back to full List</a>
+                    </p>
+                </div>
+            </th>
+        </tr>
+    </thead>
+</table>
+@*<a asp-page="./v20BuySell" asp-route-refreshAll="true" class="btn btn-primary">Refresh Buy/Sell for All</a>*@
+<table class="table">
+    <thead>
+        <tr style="text-align:center; font-size:small;">
             <th>
                 <a asp-page="./v20BuySell" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].StockMaster.Symbol)
@@ -64,7 +101,7 @@
     <tbody>
         @foreach (var item in Model.V20_CANDLE_STRATEGies)
         {
-            <tr>
+            <tr style="text-align:center; font-size:small;">
                 <td>
                     @Html.DisplayFor(modelItem => item.StockMaster.Symbol)
                 </td>
@@ -95,12 +132,12 @@
                 <td>
                     <a asp-page="./v20BuySell" asp-route-id="@item.StockMasterID" asp-route-getQuote="false" asp-route-updateBuySell="true"
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.V20_CANDLE_STRATEGies.PageIndex"
-                   asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell Indicator</a> |
+                   asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
                     <a asp-page="./v20BuySell" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.V20_CANDLE_STRATEGies.PageIndex"
-                   asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
+                   asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                     <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID" >Add to Portfolio</a>
+                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID">Portfolio</a>
                 </td>
             </tr>
         }
@@ -111,6 +148,6 @@
     var nextDisabled = !Model.V20_CANDLE_STRATEGies.HasNextPage ? "disabled" : "";
 }
 <a asp-page="./v20BuySell" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.V20_CANDLE_STRATEGies.PageIndex - 1)"
-   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled" style="font-size:small">Previous</a>
 <a asp-page="./v20BuySell" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.V20_CANDLE_STRATEGies.PageIndex + 1)"
-   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled" style="font-size:small">Next</a>
