@@ -16,6 +16,7 @@ namespace MarketAnalytics.Models
         public DateTime TO_DATE { get; set; } = default(DateTime);
         [Required]
         [DisplayName("DiffPct")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double DIFF_PCT { get; set; } = default(double);
 
         [Required]
