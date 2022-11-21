@@ -95,7 +95,7 @@ namespace MarketAnalytics.Data
                         continue;
                     }
                     fields = record.ToString().Split(',');
-                    if (IsMasterUpdated(context, fields[0], fields[1], "NS"))
+                    //if (IsMasterUpdated(context, fields[0], fields[1], "NS") == false)
                     {
                         GetQuote(fields[0] + ".NS", out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
@@ -326,20 +326,27 @@ namespace MarketAnalytics.Data
 
                 IQueryable<StockMaster> currentStockIQ = stockmasterIQ.Where(s => (s.Symbol.Equals(symbol)) && (s.CompName.Equals(compname)) &&
                                                                                   (s.Exchange.Equals(exchange)));
-
-                StockMaster lastRec = currentStockIQ.OrderBy(p => p.QuoteDateTime).LastOrDefault();
-                if (lastRec != null)
+                if (currentStockIQ.Count() > 0)
                 {
-                    //if (Convert.ToDateTime(lastRec.QuoteDateTime).Date.CompareTo(DateTime.Today.Date) < 0)
-                    if (Convert.ToDateTime(lastRec.QuoteDateTime.Value.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.ToShortDateString())) < 0)
+                    StockMaster lastRec = currentStockIQ.OrderBy(p => p.QuoteDateTime).LastOrDefault();
+                    if (lastRec != null)
                     {
-                        breturn = false;
+                        //if (Convert.ToDateTime(lastRec.QuoteDateTime).Date.CompareTo(DateTime.Today.Date) < 0)
+                        if (Convert.ToDateTime(lastRec.QuoteDateTime.Value.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.ToShortDateString())) < 0)
+                        {
+                            breturn = false;
+                        }
                     }
+                }
+                else
+                {
+                    //this is new listed stock
+                    breturn = false;
                 }
             }
             catch (Exception ex)
             {
-                breturn = true;
+                breturn = false;
             }
             return breturn;
         }
@@ -853,12 +860,14 @@ namespace MarketAnalytics.Data
                 }
 
                 IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-                IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+
+                IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) && 
+                                                                (s.PriceDate >= DateTime.Today.AddDays(-365))));
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
                     //we will only look back 1 year. hence our first check will be from a record 365 days before
-                    for (int rownum = symbolIQ.Count() - 365; rownum < symbolIQ.Count(); rownum++)
+                    for (int rownum = 0; rownum < symbolIQ.Count(); rownum++)
                     {
                         //lowestlow will be stored as buy price within the range
                         low = lowestlow = 0;
