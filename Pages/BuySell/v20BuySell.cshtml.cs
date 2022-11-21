@@ -82,7 +82,7 @@ namespace MarketAnalytics.Pages.BuySell
                     {
                         id = symbolToUpdate;
                     }
-                    var selectedRecord = await _context.V20_CANDLE_STRATEGY.FirstOrDefaultAsync(m => m.StockMaster.StockMasterID == id);
+                    var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
                         if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
@@ -92,30 +92,30 @@ namespace MarketAnalytics.Pages.BuySell
                             DateTime[] quoteDate = null;
                             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-                            DbInitializer.GetQuote(selectedRecord.StockMaster.Symbol + "." + selectedRecord.StockMaster.Exchange, out quoteDate, out open,
+                            DbInitializer.GetQuote(selectedRecord.Symbol + "." + selectedRecord.Exchange, out quoteDate, out open,
                                 out high, out low, out close,
                                 out volume, out change, out changepercent, out prevclose);
                             if (quoteDate != null)
                             {
-                                selectedRecord.StockMaster.QuoteDateTime = quoteDate[0];
-                                selectedRecord.StockMaster.Open = open[0];
-                                selectedRecord.StockMaster.High = high[0];
-                                selectedRecord.StockMaster.Low = low[0];
-                                selectedRecord.StockMaster.Close = close[0];
-                                selectedRecord.StockMaster.Volume = volume[0];
-                                selectedRecord.StockMaster.ChangePercent = changepercent[0];
-                                selectedRecord.StockMaster.Change = change[0];
-                                selectedRecord.StockMaster.PrevClose = prevclose[0];
-                                _context.StockMaster.Update(selectedRecord.StockMaster);
+                                selectedRecord.QuoteDateTime = quoteDate[0];
+                                selectedRecord.Open = open[0];
+                                selectedRecord.High = high[0];
+                                selectedRecord.Low = low[0];
+                                selectedRecord.Close = close[0];
+                                selectedRecord.Volume = volume[0];
+                                selectedRecord.ChangePercent = changepercent[0];
+                                selectedRecord.Change = change[0];
+                                selectedRecord.PrevClose = prevclose[0];
+                                _context.StockMaster.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord.StockMaster);
+                            DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord);
                             if(symbolToUpdate != null)
                             {
-                                searchString = selectedRecord.StockMaster.Symbol;
+                                searchString = selectedRecord.Symbol;
                             }
                         }
                     }

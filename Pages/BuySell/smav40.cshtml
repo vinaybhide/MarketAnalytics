@@ -2,25 +2,63 @@
 @model MarketAnalytics.Pages.BuySell.SMAV40Finder
 
 @{
-    ViewData["Title"] = "BuySell";
+    ViewData["Title"] = "SMAV40BuySell";
 }
 
-<h3>SMA V40 Strategy</h3>
+<h4>SMA V40 Strategy</h4>
 
 @*<p>
     <a asp-page="Create">Create New</a>
 </p>*@
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <form asp-page="./smav40" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*|
+                            <a asp-page="./smav40">Back to full List</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <form asp-page="./smav40" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
+                                <option value="">Select Symbol</option>
+                            </select>
 
-<form asp-page="./smav40" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by symbol or company name:
-            <input type="text" name="SearchString" value="@Model.CurrentFilter" />
-            <input type="submit" value="Search" class="btn btn-primary" /> |
-            <a asp-page="./smav40">Back to full List</a>
-        </p>
-    </div>
-</form>
+                            <input type="submit" value="Update buy-sell for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*|
+                            <a asp-page="./v20BuySell">Back to full List</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./smav40" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+                    </p>
+                </div>
+
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./smav40" style="font-size:small">Back to full List</a>
+                    </p>
+                </div>
+            </th>
+        </tr>
+    </thead>
+</table>
+
 @*<form asp-page="./smav40" method="get">
     <div class="form-actions no-color">
         <div class="form-actions no-color">
@@ -31,14 +69,13 @@
         </div>
     </div>
 </form>*@
-<a asp-page="./smav40" asp-route-refreshAll="true" class="btn btn-primary">Refresh Buy/Sell for All</a>
 <table class="table">
     <thead>
-        <tr>
+        <tr style="text-align:center; font-size:small;">
             @*<th>
-                <a asp-page="./smav40" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
-                </a>
+            <a asp-page="./smav40" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
+            @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
+            </a>
             </th>*@
             <th>
                 <a asp-page="./smav40" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
@@ -46,33 +83,33 @@
                 </a>
             </th>
             @*<th>
-                <a asp-page="./smav40" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.StockMaster[0].CompName)
-                </a>
+            <a asp-page="./smav40" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
+            @Html.DisplayNameFor(model => model.StockMaster[0].CompName)
+            </a>
             </th>*@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].QuoteDateTime)
             </th>
             @*<th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].Open)
+            @Html.DisplayNameFor(model => model.StockMaster[0].Open)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].High)
+            @Html.DisplayNameFor(model => model.StockMaster[0].High)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].Low)
+            @Html.DisplayNameFor(model => model.StockMaster[0].Low)
             </th>*@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].Close)
             </th>
             @*@<th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].Volume)
+            @Html.DisplayNameFor(model => model.StockMaster[0].Volume)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].Change)
+            @Html.DisplayNameFor(model => model.StockMaster[0].Change)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].ChangePercent)
+            @Html.DisplayNameFor(model => model.StockMaster[0].ChangePercent)
             </th>*@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
@@ -105,40 +142,40 @@
     <tbody>
         @foreach (var item in Model.StockMaster)
         {
-            <tr>
+            <tr style="text-align:center; font-size:small;">
                 @*<td>
-                    @Html.DisplayFor(modelItem => item.Exchange)
-                </td>*@
+            @Html.DisplayFor(modelItem => item.Exchange)
+            </td>*@
                 <td>
                     @Html.DisplayFor(modelItem => item.Symbol)
                 </td>
                 @*<td>
-                    @Html.DisplayFor(modelItem => item.CompName)
-                </td>*@
+            @Html.DisplayFor(modelItem => item.CompName)
+            </td>*@
                 <td>
                     @Html.DisplayFor(modelItem => item.QuoteDateTime)
                 </td>
                 @*<td>
-                    @Html.DisplayFor(modelItem => item.Open)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.High)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Low)
-                </td>*@
+            @Html.DisplayFor(modelItem => item.Open)
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.High)
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.Low)
+            </td>*@
                 <td>
                     @Html.DisplayFor(modelItem => item.Close)
                 </td>
                 @*<td>
-                    @Html.DisplayFor(modelItem => item.Volume)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Change)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ChangePercent)
-                </td>*@
+            @Html.DisplayFor(modelItem => item.Volume)
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.Change)
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.ChangePercent)
+            </td>*@
                 <td>
                     @Html.DisplayFor(modelItem => item.PrevClose)
                 </td>
@@ -162,16 +199,16 @@
 
                 <td>
                     @*<a asp-page="./Edit" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.StockMaster.PageIndex">Edit V40 Status</a> |
-                    <a asp-page="./Details" asp-route-id="@item.StockMasterID">Details</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.StockMasterID">Delete from V40</a> |*@
+                <a asp-page="./Details" asp-route-id="@item.StockMasterID">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.StockMasterID">Delete from V40</a> |*@
                     <a asp-page="./smav40" asp-route-id="@item.StockMasterID"
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                   asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell Indicator</a> |
-                    @*<a asp-page="./smav40" asp-route-id="@item.StockMasterID"
+                   asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
+                    <a asp-page="./smav40" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                   asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |*@
+                   asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                     <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID" >Add to Portfolio</a>
+                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID">Portfolio</a>
 
                 </td>
             </tr>

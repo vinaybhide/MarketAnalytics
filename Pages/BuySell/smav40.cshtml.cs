@@ -11,6 +11,7 @@ using MarketAnalytics.Models;
 using System.Data;
 using System.Net;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MarketAnalytics.Pages.BuySell
 {
@@ -18,11 +19,20 @@ namespace MarketAnalytics.Pages.BuySell
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public List<SelectListItem> symbolList { get; set; }
 
         public SMAV40Finder(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
+            symbolList = new List<SelectListItem>();
+            //symbolList.Clear();
+            //symbolList = _context.StockMaster.Where(x => x.V200 == true).Select(a =>
+            //                                              new SelectListItem
+            //                                              {
+            //                                                  Value = a.StockMasterID.ToString(),
+            //                                                  Text = a.Symbol
+            //                                              }).ToList();
 
             //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
             //stockmasterIQ = stockmasterIQ.Where(s => (s.V40 == true) );
@@ -43,8 +53,16 @@ namespace MarketAnalytics.Pages.BuySell
         public int CurrentID { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? history)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
+            symbolList.Clear();
+            symbolList = _context.StockMaster.Where(x => x.V40 == true).Select(a =>
+                                                          new SelectListItem
+                                                          {
+                                                              Value = a.StockMasterID.ToString(),
+                                                              Text = a.Symbol
+                                                          }).ToList();
+
             if (_context.StockMaster != null)
             {
                 //StockMaster = await _context.StockMaster.ToListAsync();
@@ -72,12 +90,17 @@ namespace MarketAnalytics.Pages.BuySell
                     refreshAll = false;
                 }
 
-                if(id != null)
+                if ((id != null) || (symbolToUpdate != null))
                 {
+                    if ((id == null) && (symbolToUpdate != null))
+                    {
+                        id = symbolToUpdate;
+                    }
+
                     var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
-                        if((history == null) || (history == false))
+                        if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
                         {
                             //DateTime quoteDate;
                             //double open, high, low, close, volume, change, changepercent, prevclose;
@@ -101,9 +124,15 @@ namespace MarketAnalytics.Pages.BuySell
                                 _context.StockMaster.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
-
+                        }
+                        if ((updateBuySell == true) || (symbolToUpdate != null))
+                        { 
                             DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, selectedRecord.Symbol, selectedRecord.Exchange,
                                 selectedRecord.StockMasterID, selectedRecord.CompName, 20, 50, 200);
+                            if (symbolToUpdate != null)
+                            {
+                                searchString = selectedRecord.Symbol;
+                            }
                         }
                     }
                 }
