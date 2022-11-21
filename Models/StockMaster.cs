@@ -39,8 +39,14 @@ namespace MarketAnalytics.Models
         public bool SMA_BUY_SIGNAL { get; set; } = false;
         [DisplayName("SMASELL")]
         public bool SMA_SELL_SIGNAL { get; set; } = false;
+        [DisplayName("SMA20")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double SMA_FAST { get; set; } = default(double);
+        [DisplayName("SMA50")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double SMA_MID { get; set; } = default(double);
+        [DisplayName("SMA200")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)] 
         public double SMA_SLOW { get; set; } = default(double);
         public ICollection<V20_CANDLE_STRATEGY> collection_V20_buysell { get; set; }
     }
