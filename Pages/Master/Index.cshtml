@@ -5,23 +5,47 @@
     ViewData["Title"] = "StockMaster";
 }
 
-<h1>Stock Master</h1>
+<h4>Stock Master</h4>
 
-<p>
+@*<p>
     <a asp-page="Create">Create New</a>
-</p>
+</p>*@
 
-<form asp-page="./Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by symbol or company name:
-            <input type="text" name="SearchString" value="@Model.CurrentFilter" />
-            <input type="submit" value="Search" class="btn btn-primary" /> |
-            <a asp-page="./Index">Back to full List</a>
-        </p>
-    </div>
-</form>
-<form asp-page="./Index" method="get">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <form asp-page="./Index" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+
+                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*|
+                            <a asp-page="./Index">Back to full List</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh All</a>
+                    </p>
+                </div>
+
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./Index" style="font-size:small">Back to full List</a>
+                    </p>
+                </div>
+            </th>
+        </tr>
+    </thead>
+</table>
+@*<form asp-page="./Index" method="get">
     <div class="form-actions no-color">
         <div class="form-actions no-color">
             <p>
@@ -30,12 +54,12 @@
             </p>
         </div>
     </div>
-</form>
-<a asp-page="/BuySell/smav40" class="btn btn-primary">SMA V40</a> |
-<a asp-page="/BuySell/v20BuySell" class="btn btn-primary">V20 Candle</a>
+</form>*@
+@*<a asp-page="/BuySell/smav40" class="btn btn-primary" style="font-size:small">SMA V40</a> |
+<a asp-page="/BuySell/v20BuySell" class="btn btn-primary" style="font-size:small">V20 Candle</a>*@
 <table class="table">
     <thead>
-        <tr>
+        <tr style="text-align:center; font-size:small;">
             <th>
                 <a asp-page="./Index" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
@@ -84,7 +108,7 @@
     <tbody>
         @foreach (var item in Model.StockMaster)
         {
-            <tr>
+            <tr style="text-align:center; font-size:small;">
                 <td>
                     @Html.DisplayFor(modelItem => item.Exchange)
                 </td>
@@ -130,7 +154,7 @@
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
                    asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
                     <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID" >Add to Portfolio</a>
+                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID">Add to Portfolio</a>
 
                 </td>
             </tr>
