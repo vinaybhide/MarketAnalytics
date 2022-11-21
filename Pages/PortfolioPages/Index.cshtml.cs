@@ -12,6 +12,7 @@ using System.Data;
 using System.Net;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -19,11 +20,13 @@ namespace MarketAnalytics.Pages.PortfolioPages
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public List<SelectListItem> symbolList { get; set; }
 
         public PortfolioModel(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
+            symbolList = new List<SelectListItem>();
         }
 
         public string DateSort { get; set; }
@@ -37,10 +40,17 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public int CurrentID { get; set; }
         public PaginatedList<PORTFOLIO> portfolio { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? history)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, int? symbolToUpdate)
         {
             DateTime[] quoteDate = null;
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+            symbolList.Clear();
+            symbolList = _context.PORTFOLIO.Select(a =>
+                                                    new SelectListItem
+                                                    {
+                                                        Value = a.StockMasterID.ToString(),
+                                                        Text = a.StockMaster.Symbol
+                                                    }).ToList();
 
             if (_context.PORTFOLIO != null)
             {
@@ -69,26 +79,62 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 //    RefreshAllStocks = false;
                 //}
 
-                if (id != null)
+                if ((id != null) || (symbolToUpdate != null))
                 {
+                    if ((id == null) && (symbolToUpdate != null))
+                    {
+                        id = symbolToUpdate;
+                    }
+
                     var selectedRecord = await _context.PORTFOLIO.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
-                        if ((history == null) || (history == false))
+                        //if ((history == null) || (history == false))
+                        //{
+                        //DateTime quoteDate;
+                        //double open, high, low, close, volume, change, changepercent, prevclose;
+                        DbInitializer.GetQuote(selectedRecord.StockMaster.Symbol + "." + selectedRecord.StockMaster.Exchange, out quoteDate, out open,
+                            out high, out low, out close,
+                            out volume, out change, out changepercent, out prevclose);
+                        if (quoteDate != null)
                         {
-                            //DateTime quoteDate;
-                            //double open, high, low, close, volume, change, changepercent, prevclose;
-                            DbInitializer.GetQuote(selectedRecord.StockMaster.Symbol + "." + selectedRecord.StockMaster.Exchange, out quoteDate, out open,
-                                out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
-                            if (quoteDate != null)
-                            {
-                                selectedRecord.CMP = close[0];
-                                selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
-                                _context.PORTFOLIO.Update(selectedRecord);
-                                _context.SaveChanges();
-                            }
+                            selectedRecord.CMP = close[0];
+                            selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+                            _context.PORTFOLIO.Update(selectedRecord);
+                            _context.SaveChanges();
                         }
+                        //}
+                        if (symbolToUpdate != null)
+                        {
+                            searchString = selectedRecord.StockMaster.Symbol;
+                        }
+                    }
+                }
+                else
+                {
+                    IQueryable<PORTFOLIO> quoteIQ = from s in _context.PORTFOLIO select s;
+                    foreach (var item in quoteIQ)
+                    {
+                        quoteDate = null;
+                        open = high = low = close = volume = change = changepercent = prevclose = null;
+                        DbInitializer.GetQuote(item.StockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
+                                    out volume, out change, out changepercent, out prevclose);
+                        if (quoteDate != null)
+                        {
+                            //var selectedRecord = _context.PORTFOLIO.Find(item.PORTFOLIO_ID);
+
+                            item.CMP = close[0];
+                            item.VALUE = item.QUANTITY * close[0];
+                            _context.PORTFOLIO.Update(item);
+
+                            //if (selectedRecord != null)
+                            //{
+                            //    selectedRecord.CMP = close[0];
+                            //    selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+                            //    _context.PORTFOLIO.Update(selectedRecord);
+                            //}
+                        }
+                        _context.SaveChanges();
                     }
                 }
 
@@ -131,28 +177,28 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
                 portfolio = await PaginatedList<PORTFOLIO>.CreateAsync(portfolioIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
-                foreach (var item in portfolio)
-                {
-                    quoteDate = null;
-                    open = high = low = close = volume = change = changepercent = prevclose = null;
-                    DbInitializer.GetQuote(item.StockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
-                    if (quoteDate != null)
-                    {
-                        var selectedRecord = _context.PORTFOLIO.Find(item.PORTFOLIO_ID);
+                //foreach (var item in portfolio)
+                //{
+                //    quoteDate = null;
+                //    open = high = low = close = volume = change = changepercent = prevclose = null;
+                //    DbInitializer.GetQuote(item.StockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
+                //                out volume, out change, out changepercent, out prevclose);
+                //    if (quoteDate != null)
+                //    {
+                //        var selectedRecord = _context.PORTFOLIO.Find(item.PORTFOLIO_ID);
 
-                        item.CMP = close[0];
-                        item.VALUE = item.QUANTITY * close[0];
+                //        item.CMP = close[0];
+                //        item.VALUE = item.QUANTITY * close[0];
 
-                        if (selectedRecord != null)
-                        {
-                            selectedRecord.CMP = close[0];
-                            selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
-                            _context.PORTFOLIO.Update(selectedRecord);
-                        }
-                    }
-                    _context.SaveChanges();
-                }
+                //        if (selectedRecord != null)
+                //        {
+                //            selectedRecord.CMP = close[0];
+                //            selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+                //            _context.PORTFOLIO.Update(selectedRecord);
+                //        }
+                //    }
+                //    _context.SaveChanges();
+                //}
             }
         }
 
