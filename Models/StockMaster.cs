@@ -49,5 +49,8 @@ namespace MarketAnalytics.Models
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)] 
         public double SMA_SLOW { get; set; } = default(double);
         public ICollection<V20_CANDLE_STRATEGY> collection_V20_buysell { get; set; }
+
+        public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
+        //public List<PortfolioTxn> portfolioTxns { get; set; }
     }
 }
