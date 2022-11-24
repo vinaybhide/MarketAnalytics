@@ -13,6 +13,7 @@
         <form asp-page="./portfolioTxnCreate" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" type="hidden" class="form-control" />
+            <input asp-for="@Model.parentpageIndex" type="hidden" class="form-control" />
 
             @*<div class="form-group">
                 <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
@@ -76,7 +77,7 @@
 </div>
 
 <div>
-    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" style="font-size:small">Back to full List</a>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentpageIndex">Back to full List</a>
 </div>
 
 @section Scripts {

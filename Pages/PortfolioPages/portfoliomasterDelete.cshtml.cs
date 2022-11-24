@@ -17,14 +17,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
         [BindProperty]
       public Portfolio_Master portfolioMaster { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? masterid)
         {
-            if (id == null || _context.PORTFOLIO_MASTER == null)
+            if (masterid == null || _context.PORTFOLIO_MASTER == null)
             {
                 return NotFound();
             }
 
-            var selectedrecord = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == id);
+            var selectedrecord = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
 
             if (selectedrecord == null)
             {
@@ -37,13 +37,13 @@ namespace MarketAnalytics.Pages.PortfolioPages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(int? id)
+        public async Task<IActionResult> OnPostAsync(int? masterid)
         {
-            if (id == null || _context.PORTFOLIO_MASTER == null)
+            if (masterid == null || _context.PORTFOLIO_MASTER == null)
             {
                 return NotFound();
             }
-            var selectedrecord = await _context.PORTFOLIO_MASTER.FindAsync(id);
+            var selectedrecord = await _context.PORTFOLIO_MASTER.FindAsync(masterid);
 
             if (selectedrecord != null)
             {

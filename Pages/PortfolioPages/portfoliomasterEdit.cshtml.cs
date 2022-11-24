@@ -19,14 +19,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
         
         public bool bNameUnique = true;
         public string errorMessage = "Portfolio name exists! Please use unique portfolio name.";
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? masterid)
         {
-            if (id == null || _context.PORTFOLIO_MASTER == null)
+            if (masterid == null || _context.PORTFOLIO_MASTER == null)
             {
                 return NotFound();
             }
 
-            var selectedrecord =  await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == id);
+            var selectedrecord =  await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
             if (selectedrecord == null)
             {
                 return NotFound();
@@ -62,7 +62,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         throw;
                     }
                 }
-                return RedirectToPage("./portfoliomasterIndex");
+                return RedirectToPage("./portfoliomasterIndex", new { masterid = portfolioMaster.PORTFOLIO_MASTER_ID});
             }
             else
             {
@@ -72,9 +72,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         }
 
-        private bool PORTFOLIOExists(int id)
+        private bool PORTFOLIOExists(int masterid)
         {
-          return _context.PORTFOLIO_MASTER.Any(e => e.PORTFOLIO_MASTER_ID == id);
+          return _context.PORTFOLIO_MASTER.Any(e => e.PORTFOLIO_MASTER_ID == masterid);
         }
     }
 }

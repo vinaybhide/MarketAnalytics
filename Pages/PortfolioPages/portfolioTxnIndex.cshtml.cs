@@ -42,29 +42,27 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public string portfolioMasterName { get; set; } = string.Empty;
         [BindProperty]
         public int MasterId { get; set; }
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterId, bool? refreshAll, bool? getQuote, int? symbolToUpdate)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid, bool? refreshAll, bool? getQuote, int? symbolToUpdate)
         {
             DateTime[] quoteDate = null;
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-            if ((_context.PORTFOLIOTXN != null) && (masterId != null))
+            if ((_context.PORTFOLIOTXN != null) && (masterid != null))
             {
-                if (masterId != null)
-                {
-                    MasterId = (int)masterId;
-                    var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == MasterId));
-                    portfolioMasterName = masterRec.PORTFOLIO_NAME;
-                }
+                MasterId = (int)masterid;
+                var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                portfolioMasterName = masterRec.PORTFOLIO_NAME;
                 symbolList.Clear();
-                symbolList = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId).Select(a =>
+                symbolList = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId).OrderBy(a => a.stockMaster.Symbol).Select(a =>
                                                         new SelectListItem
                                                         {
                                                             Value = a.StockMasterID.ToString(),
                                                             Text = a.stockMaster.Symbol
                                                         }).ToList();
-                _context.PORTFOLIOTXN.Include(x => x.PORTFOLIO_MASTER_ID);
+                
+                //_context.PORTFOLIOTXN.Include(x => x.PORTFOLIO_MASTER_ID);
 
-                IQueryable<PORTFOLIOTXN> txnIQ = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterId);
+                IQueryable<PORTFOLIOTXN> txnIQ = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterid);
 
                 CurrentSort = sortOrder;
                 DateSort = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
@@ -82,7 +80,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                 if (symbolToUpdate != null)
                 {
-                    var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == MasterId) && (m.StockMasterID == symbolToUpdate)));
+                    var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == symbolToUpdate)));
                     if (selectedRecord != null)
                     {
                         DbInitializer.GetQuote(selectedRecord.stockMaster.Symbol + "." + selectedRecord.stockMaster.Exchange, out quoteDate, out open,

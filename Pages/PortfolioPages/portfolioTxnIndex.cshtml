@@ -13,7 +13,7 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="portfolioTxnCreate" asp-route-masterId="@Model.MasterId" class="btn btn-sm btn-primary" style="font-size:small">New Txn</a>
+                        <a asp-page="portfolioTxnCreate" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.portfolioTxn.PageIndex" class="btn btn-sm btn-primary" style="font-size:small">New Txn</a>
                     </p>
                 </div>
             </th>
@@ -21,7 +21,7 @@
                 <form asp-page="./portfolioTxnIndex" method="get">
                     <div class="form-actions no-color">
                         <p>
-                            <input asp-for="@Model.MasterId" type="hidden"/>
+                            <input asp-for="@Model.MasterId" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
                             <input type="submit" value="Search txn for symbol or company" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
@@ -45,7 +45,7 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
                     </p>
                 </div>
             </th>
@@ -74,22 +74,22 @@
     <thead>
         <tr style="text-align:center; font-size:small;">
             <th>
-                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.DateSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.DateSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.portfolioTxn[0].PURCHASE_DATE)
                 </a>
             </th>
             <th>
-                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.Exchange)
                 </a>
             </th>
             <th>
-                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.Symbol)
                 </a>
             </th>
             <th>
-                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.CompName)
                 </a>
             </th>
@@ -145,12 +145,12 @@
                         @Html.DisplayFor(modelItem => item.VALUE)
                     </td>
                     <td>
-                        <a asp-page="./portfolioTxnEdit" asp-route-masterId="@Model.MasterId" asp-route-stockid="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Edit</a> |
-                        <a asp-page="./portfolioTxnDetails" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Details</a> |
-                        <a asp-page="./portfolioTxnDelete" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Delete</a> |
-                        <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort"
-                        asp-route-pageIndex="@Model.portfolioTxn.PageIndex" asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
-                        <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>
+                        <a asp-page="./portfolioTxnEdit" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-stockid="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Edit</a> |
+                        <a asp-page="./portfolioTxnDetails" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Details</a> |
+                        <a asp-page="./portfolioTxnDelete" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Delete</a> |
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort"
+                   asp-route-pageIndex="@Model.portfolioTxn.PageIndex" asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
+                        <a asp-page="/History/Index" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" sasp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>
                     </td>
                 </tr>
             }
@@ -161,7 +161,10 @@
     var prevDisabled = !Model.portfolioTxn.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.portfolioTxn.HasNextPage ? "disabled" : "";
 }
-<a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex - 1)"
+<a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
-<a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex + 1)"
+<a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+<div>
+    <a asp-page="./portfoliomasterIndex">Back to portfolio list</a>
+</div>

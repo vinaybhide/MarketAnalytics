@@ -20,33 +20,36 @@ namespace MarketAnalytics.Pages.PortfolioPages
         [BindProperty]
         public PORTFOLIOTXN portfolioTxn { get; set; }
 
+        [BindProperty]
+        public int parentpageIndex { get; set; }
         public PortfolioTxnCreateModel(MarketAnalytics.Data.DBContext context)
         {
             _context = context;
             symbolList = new List<SelectListItem>();
         }
 
-        public IActionResult OnGet(int? masterId)
+        public IActionResult OnGet(int? masterid, int? pageIndex)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Select(a =>
+            symbolList = _context.StockMaster.OrderBy(a => a.Symbol).Select(a =>
                                               new SelectListItem
                                               {
                                                   Value = a.StockMasterID.ToString(),
                                                   Text = a.Symbol
                                               }).ToList();
-
-            if (masterId != null)
+            if (masterid != null)
             {
                 portfolioTxn = new PORTFOLIOTXN();
-                portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterId;
+                portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterid;
                 //var masterRec = _context.PORTFOLIO_MASTER.Select(m => (m.PORTFOLIO_MASTER_ID == masterId));
-                var masterRec = _context.PORTFOLIO_MASTER.FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterId));
+                var masterRec = _context.PORTFOLIO_MASTER.FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 if (masterRec != null)
                 {
                     portfolioMasterName = masterRec.PORTFOLIO_NAME.ToString();
+                    portfolioTxn.portfolioMaster = masterRec;
                 }
             }
+            parentpageIndex = (int)pageIndex;
             return Page();
         }
 
@@ -76,7 +79,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
             _context.PORTFOLIOTXN.Add(portfolioTxn);
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("./portfolioTxnIndex", new { masterId = portfolioTxn.PORTFOLIO_MASTER_ID });
+            //return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex });
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID});
         }
     }
 }

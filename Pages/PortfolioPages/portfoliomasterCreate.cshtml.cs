@@ -43,7 +43,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 _context.PORTFOLIO_MASTER.Add(portfolioMaster);
                 await _context.SaveChangesAsync();
 
-                return RedirectToPage("./portfoliomasterIndex");
+                return RedirectToPage("./portfoliomasterIndex", new {masterid = portfolioMaster.PORTFOLIO_MASTER_ID});
             }
             else
             {

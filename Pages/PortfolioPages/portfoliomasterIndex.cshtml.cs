@@ -26,7 +26,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public int CurrentID { get; set; }
         public PaginatedList<Portfolio_Master> portfolioMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid)
         {
             masterList.Clear();
             masterList = _context.PORTFOLIO_MASTER.Select(a =>
@@ -52,7 +52,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 CurrentFilter = searchString;
 
                 IQueryable<Portfolio_Master> portfolioIQ = from s in _context.PORTFOLIO_MASTER select s;
-
+                if (masterid != null)
+                {
+                    var currentrecord = portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
+                    if(currentrecord != null)
+                    {
+                        searchString = currentrecord.PORTFOLIO_NAME;
+                    }
+                }
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     portfolioIQ = portfolioIQ.Where(s => s.PORTFOLIO_NAME.ToUpper().Contains(searchString.ToUpper()));
