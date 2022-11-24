@@ -1,0 +1,86 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.PortfolioTxnCreateModel
+
+@{
+    ViewData["Title"] = "PortfolioTxnCreate";
+}
+
+<h3>Portfolio - @Model.portfolioMasterName</h3>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-page="./portfolioTxnCreate" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" type="hidden" class="form-control" />
+
+            @*<div class="form-group">
+                <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
+                <select asp-for="portfolio.StockMaster.Exchange" asp-items="Model.exchangeList">
+                    <option value="">Select Exchange</option>
+                </select>   
+                <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
+                <input asp-for="portfolio.StockMaster.Exchange" class="form-control" />
+                <span asp-validation-for="portfolio.StockMaster.Exchange" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <label asp-for="portfolioTxn.stockMaster.Symbol" class="control-label"></label>
+                <select asp-for="portfolioTxn.StockMasterID" asp-items="Model.symbolList">
+                    <option value="">Select Symbol</option>
+                </select>
+
+                @*<label asp-for="portfolio.StockMaster.Symbol" class="control-label"></label>
+                <input asp-for="portfolio.StockMaster.Symbol" class="form-control" />
+                <span asp-validation-for="portfolio.StockMaster.Symbol" class="text-danger"></span>*@
+            </div>
+            @*<div class="form-group">
+                <label asp-for="portfolio.StockMaster.CompName" class="control-label"></label>
+                <input asp-for="portfolio.StockMaster.CompName" class="form-control" />
+                <span asp-validation-for="portfolio.StockMaster.CompName" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <label asp-for="portfolioTxn.PURCHASE_DATE" class="control-label"></label>
+                <input asp-for="portfolioTxn.PURCHASE_DATE" class="form-control" />
+                <span asp-validation-for="portfolioTxn.PURCHASE_DATE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.QUANTITY" class="control-label"></label>
+                <input asp-for="portfolioTxn.QUANTITY" class="form-control" />
+                <span asp-validation-for="portfolioTxn.QUANTITY" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.COST_PER_SHARE" class="control-label"></label>
+                <input asp-for="portfolioTxn.COST_PER_SHARE" class="form-control" />
+                <span asp-validation-for="portfolioTxn.COST_PER_SHARE" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                <label asp-for="portfolio.TOTAL_COST" class="control-label"></label>
+                <input asp-for="portfolio.TOTAL_COST" class="form-control" />
+                <span asp-validation-for="portfolio.TOTAL_COST" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolio.CMP" class="control-label"></label>
+                <input asp-for="portfolio.CMP" class="form-control" />
+                <span asp-validation-for="portfolio.CMP" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolio.VALUE" class="control-label"></label>
+                <input asp-for="portfolio.VALUE" class="form-control" />
+                <span asp-validation-for="portfolio.VALUE" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" style="font-size:small">Back to full List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

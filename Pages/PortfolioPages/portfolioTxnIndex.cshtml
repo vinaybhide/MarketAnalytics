@@ -1,0 +1,167 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.PortfolioTxnIndex
+
+@{
+    ViewData["Title"] = "PortfolioTxnIndex";
+}
+
+<h4>Portfolio - @Model.portfolioMasterName</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="portfolioTxnCreate" asp-route-masterId="@Model.MasterId" class="btn btn-sm btn-primary" style="font-size:small">New Txn</a>
+                    </p>
+                </div>
+            </th>
+            <th>
+                <form asp-page="./portfolioTxnIndex" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input asp-for="@Model.MasterId" type="hidden"/>
+                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search txn for symbol or company" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <form asp-page="./portfolioTxnIndex" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input asp-for="@Model.MasterId" type="hidden" />
+                            <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
+                                <option value="">Select Symbol</option>
+                            </select>
+
+                            <input type="submit" value="Search txns for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+                    </p>
+                </div>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" style="font-size:small">Back to full List</a>
+                    </p>
+                </div>
+            </th>
+        </tr>
+    </thead>
+</table>
+@*<form asp-page="./Index" method="get">
+            <div class="form-actions no-color">
+            <div class="form-actions no-color">
+            <p>
+            <input type="hidden" name="RefreshAll" value="true" />
+            <input type="submit" value="Refresh All" class="btn btn-primary" />
+            </p>
+            </div>
+            </div>
+            </form>
+            *@
+<table class="table">
+    <thead>
+        <tr style="text-align:center; font-size:small;">
+            <th>
+                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.DateSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.portfolioTxn[0].PURCHASE_DATE)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.Exchange)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.Symbol)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CompNameSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.CompName)
+                </a>
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].CMP)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.portfolioTxn.Count > 0)
+        {
+            @foreach (var item in Model.portfolioTxn)
+            {
+                <tr style="text-align:center; font-size:small;">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PURCHASE_DATE)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.Exchange)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.Symbol)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.CompName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.QUANTITY)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.COST_PER_SHARE)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TOTAL_COST)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CMP)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.VALUE)
+                    </td>
+                    <td>
+                        <a asp-page="./portfolioTxnEdit" asp-route-masterId="@Model.MasterId" asp-route-stockid="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Edit</a> |
+                        <a asp-page="./portfolioTxnDetails" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Details</a> |
+                        <a asp-page="./portfolioTxnDelete" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Delete</a> |
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort"
+                        asp-route-pageIndex="@Model.portfolioTxn.PageIndex" asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
+                        <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+@{
+    var prevDisabled = !Model.portfolioTxn.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.portfolioTxn.HasNextPage ? "disabled" : "";
+}
+<a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex - 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+<a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex + 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>

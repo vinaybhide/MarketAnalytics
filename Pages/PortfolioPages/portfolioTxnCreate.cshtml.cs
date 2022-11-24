@@ -3,19 +3,24 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MarketAnalytics.Data;
 using MarketAnalytics.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
 
-    public class CreateModel : PageModel
+    public class PortfolioTxnCreateModel : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
 
         public List<SelectListItem> exchangeList { get; set; }
         public List<SelectListItem> symbolList { get; set; }
         public int SelectedTag { get; set; }
+        public string portfolioMasterName { get; set; } = string.Empty;
 
-        public CreateModel(MarketAnalytics.Data.DBContext context)
+        [BindProperty]
+        public PORTFOLIOTXN portfolioTxn { get; set; }
+
+        public PortfolioTxnCreateModel(MarketAnalytics.Data.DBContext context)
         {
             _context = context;
             symbolList = new List<SelectListItem>();
@@ -33,15 +38,17 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
             if (masterId != null)
             {
-                portfolio = new PORTFOLIO();
-                //portfolio.PORTFOLIO_MASTER_ID = (int)masterId;
+                portfolioTxn = new PORTFOLIOTXN();
+                portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterId;
+                //var masterRec = _context.PORTFOLIO_MASTER.Select(m => (m.PORTFOLIO_MASTER_ID == masterId));
+                var masterRec = _context.PORTFOLIO_MASTER.FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterId));
+                if (masterRec != null)
+                {
+                    portfolioMasterName = masterRec.PORTFOLIO_NAME.ToString();
+                }
             }
             return Page();
         }
-
-        [BindProperty]
-        public PORTFOLIO portfolio { get; set; }
-
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
@@ -54,22 +61,22 @@ namespace MarketAnalytics.Pages.PortfolioPages
             DateTime[] quoteDate = null;
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-            portfolio.StockMaster = (StockMaster)_context.StockMaster.Find(portfolio.StockMasterID);
+            portfolioTxn.stockMaster = (StockMaster)_context.StockMaster.Find(portfolioTxn.StockMasterID);
 
-            DbInitializer.GetQuote(portfolio.StockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
+            DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
                         out volume, out change, out changepercent, out prevclose);
             if (quoteDate != null)
             {
-                portfolio.CMP = close[0];
-                portfolio.VALUE = portfolio.QUANTITY * close[0];
+                portfolioTxn.CMP = close[0];
+                portfolioTxn.VALUE = portfolioTxn.QUANTITY * close[0];
             }
 
-            portfolio.TOTAL_COST = portfolio.QUANTITY * portfolio.COST_PER_SHARE;
+            portfolioTxn.TOTAL_COST = portfolioTxn.QUANTITY * portfolioTxn.COST_PER_SHARE;
 
-            _context.PORTFOLIO.Add(portfolio);
+            _context.PORTFOLIOTXN.Add(portfolioTxn);
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("./Index");
+            return RedirectToPage("./portfolioTxnIndex", new { masterId = portfolioTxn.PORTFOLIO_MASTER_ID });
         }
     }
 }
