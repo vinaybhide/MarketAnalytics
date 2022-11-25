@@ -5,7 +5,7 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h4>Edit : @Model.StockMaster.CompName (@Model.StockMaster.Exchange.@Model.StockMaster.Symbol)</h4>
 
 <h4>StockMaster</h4>
 <hr />
@@ -14,67 +14,73 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="StockMaster.StockMasterID" />
+            <input asp-for="@Model.parentPageIndex" type="hidden" />
+            <input asp-for="@Model.CurrentFilter" type="hidden" />
+            <input asp-for="@Model.CurrentSort" type="hidden" />
             <div class="form-group">
-                <label asp-for="StockMaster.Exchange" class="control-label"></label>
-                <input asp-for="StockMaster.Exchange" class="form-control" />
+                <label asp-for="StockMaster.Exchange" class="control-label" hidden="true"></label>
+                <input asp-for="StockMaster.Exchange" class="form-control" readonly="true" hidden="true" />
                 <span asp-validation-for="StockMaster.Exchange" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Symbol" class="control-label"></label>
-                <input asp-for="StockMaster.Symbol" class="form-control" />
+                <label asp-for="StockMaster.Symbol" class="control-label" hidden="true"></label>
+                <input asp-for="StockMaster.Symbol" class="form-control" readonly="true" hidden="true" />
                 <span asp-validation-for="StockMaster.Symbol" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.CompName" class="control-label"></label>
-                <input asp-for="StockMaster.CompName" class="form-control" />
+                <label asp-for="StockMaster.CompName" class="control-label" hidden="true"></label>
+                <input asp-for="StockMaster.CompName" class="form-control" readonly="true" hidden="true" />
                 <span asp-validation-for="StockMaster.CompName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="StockMaster.QuoteDateTime" class="control-label"></label>
-                <input asp-for="StockMaster.QuoteDateTime" class="form-control" />
-                <span asp-validation-for="StockMaster.QuoteDateTime" class="text-danger"></span>
+            @*<div class="form-group">
+            <label asp-for="StockMaster.QuoteDateTime" class="control-label"></label>
+            <input asp-for="StockMaster.QuoteDateTime" class="form-control" />
+            <span asp-validation-for="StockMaster.QuoteDateTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Open" class="control-label"></label>
-                <input asp-for="StockMaster.Open" class="form-control" />
-                <span asp-validation-for="StockMaster.Open" class="text-danger"></span>
+            <label asp-for="StockMaster.Open" class="control-label"></label>
+            <input asp-for="StockMaster.Open" class="form-control" />
+            <span asp-validation-for="StockMaster.Open" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.High" class="control-label"></label>
-                <input asp-for="StockMaster.High" class="form-control" />
-                <span asp-validation-for="StockMaster.High" class="text-danger"></span>
+            <label asp-for="StockMaster.High" class="control-label"></label>
+            <input asp-for="StockMaster.High" class="form-control" />
+            <span asp-validation-for="StockMaster.High" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Low" class="control-label"></label>
-                <input asp-for="StockMaster.Low" class="form-control" />
-                <span asp-validation-for="StockMaster.Low" class="text-danger"></span>
+            <label asp-for="StockMaster.Low" class="control-label"></label>
+            <input asp-for="StockMaster.Low" class="form-control" />
+            <span asp-validation-for="StockMaster.Low" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Close" class="control-label"></label>
-                <input asp-for="StockMaster.Close" class="form-control" />
-                <span asp-validation-for="StockMaster.Close" class="text-danger"></span>
+            <label asp-for="StockMaster.Close" class="control-label"></label>
+            <input asp-for="StockMaster.Close" class="form-control" />
+            <span asp-validation-for="StockMaster.Close" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Volume" class="control-label"></label>
-                <input asp-for="StockMaster.Volume" class="form-control" />
-                <span asp-validation-for="StockMaster.Volume" class="text-danger"></span>
+            <label asp-for="StockMaster.Volume" class="control-label"></label>
+            <input asp-for="StockMaster.Volume" class="form-control" />
+            <span asp-validation-for="StockMaster.Volume" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.Change" class="control-label"></label>
-                <input asp-for="StockMaster.Change" class="form-control" />
-                <span asp-validation-for="StockMaster.Change" class="text-danger"></span>
+            <label asp-for="StockMaster.Change" class="control-label"></label>
+            <input asp-for="StockMaster.Change" class="form-control" />
+            <span asp-validation-for="StockMaster.Change" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.ChangePercent" class="control-label"></label>
-                <input asp-for="StockMaster.ChangePercent" class="form-control" />
-                <span asp-validation-for="StockMaster.ChangePercent" class="text-danger"></span>
+            <label asp-for="StockMaster.ChangePercent" class="control-label"></label>
+            <input asp-for="StockMaster.ChangePercent" class="form-control" />
+            <span asp-validation-for="StockMaster.ChangePercent" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StockMaster.PrevClose" class="control-label"></label>
-                <input asp-for="StockMaster.PrevClose" class="form-control" />
-                <span asp-validation-for="StockMaster.PrevClose" class="text-danger"></span>
-            </div>
+            <label asp-for="StockMaster.PrevClose" class="control-label"></label>
+            <input asp-for="StockMaster.PrevClose" class="form-control" />
+            <span asp-validation-for="StockMaster.PrevClose" class="text-danger"></span>
+            </div>*@
 
+            <div class="form-group">
+                <label>Stock Category</label>
+            </div>
             <div class="form-group">
                 @*<input type="checkbox" name="StockClassification" value="V40" /> V40 <br />
                 <input type="checkbox" name="StockClassification" value="V40N" /> V40N <br />
@@ -99,9 +105,11 @@
 </div>
 
 <div>
-    <a asp-page="./Index">Back to List</a>
+    <a asp-page="./Index" asp-route-pageIndex="@Model.parentPageIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Back to full List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

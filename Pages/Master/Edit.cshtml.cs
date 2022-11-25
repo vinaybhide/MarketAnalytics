@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Data;
 using MarketAnalytics.Models;
+using Microsoft.Data.SqlClient;
 
 namespace MarketAnalytics.Pages.Master
 {
@@ -25,18 +26,29 @@ namespace MarketAnalytics.Pages.Master
         [BindProperty]
         public List<string> StockClassification { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        [BindProperty]
+        public int parentPageIndex { get; set; }
+        [BindProperty]
+        public string CurrentSort { get; set; }
+        
+        [BindProperty]
+        public string CurrentFilter { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int? id, int? pageIndex, string sortOrder, string currentFilter)
         {
             if (id == null || _context.StockMaster == null)
             {
                 return NotFound();
             }
-
             var stockmaster = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
             if (stockmaster == null)
             {
                 return NotFound();
             }
+            CurrentSort = sortOrder;
+            CurrentFilter = currentFilter;
+
+            parentPageIndex = (int)pageIndex;
             StockMaster = stockmaster;
             return Page();
         }
@@ -68,7 +80,7 @@ namespace MarketAnalytics.Pages.Master
                 }
             }
 
-            return RedirectToPage("./Index");
+            return RedirectToPage("./Index", new {pageIndex = parentPageIndex, sortOrder = CurrentSort, currentFilter = CurrentFilter});
         }
 
         private bool StockMasterExists(int id)

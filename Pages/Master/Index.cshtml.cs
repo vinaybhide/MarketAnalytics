@@ -28,6 +28,9 @@ namespace MarketAnalytics.Pages.Master
         public string ExchangeSort { get; set; }
         public string SymbolSort { get; set; }
         public string CompNameSort { get; set; }
+        public string V40Sort { get; set; }
+        public string V40NSort { get; set; }
+        public string V200Sort { get; set; }
         public string CurrentFilter { get; set; }
         public string CurrentSort { get; set; }
 
@@ -35,7 +38,8 @@ namespace MarketAnalytics.Pages.Master
         public int CurrentID { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? history)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, 
+                                bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N, bool? v200)
         {
             if (_context.StockMaster != null)
             {
@@ -45,7 +49,11 @@ namespace MarketAnalytics.Pages.Master
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
                 ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
                 CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
-                if(searchString != null)
+                V40Sort = sortOrder == "V40" ? "v40_desc" : "V40";
+                V40NSort = sortOrder == "V40N" ? "v40n_desc" : "V40N";
+                V200Sort = sortOrder == "V200" ? "v200_desc" : "V200";
+
+                if (searchString != null)
                 {
                     pageIndex = 1;
                 }
@@ -68,7 +76,7 @@ namespace MarketAnalytics.Pages.Master
                     var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
-                        if((history == null) || (history == false))
+                        if(getQuote == true)
                         {
                             //DateTime quoteDate;
                             //double open, high, low, close, volume, change, changepercent, prevclose;
@@ -105,7 +113,6 @@ namespace MarketAnalytics.Pages.Master
                     stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.CompName.ToUpper().Contains(searchString.ToUpper()));
                 }
-
                 switch (sortOrder)
                 {
                     case "symbol_desc":
@@ -123,6 +130,25 @@ namespace MarketAnalytics.Pages.Master
                     case "compname_desc":
                         stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.CompName);
                         break;
+                    case "V40":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40);
+                        break;
+                    case "v40_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40);
+                        break;
+                    case "V40N":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40N);
+                        break;
+                    case "v40n_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40N);
+                        break;
+                    case "V200":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V200);
+                        break;
+                    case "v200_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V200);
+                        break;
+
                     default:
                         stockmasterIQ = stockmasterIQ.OrderBy(s => s.Symbol);
                         break;

@@ -14,14 +14,22 @@ namespace MarketAnalytics.Pages.Master
     {
         private readonly MarketAnalytics.Data.DBContext _context;
 
+        [BindProperty]
+        public int parentPageIndex { get; set; }
+        [BindProperty]
+        public string CurrentSort { get; set; }
+
+        [BindProperty]
+        public string CurrentFilter { get; set; }
+
         public DetailsModel(MarketAnalytics.Data.DBContext context)
         {
             _context = context;
         }
 
-      public StockMaster StockMaster { get; set; }
+        public StockMaster StockMaster { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id, int? pageIndex, string sortOrder, string currentFilter)
         {
             if (id == null || _context.StockMaster == null)
             {
@@ -33,10 +41,11 @@ namespace MarketAnalytics.Pages.Master
             {
                 return NotFound();
             }
-            else 
-            {
-                StockMaster = stockmaster;
-            }
+            CurrentSort = sortOrder;
+            CurrentFilter = currentFilter;
+
+            parentPageIndex = (int)pageIndex;
+            StockMaster = stockmaster;
             return Page();
         }
     }

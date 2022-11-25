@@ -33,7 +33,6 @@
                         <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh All</a>
                     </p>
                 </div>
-
             </th>
             <th>
                 <div class="form-actions no-color">
@@ -102,6 +101,21 @@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
             </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.V40Sort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].V40)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.V40NSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].V40N)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.V200Sort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].V200)
+                </a>
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -145,17 +159,49 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.PrevClose)
                 </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.V40)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.V40N)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.V200)
+                </td>
 
                 <td>
-                    <a asp-page="./Edit" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.StockMaster.PageIndex">Edit</a> |
-                    <a asp-page="./Details" asp-route-id="@item.StockMasterID">Details</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.StockMasterID">Delete</a> |
+                    <a asp-page="./Edit" asp-route-id="@item.StockMasterID" 
+                        asp-route-sortOrder="@Model.CurrentSort" 
+                        asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                        asp-route-currentFilter="@Model.CurrentFilter"
+                       asp-route-refreshAll=false
+                       asp-route-getQuote="false">Edit Category</a> |
+                    <a asp-page="./Details" asp-route-id="@item.StockMasterID"
+                        asp-route-sortOrder="@Model.CurrentSort"
+                        asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                        asp-route-currentFilter="@Model.CurrentFilter"
+                        asp-route-refreshAll=false
+                        asp-route-getQuote="false">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.StockMasterID"
+                        asp-route-sortOrder="@Model.CurrentSort"
+                        asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                        asp-route-currentFilter="@Model.CurrentFilter"
+                        asp-route-refreshAll=false
+                        asp-route-getQuote="false">Delete</a> |
                     <a asp-page="./Index" asp-route-id="@item.StockMasterID"
-                   asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                   asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
-                    <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                    <a asp-page="/PortfolioPages/Create" asp-route-id="@item.StockMasterID">Add to Portfolio</a>
-
+                        asp-route-sortOrder="@Model.CurrentSort" 
+                        asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                        asp-route-currentFilter="@Model.CurrentFilter"
+                        asp-route-refreshAll=false
+                        asp-route-getQuote="true">Get Quote</a> |
+                    <a asp-page="/History/Index" 
+                        asp-route-id="@item.StockMasterID"
+                        asp-route-sortOrder="@Model.CurrentSort"
+                        asp-route-pageIndex="@Model.StockMaster.PageIndex"
+                        asp-route-currentFilter="@Model.CurrentFilter"
+                        asp-route-getQuote="false"
+                        asp-route-refreshAll=false 
+                        asp-route-history=true>History</a>|
                 </td>
             </tr>
         }
