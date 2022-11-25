@@ -33,7 +33,9 @@
                     <div class="form-actions no-color">
                         <p>
                             <input asp-for="@Model.MasterId" type="hidden" />
-                            <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
+                            <input name="getQuote=false" type="hidden" />
+                            <input name="updateBuySell=false" type="hidden" />
+                            <select name="stockid" asp-items="Model.symbolList" style="font-size:small">
                                 <option value="">Select Symbol</option>
                             </select>
 
@@ -108,6 +110,31 @@
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40N)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V200)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_FAST)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_MID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_SLOW)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_BUY_SIGNAL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_SELL_SIGNAL)
+            </th>
+
             <th></th>
         </tr>
     </thead>
@@ -145,12 +172,81 @@
                         @Html.DisplayFor(modelItem => item.VALUE)
                     </td>
                     <td>
-                        <a asp-page="./portfolioTxnEdit" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-stockid="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Edit</a> |
-                        <a asp-page="./portfolioTxnDetails" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Details</a> |
-                        <a asp-page="./portfolioTxnDelete" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-pageIndex="@Model.portfolioTxn.PageIndex">Delete</a> |
-                        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort"
-                   asp-route-pageIndex="@Model.portfolioTxn.PageIndex" asp-route-currentFilter="@Model.CurrentFilter">Get Quote</a> |
-                        <a asp-page="/History/Index" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-txnid="@item.PORTFOLIOTXN_ID" sasp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>
+                        @Html.DisplayFor(modelItem => item.stockMaster.V40)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.V40N)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.V200)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.SMA_FAST)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.SMA_MID)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.SMA_SLOW)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.SMA_BUY_SIGNAL)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.SMA_SELL_SIGNAL)
+                    </td>
+                    <td>
+                        <a asp-page="./portfolioTxnEdit" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" 
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-stockid="@item.StockMasterID"
+                   asp-route-sortOrder="@Model.CurrentSort"
+                   asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                   asp-route-currentFilter="@Model.CurrentFilter"
+                   asp-route-refreshAll="false">Edit</a> |
+                        <a asp-page="./portfolioTxnDetails" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" 
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-stockid="@item.StockMasterID"
+                                asp-route-sortOrder="@Model.CurrentSort"
+                                asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                                asp-route-currentFilter="@Model.CurrentFilter"
+                                asp-route-getQuote="false"
+                                asp-route-updateBuySell="false"
+                                asp-route-refreshAll="false">Details</a> |
+                        <a asp-page="./portfolioTxnDelete" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" 
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-stockid="@item.StockMasterID"
+                                asp-route-sortOrder="@Model.CurrentSort"
+                                asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                                asp-route-currentFilter="@Model.CurrentFilter"
+                                asp-route-getQuote="false"
+                                asp-route-updateBuySell="false"
+                                asp-route-refreshAll="false">Delete</a> |
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" 
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-stockid="@item.StockMasterID" 
+                                asp-route-sortOrder="@Model.CurrentSort" 
+                                asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                                asp-route-currentFilter="@Model.CurrentFilter" 
+                                asp-route-getQuote="true" 
+                                asp-route-updateBuySell="false"
+                                asp-route-refreshAll="false">Get Quote</a> |
+                   @if(item.stockMaster.V40 == true)
+                        {
+                            <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-stockid="@item.StockMasterID"
+                                asp-route-sortOrder="@Model.CurrentSort" 
+                                asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                                asp-route-currentFilter="@Model.CurrentFilter"
+                                asp-route-getQuote="true"
+                                asp-route-updateBuySell="true"
+                                asp-route-refreshAll="false">Update Buy/Sell |</a>
+                       }
+                        <a asp-page="/History/Index" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" 
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID" 
+                                asp-route-id="@item.StockMasterID" 
+                                asp-route-refreshAll=false 
+                                asp-route-history=true>History</a>
                     </td>
                 </tr>
             }

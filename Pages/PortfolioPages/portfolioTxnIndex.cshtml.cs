@@ -42,7 +42,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public string portfolioMasterName { get; set; } = string.Empty;
         [BindProperty]
         public int MasterId { get; set; }
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid, bool? refreshAll, bool? getQuote, int? symbolToUpdate)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid, 
+            bool? refreshAll, bool? getQuote, int? stockid, bool? updateBuySell)
         {
             DateTime[] quoteDate = null;
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
@@ -53,12 +54,16 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioMasterName = masterRec.PORTFOLIO_NAME;
                 symbolList.Clear();
-                symbolList = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId).OrderBy(a => a.stockMaster.Symbol).Select(a =>
-                                                        new SelectListItem
-                                                        {
-                                                            Value = a.StockMasterID.ToString(),
-                                                            Text = a.stockMaster.Symbol
-                                                        }).ToList();
+                symbolList = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                                                        .OrderBy(a => a.stockMaster.Symbol)
+                                                        .Distinct()
+                                                        .Select(a =>
+                                                            new SelectListItem
+                                                            {
+                                                                Value = a.StockMasterID.ToString(),
+                                                                Text = a.stockMaster.Symbol
+                                                            }
+                                                        ).ToList();
                 
                 //_context.PORTFOLIOTXN.Include(x => x.PORTFOLIO_MASTER_ID);
 
@@ -78,25 +83,38 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     searchString = currentFilter;
                 }
 
-                if (symbolToUpdate != null)
+                if (stockid != null)
                 {
-                    var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == symbolToUpdate)));
+                    var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == stockid)));
                     if (selectedRecord != null)
                     {
-                        DbInitializer.GetQuote(selectedRecord.stockMaster.Symbol + "." + selectedRecord.stockMaster.Exchange, out quoteDate, out open,
+                        if (getQuote == true)
+                        {
+                            DbInitializer.GetQuote(selectedRecord.stockMaster.Symbol + "." + selectedRecord.stockMaster.Exchange, out quoteDate, out open,
                             out high, out low, out close,
                             out volume, out change, out changepercent, out prevclose);
-                        if (quoteDate != null)
-                        {
-                            selectedRecord.CMP = close[0];
-                            selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
-                            _context.PORTFOLIOTXN.Update(selectedRecord);
-                            _context.SaveChanges();
+                            if (quoteDate != null)
+                            {
+                                selectedRecord.CMP = close[0];
+                                selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+                                _context.PORTFOLIOTXN.Update(selectedRecord);
+                                _context.SaveChanges();
+                            }
                         }
-                        searchString = selectedRecord.stockMaster.Symbol;
+                        if(updateBuySell == true)
+                        {
+                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord.stockMaster, selectedRecord.stockMaster.Symbol, 
+                                selectedRecord.stockMaster.Exchange,
+                                selectedRecord.StockMasterID, selectedRecord.stockMaster.CompName, 20, 50, 200);
+
+                        }
+                        if (((getQuote == null) || (getQuote == false)) && ((updateBuySell == null) || (updateBuySell == false)))
+                        {
+                            searchString = selectedRecord.stockMaster.Symbol;
+                        }
                     }
                 }
-                else
+                else if(string.IsNullOrEmpty(searchString))
                 {
                     //IQueryable<PortfolioTxn> quoteIQ = from s in _context.PORTFOLIOTxn select s;
 
@@ -113,6 +131,12 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             _context.PORTFOLIOTXN.Update(item);
                         }
                         _context.SaveChanges();
+
+                        if (refreshAll == true)
+                        {
+                            DbInitializer.GetSMA_BUYSELL(_context, item.stockMaster, item.stockMaster.Symbol, item.stockMaster.Exchange, 
+                                                        item.StockMasterID, item.stockMaster.CompName, 20, 50, 200);
+                        }
                     }
                 }
 
