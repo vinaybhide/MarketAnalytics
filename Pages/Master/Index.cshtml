@@ -102,6 +102,12 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].LIFETIME_HIGH)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].LIFETIME_LOW)
+            </th>
+            <th>
                 <a asp-page="./Index" asp-route-sortOrder="@Model.V40Sort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].V40)
                 </a>
@@ -160,6 +166,12 @@
                     @Html.DisplayFor(modelItem => item.PrevClose)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.LIFETIME_HIGH)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LIFETIME_LOW)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.V40)
                 </td>
                 <td>
@@ -194,13 +206,15 @@
                         asp-route-currentFilter="@Model.CurrentFilter"
                         asp-route-refreshAll=false
                         asp-route-getQuote="true">Get Quote</a> |
-                    <a asp-page="/History/Index" 
-                        asp-route-id="@item.StockMasterID"
+                    <a asp-page="./Index" asp-route-id="@item.StockMasterID"
                         asp-route-sortOrder="@Model.CurrentSort"
                         asp-route-pageIndex="@Model.StockMaster.PageIndex"
                         asp-route-currentFilter="@Model.CurrentFilter"
+                        asp-route-refreshAll=false
                         asp-route-getQuote="false"
-                        asp-route-refreshAll=false 
+                        asp-route-lifetimeHighLow="true">Lifetime high/low</a> |
+                    <a asp-page="/History/Index"
+                   asp-route-id="@item.StockMasterID"
                         asp-route-history=true>History</a>|
                 </td>
             </tr>

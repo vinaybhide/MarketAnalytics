@@ -39,7 +39,8 @@ namespace MarketAnalytics.Pages.Master
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, 
-                                bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N, bool? v200)
+                    bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N, 
+                    bool? v200, bool? lifetimeHighLow)
         {
             if (_context.StockMaster != null)
             {
@@ -100,6 +101,16 @@ namespace MarketAnalytics.Pages.Master
                                 _context.StockMaster.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
+                        }
+                        if((lifetimeHighLow != null) && (lifetimeHighLow == true))
+                        {
+                            double high, low = 0;
+
+                            DbInitializer.GetLifetimeHighLow(_context, selectedRecord, out high, out low);
+                            selectedRecord.LIFETIME_HIGH = high;
+                            selectedRecord.LIFETIME_LOW = low;
+                            _context.StockMaster.Update(selectedRecord);
+                            _context.SaveChanges();
                         }
                     }
                 }
