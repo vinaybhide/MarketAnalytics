@@ -10,6 +10,7 @@ using System.Text;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.ComponentModel;
 using SQLitePCL;
+using System.Net.NetworkInformation;
 
 namespace MarketAnalytics.Data
 {
@@ -184,6 +185,11 @@ namespace MarketAnalytics.Data
                     IQueryable<StockPriceHistory> currentPrice;
                     for (int i = 0; i < quoteDate.Length; i++)
                     {
+                        if (quoteDate[i].ToShortDateString().Contains("0001"))
+                        {
+                            //this means we skipped few rows due to null values in price
+                            continue;
+                        }
                         //find if stock exist in StockMaster, if not add it to context
                         var recTOAdd = new StockPriceHistory();
                         //currentPrice = stockpriceIQ.Where(s => s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper())
@@ -313,6 +319,7 @@ namespace MarketAnalytics.Data
             }
             catch (Exception ex)
             {
+                throw ex;
             }
         }
 
@@ -349,6 +356,20 @@ namespace MarketAnalytics.Data
                 breturn = false;
             }
             return breturn;
+        }
+        public static void GetLifetimeHighLow(DBContext context, StockMaster stockMaster,
+                                            out double high, out double low)
+        {
+            high = -1;
+            low = -1;
+            string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
+            if (string.IsNullOrEmpty(lastPriceDate) == false)
+            {
+                InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, 
+                    lastPriceDate);
+            }
+            high = (from s in context.StockPriceHistory select s).Max(c => c.Close);
+            low = (from s in context.StockPriceHistory select s).Min(c => c.Close);
         }
 
         public static string IsHistoryUpdated(DBContext context, StockMaster stockMaster, int? stockMasterID)
@@ -535,6 +556,57 @@ namespace MarketAnalytics.Data
             }
         }
 
+        /// <summary>
+        /// In the first step:
+        ///     Find downtrend upto the point where price starts moving up
+        ///     If( above is found)
+        ///         Left Shoulder
+        ///             first save the lowest price in downtrend in L1
+        ///             then follow the uptrend till the point price starts going down. 
+        ///             Record the highest point in uptrend in H2. 
+        ///             Then record date & price H1 = H2 by backtracking on the downtrend. 
+        ///             Ideally the duration from H1 to H2 should be >= 10 candles
+        ///         Head
+        ///             Now again follow the downtrend. 
+        ///             First case: THe downtrend goes below L1 and reaches lowest low and uptrend starts
+        ///                 Record the lowest low in L2
+        ///                 Follow the uptrend and if it crosses price of H1/H2 then CANCEL
+        ///                 Else if it reaches H1/H2 and a downtrend starts then we found Head
+        ///                 Record Higest high in H3
+        ///                 Now H1 = H2 = H3 and L1 > L2
+        ///         Right shoulder
+        ///             FOllow the downtrend and if it goes beyond L1 then CANCEL
+        ///             If before reaching L1 and uptrend starts and if price reaches H1=H2=H3
+        ///                 then check the next candle that must be Green candle above the H1=H2=H3
+        ///                 
+        ///                 
+        ///                 
+        ///  //New - we will pass date start, LH1 = high, LL1 = low
+        ///     Start from the given historical date to find left shoulder
+        ///     for(startdate = currentrecdate to date <= today )
+        ///         reset all variables
+        ///         Save highest high price in LH1
+        ///         save lowest low price in LL1
+        ///         Lcounter = 0
+        ///             try to find if there is downtrend
+        ///             while(nextday highest high price < LH1) OR nextday = today
+        ///                 Save nextday lowest low price in LL1 if it is lower than current LL1
+        ///                 Lcounter ++
+        ///                 go to nextday
+        ///             We are out of while loop in two conditions
+        ///                 1. Nextday price immediatly after the startdate is higher, meaning there is no
+        ///                     downtrend. In this case we go to top and start from the current nextdate
+        ///                 2. if Lcounter > 5 or 10, this means we had downtrend and then uptrend
+        ///                     We will save the highest high in LH2
+        ///                     We will return the date, LH2
+        ///     
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        public static void FindCup(DBContext context, StockMaster stockMaster)
+        {
+
+        }
         public static void GetSMA_EMA_MACD_BBANDS_Table(DBContext context, StockMaster stockMaster, string symbol, string exchange,
                                     int? stockMasterID, string compname,
                                     string seriestype = "CLOSE", string time_interval = "1d", string fromDate = null,
@@ -1026,70 +1098,104 @@ namespace MarketAnalytics.Data
                     change = new double[myResult.timestamp.Count];
                     changepercent = new double[myResult.timestamp.Count];
                     prevclose = new double[myResult.timestamp.Count];
-
+                    int outCtr = 0;
                     for (int i = 0; i < myResult.timestamp.Count; i++)
                     //for (int i = 0; i <= 0; i++)
                     {
-                        if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
-                            && (myQuote.volume[i] == null))
+                        try
                         {
-                            continue;
-                        }
+                            //if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
+                            //&& (myQuote.volume[i] == null))
+                            //if(myResult.timestamp[i] == null)
+                            if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && 
+                                (myQuote.low[i] == null) && (myQuote.open[i] == null) && (myQuote.volume[i] == null))
+                            {
+                                //I have seen cases where date is valid but rest of the price data including
+                                //volume is null. Hence we will skip the record
+                                continue;
+                            }
 
-                        quoteDate[i] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
+                            quoteDate[outCtr] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
 
-                        if (myQuote.close[i] == null)
-                        {
-                            close[i] = 0.00;
-                        }
-                        else
-                        {
-                            //close = (double)myQuote.close[i];
-                            close[i] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
-                        }
+                            if (myQuote.close[i] == null)
+                            {
+                                close[outCtr] = 0.00;
+                            }
+                            else
+                            {
+                                //close = (double)myQuote.close[i];
+                                close[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
+                            }
 
-                        if (myQuote.high[i] == null)
-                        {
-                            high[i] = 0.00;
-                        }
-                        else
-                        {
-                            //high = (double)myQuote.high[i];
-                            high[i] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
-                        }
+                            if (myQuote.high[i] == null)
+                            {
+                                high[outCtr] = 0.00;
+                            }
+                            else
+                            {
+                                //high = (double)myQuote.high[i];
+                                high[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
+                            }
 
-                        if (myQuote.low[i] == null)
-                        {
-                            low[i] = 0.00;
-                        }
-                        else
-                        {
-                            //low = (double)myQuote.low[i];
-                            low[i] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
-                        }
+                            if (myQuote.low[i] == null)
+                            {
+                                low[outCtr] = 0.00;
+                            }
+                            else
+                            {
+                                //low = (double)myQuote.low[i];
+                                low[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
+                            }
 
-                        if (myQuote.open[i] == null)
-                        {
-                            open[i] = 0.00;
+                            if (myQuote.open[i] == null)
+                            {
+                                open[outCtr] = 0.00;
+                            }
+                            else
+                            {
+                                //open = (double)myQuote.open[i];
+                                open[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
+                            }
+                            if (myQuote.volume[i] == null)
+                            {
+                                volume[outCtr] = 0;
+                            }
+                            else
+                            {
+                                volume[outCtr] = (int)myQuote.volume[i];
+                            }
+                            if (outCtr == 0)
+                            {
+                                try
+                                {
+                                    prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                                }
+                                catch
+                                {
+                                    prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 0.00));
+                                }
+                            }
+                            else
+                            {
+                                prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", close[outCtr - 1]));
+                            }
+                            //change[outCtr] = close[outCtr] - prevclose[outCtr];
+                            change[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[outCtr] - prevclose[outCtr])));
+                            if (prevclose[outCtr] > 0)
+                            {
+                                //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
+                                changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[outCtr] / prevclose[outCtr]) * 100)));
+                            }
+                            else
+                            {
+                                changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
+                            }
+                            outCtr++;
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            //open = (double)myQuote.open[i];
-                            open[i] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
+                            throw ex;
                         }
-                        if (myQuote.volume[i] == null)
-                        {
-                            volume[i] = 0;
-                        }
-                        else
-                        {
-                            volume[i] = (int)myQuote.volume[i];
-                        }
-                        prevclose[i] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
-                        change[i] = close[i] - prevclose[i];
-                        changepercent[i] = (change[i] / prevclose[i]) * 100;
-                        change[i] = System.Convert.ToDouble(string.Format("{0:0.00}", change[i]));
-                        changepercent[i] = System.Convert.ToDouble(string.Format("{0:0.00}", changepercent[i]));
                     }
                 }
             }
@@ -1097,6 +1203,7 @@ namespace MarketAnalytics.Data
             {
             }
         }
+
         public static string findTimeZoneId(string zoneId)
         {
             string returnTimeZoneId = "";
