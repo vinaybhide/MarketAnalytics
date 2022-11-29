@@ -19,6 +19,7 @@ namespace MarketAnalytics.Pages.History
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
 
+        public List<SelectListItem> symbolList { get; set; }
 
         public string PriceDateSort { get; set; }
         public int? CurrentID { get; set; }
@@ -35,12 +36,25 @@ namespace MarketAnalytics.Pages.History
         {
             _context = context;
             Configuration = configuration;
+            symbolList = new List<SelectListItem>();
         }
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool?refreshAll)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, 
+                                    int? id, bool?refreshAll)
         {
             if (_context.StockPriceHistory != null)
             {
+                symbolList.Clear();
+                symbolList = _context.StockMaster
+                                        .OrderBy(a => a.Symbol)
+                                            .Select(a =>
+                                                new SelectListItem
+                                                {
+                                                    Value = a.StockMasterID.ToString(),
+                                                    Text = a.Symbol
+                                                }
+                                            ).ToList();
+
                 //CurrentID = id;
                 CurrentSort = sortOrder;
                 PriceDateSort = String.IsNullOrEmpty(sortOrder) ? "pricedate_desc" : "";
@@ -59,54 +73,58 @@ namespace MarketAnalytics.Pages.History
                     CurrentID = id;
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
-                }
-                else
-                {
-                    CurrentID = _context.StockPriceHistory.FirstOrDefault().StockMasterID;
-                    StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == CurrentID);
-                }
+                    symbolList.FirstOrDefault(a => a.Value.Equals(CurrentID.ToString())).Selected = true;
+                    //}
+                    //else
+                    //{
+                    //    CurrentID = _context.StockPriceHistory.FirstOrDefault().StockMasterID;
+                    //    StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == CurrentID);
+                    //}
 
-                CompanyName = StockMasterRec.CompName;
+                    CompanyName = StockMasterRec.CompName;
 
-                //if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
-                if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
-                {
-                    //we have found a matching record from StockMaster, from where we can get id, symbol, company
-                    //DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange);
-                    //RefreshAllStocks = false;
-
-                    string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, StockMasterRec, CurrentID);
-                    if (string.IsNullOrEmpty(lastPriceDate) == false)
+                    //if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
+                    if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
                     {
-                        DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange, lastPriceDate);
-                        RefreshAllStocks = false;
+                        //we have found a matching record from StockMaster, from where we can get id, symbol, company
+                        //DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange);
+                        //RefreshAllStocks = false;
+
+                        string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, StockMasterRec, CurrentID);
+                        if (string.IsNullOrEmpty(lastPriceDate) == false)
+                        {
+                            DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange, lastPriceDate);
+                            RefreshAllStocks = false;
+                        }
                     }
+
+
+                    CurrentFilter = searchString;
+
+                    IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
+
+                    stockpriceIQ = stockpriceIQ.Where(s => (s.StockMasterID == CurrentID));
+
+                    if (!String.IsNullOrEmpty(searchString))
+                    {
+                        //stockpriceIQ = stockpriceIQ.Where(s => s.PriceDate.Date.Equals(Convert.ToDateTime(searchString).Date)
+                        //                                        && (s.StockMasterID == CurrentID));
+                        stockpriceIQ = stockpriceIQ.Where(s => (s.PriceDate.Date >= (Convert.ToDateTime(searchString).Date))
+                                                                && (s.StockMasterID == CurrentID));
+                    }
+
+                    switch (sortOrder)
+                    {
+                        case "pricedate_desc":
+                            stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.PriceDate);
+                            break;
+                        default:
+                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
+                            break;
+                    }
+                    var pageSize = Configuration.GetValue("PageSize", 10);
+                    StockPriceHistory = await PaginatedList<StockPriceHistory>.CreateAsync(stockpriceIQ.AsNoTracking(), pageIndex ?? 1, pageSize, CurrentID);
                 }
-
-
-                CurrentFilter = searchString;
-
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
-
-                stockpriceIQ = stockpriceIQ.Where(s => (s.StockMasterID == CurrentID));
-
-                if (!String.IsNullOrEmpty(searchString))
-                {
-                    stockpriceIQ = stockpriceIQ.Where(s => s.PriceDate.Date.Equals(Convert.ToDateTime(searchString).Date)
-                                                            && (s.StockMasterID == CurrentID));
-                }
-
-                switch (sortOrder)
-                {
-                    case "pricedate_desc":
-                        stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.PriceDate);
-                        break;
-                    default:
-                        stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
-                        break;
-                }
-                var pageSize = Configuration.GetValue("PageSize", 10);
-                StockPriceHistory = await PaginatedList<StockPriceHistory>.CreateAsync(stockpriceIQ.AsNoTracking(), pageIndex ?? 1, pageSize, CurrentID);
             }
         }
     }
