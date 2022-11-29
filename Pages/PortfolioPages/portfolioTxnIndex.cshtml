@@ -111,6 +111,12 @@
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
             </th>
             <th>
@@ -172,6 +178,12 @@
                         @Html.DisplayFor(modelItem => item.VALUE)
                     </td>
                     <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_HIGH)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_LOW)
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.V40)
                     </td>
                     <td>
@@ -230,6 +242,17 @@
                                 asp-route-getQuote="true" 
                                 asp-route-updateBuySell="false"
                                 asp-route-refreshAll="false">Get Quote</a> |
+                        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
+                                asp-route-txnid="@item.PORTFOLIOTXN_ID"
+                                asp-route-stockid="@item.StockMasterID"
+                                asp-route-sortOrder="@Model.CurrentSort"
+                                asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
+                                asp-route-currentFilter="@Model.CurrentFilter"
+                                asp-route-getQuote="false"
+                                asp-route-updateBuySell="false"
+                                asp-route-refreshAll="false"
+                                asp-route-lifetimeHighLow="true">Lifetime High/Low</a> |
+
                    @if(item.stockMaster.V40 == true)
                         {
                             <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"

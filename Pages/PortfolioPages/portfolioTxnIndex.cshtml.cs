@@ -43,7 +43,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         [BindProperty]
         public int MasterId { get; set; }
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid, 
-            bool? refreshAll, bool? getQuote, int? stockid, bool? updateBuySell)
+            bool? refreshAll, bool? getQuote, int? stockid, bool? updateBuySell, bool? lifetimeHighLow)
         {
             DateTime[] quoteDate = null;
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
@@ -95,8 +95,19 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             out volume, out change, out changepercent, out prevclose);
                             if (quoteDate != null)
                             {
+                                selectedRecord.stockMaster.Close = close[0];
+                                selectedRecord.stockMaster.Open = open[0];
+                                selectedRecord.stockMaster.High = high[0];
+                                selectedRecord.stockMaster.Low = low[0];
+                                selectedRecord.stockMaster.Volume= volume[0];
+                                selectedRecord.stockMaster.Change= change[0];
+                                selectedRecord.stockMaster.ChangePercent = changepercent[0];
+                                selectedRecord.stockMaster.PrevClose= prevclose[0];
+
                                 selectedRecord.CMP = close[0];
                                 selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+
+                                _context.StockMaster.Update(selectedRecord.stockMaster);
                                 _context.PORTFOLIOTXN.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
@@ -106,8 +117,17 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             DbInitializer.GetSMA_BUYSELL(_context, selectedRecord.stockMaster, selectedRecord.stockMaster.Symbol, 
                                 selectedRecord.stockMaster.Exchange,
                                 selectedRecord.StockMasterID, selectedRecord.stockMaster.CompName, 20, 50, 200);
-
                         }
+                        if((lifetimeHighLow != null) && (lifetimeHighLow == true))
+                        {
+                            double lifetimehigh, lifetimelow = 0;
+                            DbInitializer.GetLifetimeHighLow(_context, selectedRecord.stockMaster, out lifetimehigh, out lifetimelow);
+                            selectedRecord.stockMaster.LIFETIME_HIGH = lifetimehigh;
+                            selectedRecord.stockMaster.LIFETIME_LOW = lifetimelow;
+                            _context.StockMaster.Update(selectedRecord.stockMaster);
+                            _context.SaveChanges();
+                        }
+
                         if (((getQuote == null) || (getQuote == false)) && ((updateBuySell == null) || (updateBuySell == false)))
                         {
                             searchString = selectedRecord.stockMaster.Symbol;
