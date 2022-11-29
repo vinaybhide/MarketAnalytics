@@ -137,7 +137,20 @@
             <div id="myfixarea" class="my_navbar bg-white">
                 <a class="navbar-brand text-dark" asp-area="" asp-page="/Index">Market Analytics</a>
                 <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                <a class="nav-link text-dark" asp-area="" asp-page="/Master/Index">Stock Master</a>
+                @*<a class="nav-link text-dark" asp-area="" asp-page="/Master/Index">Stock Master</a>*@
+                <div class="my_dropdown text-dark">
+                    <button class="my_dropbtn text-dark">
+                        Stock Master
+                        <i class="fa fa-caret-down text-dark"></i>
+                    </button>
+                    <div class="my_dropdown-content">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Master/Index">Browse all symbols</a>
+                        <a class="nav-link text-dark" asp-area="" asp-page="/History/Index">Historical data</a>
+                        @*<a href="#">Link 2</a>
+                        <a href="#">Link 3</a>*@
+                    </div>
+                </div>
+
                 <a class="nav-link text-dark" asp-area="" asp-page="/Forecast/Index">Forecast</a>
                 @*<a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/Index">Portfolio</a>*@
                 <div class="my_dropdown text-dark">
@@ -146,7 +159,7 @@
                         <i class="fa fa-caret-down text-dark"></i>
                     </button>
                     <div class="my_dropdown-content">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/Index">Browse</a>
+                        <a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/portfoliomasterIndex">Browse</a>
                         <a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/Create">New</a>
                         @*<a href="#">Link 2</a>
                         <a href="#">Link 3</a>*@
