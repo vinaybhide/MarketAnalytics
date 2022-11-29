@@ -18,10 +18,14 @@
                 <form asp-page="./v20BuySell" method="get">
                     <div class="form-actions no-color">
                         <p>
-                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
-                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
-                            @*|
-                            <a asp-page="./v20BuySell">Back to full List</a>*@
+                            <select name="searchString" asp-items="Model.currentSymbolList" style="font-size:small">
+                                <option value="">Select Symbol</option>
+                            </select>
+
+                            <input type="submit" value="Search from current list" class="btn btn-sm btn-primary" style="font-size:small" />
+
+                            @*<input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />*@
                         </p>
                     </div>
                 </form>
@@ -35,8 +39,6 @@
                             </select>
 
                             <input type="submit" value="Update buy-sell for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
-                            @*|
-                            <a asp-page="./v20BuySell">Back to full List</a>*@
                         </p>
                     </div>
                 </form>
@@ -77,10 +79,14 @@
                 @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].StockMaster.PrevClose)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].FROM_DATE)
+                <a asp-page="./v20BuySell" asp-route-sortOrder="@Model.FromDtSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].FROM_DATE)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].TO_DATE)
+                <a asp-page="./v20BuySell" asp-route-sortOrder="@Model.ToDtSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].TO_DATE)
+                </a>
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.V20_CANDLE_STRATEGies[0].DIFF_PCT)

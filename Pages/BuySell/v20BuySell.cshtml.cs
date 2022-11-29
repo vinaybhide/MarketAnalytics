@@ -21,16 +21,20 @@ namespace MarketAnalytics.Pages.BuySell
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> symbolList { get; set; }
+        public List<SelectListItem> currentSymbolList { get; set; }
 
         public V20BuySell(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
             symbolList = new List<SelectListItem>();
+            currentSymbolList = new List<SelectListItem>();
         }
         public string BuySignalSort { get; set; }
         public string SymbolSort { get; set; }
         public string SellSignalSort { get; set; }
+        public string FromDtSort { get; set; }
+        public string ToDtSort { get; set; }
         public string CurrentFilter { get; set; }
         public string CurrentSort { get; set; }
 
@@ -60,6 +64,8 @@ namespace MarketAnalytics.Pages.BuySell
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
                 BuySignalSort = sortOrder == "BUY_PRICE" ? "buyprice_desc" : "BUY_PRICE";
                 SellSignalSort = sortOrder == "SELL_PRICE" ? "sellprice_desc" : "SELL_PRICE";
+                FromDtSort = sortOrder == "FROM_DT" ? "fromdt_desc" : "FROM_DT";
+                ToDtSort = sortOrder == "TO_DT" ? "todt_desc" : "TO_DT";
                 if (searchString != null)
                 {
                     pageIndex = 1;
@@ -113,7 +119,7 @@ namespace MarketAnalytics.Pages.BuySell
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
                             DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord);
-                            if(symbolToUpdate != null)
+                            if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
                             }
@@ -125,10 +131,33 @@ namespace MarketAnalytics.Pages.BuySell
 
                 IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in _context.V20_CANDLE_STRATEGY select s;
                 v20CandleIQ = v20CandleIQ.Where(s => (s.StockMaster.V200 == true));
+                currentSymbolList.Clear();
+                //currentSymbolList = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true))
+                //    .OrderBy(x => x.StockMaster.Symbol)
+                //    .Distinct()
+                //    .Select(a =>
+                //        new SelectListItem
+                //        {
+                //            Value = a.StockMaster.Symbol.ToString(),
+                //            Text = a.StockMaster.Symbol.ToString()
+                //        }).ToList();
+
+                currentSymbolList = v20CandleIQ //.Where(x => x.StockMaster.V200 == true)
+                                        //.GroupBy(a => a.StockMaster.Symbol)
+                                            .OrderBy(a => a.StockMasterID)
+                                            .Distinct()
+                                                .Select(a =>
+                                                    new SelectListItem
+                                                    {
+                                                        Value = a.StockMaster.Symbol.ToString(),
+                                                        Text = a.StockMaster.Symbol.ToString()
+                                                    }).Distinct().ToList();
+               
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     v20CandleIQ = v20CandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
+                    currentSymbolList.FirstOrDefault(a => a.Value.Equals(searchString)).Selected = true;
                 }
 
                 switch (sortOrder)
@@ -147,6 +176,18 @@ namespace MarketAnalytics.Pages.BuySell
                         break;
                     case "sellprice_desc":
                         v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.SELL_PRICE);
+                        break;
+                    case "FROM_DT":
+                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.FROM_DATE);
+                        break;
+                    case "fromdt_desc":
+                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.FROM_DATE);
+                        break;
+                    case "TO_DT":
+                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.TO_DATE);
+                        break;
+                    case "todt_desc":
+                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.TO_DATE);
                         break;
                     default:
                         v20CandleIQ = v20CandleIQ.OrderBy(s => s.StockMaster.Symbol);
