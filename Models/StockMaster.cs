@@ -48,6 +48,12 @@ namespace MarketAnalytics.Models
         [DisplayName("SMA200")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)] 
         public double SMA_SLOW { get; set; } = default(double);
+
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double LIFETIME_HIGH { get; set; } = default(double);
+
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double LIFETIME_LOW { get; set; } = default(double);
         public ICollection<V20_CANDLE_STRATEGY> collection_V20_buysell { get; set; }
 
         public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
