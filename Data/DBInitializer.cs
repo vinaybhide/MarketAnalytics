@@ -603,9 +603,36 @@ namespace MarketAnalytics.Data
         /// </summary>
         /// <param name="context"></param>
         /// <param name="stockMaster"></param>
-        public static void FindCup(DBContext context, StockMaster stockMaster)
+        public static bool FindCup(DBContext context, StockMaster stockMaster, DateTime startDate,
+            out double leftHigh, out double rightHigh, out double lowestLow)
         {
+            bool bfound = false;
+            try
+            {
+                //get historical data from the start date
+                string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
+                if (string.IsNullOrEmpty(lastPriceDate) == false)
+                {
+                    InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
+                }
 
+                List<StockPriceHistory> currentRange = context.StockPriceHistory.Where(a => (a.StockMasterID == stockMaster.StockMasterID) &&
+                                    (a.PriceDate.Date > startDate.Date)).ToList();
+
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                ////List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
+
+                //IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID) &&
+                //                s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
+
+                //now start from the first record and 
+
+            }
+            catch
+            {
+                bfound = false;
+            }
+            return bfound;
         }
         public static void GetSMA_EMA_MACD_BBANDS_Table(DBContext context, StockMaster stockMaster, string symbol, string exchange,
                                     int? stockMasterID, string compname,
