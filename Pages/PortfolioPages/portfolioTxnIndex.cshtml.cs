@@ -107,6 +107,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                 selectedRecord.CMP = close[0];
                                 selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
 
+                                selectedRecord.GAIN_AMT = selectedRecord.VALUE - selectedRecord.TOTAL_COST;
+                                selectedRecord.GAIN_PCT = (selectedRecord.GAIN_AMT / selectedRecord.VALUE) * 100;
+
                                 _context.StockMaster.Update(selectedRecord.stockMaster);
                                 _context.PORTFOLIOTXN.Update(selectedRecord);
                                 _context.SaveChanges();
@@ -148,6 +151,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         {
                             item.CMP = close[0];
                             item.VALUE = item.QUANTITY * close[0];
+                            item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
+                            item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
                             _context.PORTFOLIOTXN.Update(item);
                         }
                         _context.SaveChanges();
