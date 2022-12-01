@@ -101,6 +101,9 @@ namespace MarketAnalytics.Pages.Master
                                 _context.StockMaster.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
+
+                            List<BULLISH_ENGULFING_STRATEGY> listEngulfing = DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord,
+                                DateTime.Today.AddDays(-180), 30);
                         }
                         if((lifetimeHighLow != null) && (lifetimeHighLow == true))
                         {
