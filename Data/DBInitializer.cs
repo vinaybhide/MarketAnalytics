@@ -368,8 +368,13 @@ namespace MarketAnalytics.Data
                 InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange,
                     lastPriceDate);
             }
-            high = (from s in context.StockPriceHistory select s).Max(c => c.Close);
-            low = (from s in context.StockPriceHistory select s).Min(c => c.Close);
+
+            high = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+                .Max(a => a.Close);
+            low = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+                .Min(a => a.Close);
+            //high = (from s in context.StockPriceHistory select s).Max(c => c.Close);
+            //low = (from s in context.StockPriceHistory select s).Min(c => c.Close);
         }
 
         public static string IsHistoryUpdated(DBContext context, StockMaster stockMaster, int? stockMasterID)
@@ -992,7 +997,13 @@ namespace MarketAnalytics.Data
 
                 //IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
+                IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingIQ = context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+
+                context.BULLISH_ENGULFING_STRATEGY.RemoveRange(bullishengulfingIQ.AsEnumerable());
+                context.SaveChanges();
+
                 IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
                     //for (int rownum = symbolIQ.Count() - period; rownum < symbolIQ.Count(); rownum++)
@@ -1066,15 +1077,30 @@ namespace MarketAnalytics.Data
             }
             return recordList;
         }
-
+        /// <summary>
+        /// Given a date this method will backtrack and find if we have a down trend
+        /// It will try to use "Change" field to check the difference current close & prev close
+        ///   if the difference is negative then it will increment the negative counter
+        ///   We will do this for given trendSpan and if we have a (trendspan /2) + 1 of negative "Change"
+        ///     values then we will mark this as downtrend and do the same for next set of dates
+        ///   if after checking Change for given sequence we have negative counter < (trendspan /2) + 1
+        ///     we will treat this as break in downtrend and exit the process
+        ///     While checking the Change values we will save the Highest Close and its record number
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="startCounter"></param>
+        /// <param name="fromDate"></param>
+        /// <param name="highestClose"></param>
+        /// <param name="foundCounter"></param>
+        /// <param name="trendSpan"></param>
+        /// <returns></returns>
         public static bool FindIfDownTrendExist(DBContext context, StockMaster stockMaster, 
                     int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 5 )
         {
             bool breturn = false;
             int negativediff = 0;
             int counter = 1;
-            bool bDownTrend = false;
-            bool bUpTrend = false;
             highestClose = 0.00;
             foundCounter = -1;
             StockPriceHistory currentRec = null;
@@ -1089,7 +1115,7 @@ namespace MarketAnalytics.Data
                         highestClose = currentRec.Close;
                         foundCounter = j;
                     }
-                    if (currentRec.Change < 0)
+                    if (currentRec.Change <= 0)
                     {
                         negativediff++;
                     }
@@ -1115,6 +1141,85 @@ namespace MarketAnalytics.Data
                         }
                         counter = 1;
                         negativediff = 0;
+                    }
+                    else
+                    {
+                        counter++;
+                    }
+                }
+            }
+            catch
+            {
+                breturn = false;
+            }
+            return breturn;
+        }
+
+        /// <summary>
+        /// Given a date this method will look ahead from the given date backtrack and 
+        /// find if we have a up trend
+        /// It will try to use "Change" field to check the difference current close & prev close
+        ///   if the difference is positive then it will increment the positive counter
+        ///   We will do this for given trendSpan and if we have a (trendspan /2) + 1 of positive "Change"
+        ///     values then we will mark this as uptrend and do the same for next set of dates
+        ///   if after checking Change for given sequence we have positive counter > (trendspan /2) + 1
+        ///     we will treat this as break in uptrend and exit the process
+        ///     While checking the Change values we will save the Highest Close and its record number
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="startCounter"></param>
+        /// <param name="fromDate"></param>
+        /// <param name="highestClose"></param>
+        /// <param name="foundCounter"></param>
+        /// <param name="trendSpan"></param>
+        /// <returns></returns>
+        public static bool FindIfUpTrendExist(DBContext context, StockMaster stockMaster,
+                    int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 5)
+        {
+            bool breturn = false;
+            int positivediff = 0;
+            int counter = 1;
+            highestClose = 0.00;
+            foundCounter = -1;
+            StockPriceHistory currentRec = null;
+            try
+            {
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+                for (int j = startCounter; j > 0; j++)
+                {
+                    currentRec = symbolIQ.AsEnumerable().ElementAt(j);
+                    if (currentRec.Close > highestClose)
+                    {
+                        highestClose = currentRec.Close;
+                        foundCounter = j;
+                    }
+                    if (currentRec.Change >= 0)
+                    {
+                        positivediff++;
+                    }
+                    if (counter >= trendSpan)
+                    {
+                        if (positivediff >= ((trendSpan / 2) + 1))
+                        {
+                            breturn = true;
+                        }
+                        else
+                        {
+                            if (breturn == true)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                foundCounter = -1;
+                                highestClose = 0.00;
+                                breturn = false;
+                                break;
+                            }
+                        }
+                        counter = 1;
+                        positivediff = 0;
                     }
                     else
                     {
