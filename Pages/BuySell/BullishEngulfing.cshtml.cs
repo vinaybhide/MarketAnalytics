@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using MarketAnalytics.Data;
 using MarketAnalytics.Models;
 using System.Data;
-using System.Net;
-using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
 
 namespace MarketAnalytics.Pages.BuySell
 {
-    public class V20BuySell : PageModel
+    public class BullishEngulfing : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> symbolList { get; set; }
         public List<SelectListItem> currentSymbolList { get; set; }
 
-        public V20BuySell(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
+        public BullishEngulfing(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
@@ -40,7 +32,7 @@ namespace MarketAnalytics.Pages.BuySell
 
         public bool RefreshAllStocks { get; set; } = false;
         public int CurrentID { get; set; }
-        public PaginatedList<V20_CANDLE_STRATEGY> V20_CANDLE_STRATEGies { get; set; } = default!;
+        public PaginatedList<BULLISH_ENGULFING_STRATEGY> BULLISH_ENGULFING_STRATEGYies { get; set; } = default!;
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
@@ -51,14 +43,8 @@ namespace MarketAnalytics.Pages.BuySell
                                                               Value = a.StockMasterID.ToString(),
                                                               Text = a.Symbol
                                                           }).ToList();
-            //symbolList = _context.StockMaster.Select(a =>
-            //                                  new SelectListItem 
-            //                                  {
-            //                                      Value = a.StockMasterID.ToString(),
-            //                                      Text = a.Symbol
-            //                                  }).ToList();
 
-            if (_context.V20_CANDLE_STRATEGY != null)
+            if (_context.BULLISH_ENGULFING_STRATEGY != null)
             {
                 CurrentSort = sortOrder;
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
@@ -115,10 +101,11 @@ namespace MarketAnalytics.Pages.BuySell
                                 _context.StockMaster.Update(selectedRecord);
                                 _context.SaveChanges();
                             }
+                            searchString = "";
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord);
+                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-180), 30);
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -129,20 +116,11 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMaster.V200 == true));
                 currentSymbolList.Clear();
-                //currentSymbolList = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true))
-                //    .OrderBy(x => x.StockMaster.Symbol)
-                //    .Distinct()
-                //    .Select(a =>
-                //        new SelectListItem
-                //        {
-                //            Value = a.StockMaster.Symbol.ToString(),
-                //            Text = a.StockMaster.Symbol.ToString()
-                //        }).ToList();
 
-                currentSymbolList = v20CandleIQ //.Where(x => x.StockMaster.V200 == true)
-                                        //.GroupBy(a => a.StockMaster.Symbol)
+                currentSymbolList = bullishengulfingCandleIQ //.Where(x => x.StockMaster.V200 == true)
+                                                             //.GroupBy(a => a.StockMaster.Symbol)
                                             .OrderBy(a => a.StockMasterID)
                                             .Distinct()
                                                 .Select(a =>
@@ -154,14 +132,12 @@ namespace MarketAnalytics.Pages.BuySell
                
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    v20CandleIQ = v20CandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
+                    bullishengulfingCandleIQ = bullishengulfingCandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
-
-                    if (v20CandleIQ.Count() == 0)
+                    if(bullishengulfingCandleIQ.Count() == 0)
                     {
-                        v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                        bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMaster.V200 == true));
                     }
-
                     if (currentSymbolList.Exists(a => (a.Value.Equals(searchString) == true)))
                     {
                         currentSymbolList.FirstOrDefault(a => a.Value.Equals(searchString)).Selected = true;
@@ -171,50 +147,49 @@ namespace MarketAnalytics.Pages.BuySell
                 switch (sortOrder)
                 {
                     case "symbol_desc":
-                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.StockMaster.Symbol);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.StockMaster.Symbol);
                         break;
                     case "BUY_PRICE":
-                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.BUY_PRICE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.BUY_PRICE);
                         break;
                     case "buyprice_desc":
-                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.BUY_PRICE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.BUY_PRICE);
                         break;
                     case "SELL_PRICE":
-                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.SELL_PRICE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.SELL_PRICE);
                         break;
                     case "sellprice_desc":
-                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.SELL_PRICE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.SELL_PRICE);
                         break;
                     case "FROM_DT":
-                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.FROM_DATE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.BIG_CANDLE_DATE);
                         break;
                     case "fromdt_desc":
-                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.FROM_DATE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.BIG_CANDLE_DATE);
                         break;
                     case "TO_DT":
-                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.TO_DATE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.SMALL_CANDLE_DATE);
                         break;
                     case "todt_desc":
-                        v20CandleIQ = v20CandleIQ.OrderByDescending(s => s.TO_DATE);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.SMALL_CANDLE_DATE);
                         break;
                     default:
-                        v20CandleIQ = v20CandleIQ.OrderBy(s => s.StockMaster.Symbol);
+                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.StockMaster.Symbol);
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
-                V20_CANDLE_STRATEGies = await PaginatedList<V20_CANDLE_STRATEGY>.CreateAsync(v20CandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
+                BULLISH_ENGULFING_STRATEGYies = await PaginatedList<BULLISH_ENGULFING_STRATEGY>.CreateAsync(bullishengulfingCandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
 
         public void RefreshAllBuySellIndicators()
         {
-            IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            stockmasterIQ = stockmasterIQ.Where(s => (s.V200 == true));
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true));
             try
             {
                 foreach (var item in stockmasterIQ)
                 {
-                    DbInitializer.V20CandlesticPatternFinder(_context, item);
+                    DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 30);
                 }
             }
             catch (Exception ex)
