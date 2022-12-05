@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
+
 namespace MarketAnalytics.Models
 {
     public class Portfolio_Master
@@ -12,7 +14,7 @@ namespace MarketAnalytics.Models
         [DisplayName("Name")]
         
         public string PORTFOLIO_NAME { get; set; } = string.Empty;
-        public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
 
+        public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
     }
 }

@@ -8,9 +8,13 @@ namespace MarketAnalytics.Models
         public int BULLISH_ENGULFING_STRATEGY_ID { get; set; }
         [Required]
         [DisplayName("Big Date")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
+
         public DateTime BIG_CANDLE_DATE { get; set; } = default(DateTime);
         [Required]
         [DisplayName("Small Date")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
+
         public DateTime SMALL_CANDLE_DATE { get; set; } = default(DateTime);
 
         [Required]

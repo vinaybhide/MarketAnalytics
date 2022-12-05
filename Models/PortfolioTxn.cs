@@ -8,6 +8,7 @@ namespace MarketAnalytics.Models
         [Key]
         public int PORTFOLIOTXN_ID { get; set; }
 
+        [DisplayFormat(DataFormatString ="{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
         public DateTime PURCHASE_DATE { get; set; } = default(DateTime);
 
         public int QUANTITY { get; set; } = default(int);

@@ -9,10 +9,12 @@ namespace MarketAnalytics.Models
         
         [Required]
         [DisplayName("From")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
         public DateTime FROM_DATE { get; set; } = default(DateTime);
 
         [Required]
         [DisplayName("To")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
         public DateTime TO_DATE { get; set; } = default(DateTime);
         [Required]
         [DisplayName("DiffPct")]
