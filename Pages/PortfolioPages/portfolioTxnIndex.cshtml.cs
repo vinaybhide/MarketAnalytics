@@ -40,6 +40,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public PaginatedList<PORTFOLIOTXN> portfolioTxn { get; set; } = default!;
 
         public string portfolioMasterName { get; set; } = string.Empty;
+        public double portfolioTotalCost { get; set; } = default(double);
+        public double portfolioTotalGain { get; set; } = default(double);
+        public double portfolioTotalValue { get; set; } = default(double);
+
         [BindProperty]
         public int MasterId { get; set; }
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid, 
@@ -131,7 +135,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             _context.SaveChanges();
                         }
 
-                        if (((getQuote == null) || (getQuote == false)) && ((updateBuySell == null) || (updateBuySell == false)))
+                        if (((getQuote == null) || (getQuote == false)) && ((updateBuySell == null) || (updateBuySell == false)) 
+                            || ((lifetimeHighLow != null) || (lifetimeHighLow == false)))
                         {
                             searchString = selectedRecord.stockMaster.Symbol;
                         }
@@ -155,15 +160,28 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
                             _context.PORTFOLIOTXN.Update(item);
                         }
-                        _context.SaveChanges();
 
                         if (refreshAll == true)
                         {
                             DbInitializer.GetSMA_BUYSELL(_context, item.stockMaster, item.stockMaster.Symbol, item.stockMaster.Exchange, 
                                                         item.StockMasterID, item.stockMaster.CompName, 20, 50, 200);
+
+                            double lifetimehigh, lifetimelow = 0;
+                            DbInitializer.GetLifetimeHighLow(_context, item.stockMaster, out lifetimehigh, out lifetimelow);
+                            item.stockMaster.LIFETIME_HIGH = lifetimehigh;
+                            item.stockMaster.LIFETIME_LOW = lifetimelow;
+                            _context.StockMaster.Update(item.stockMaster);
                         }
                     }
+                    _context.SaveChanges();
                 }
+
+                portfolioTotalCost = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                                                            .Sum(a => a.TOTAL_COST);
+                portfolioTotalGain = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                                                            .Sum(a => a.GAIN_AMT);
+                portfolioTotalValue = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                                                            .Sum(a => a.VALUE);
 
                 CurrentFilter = searchString;
 

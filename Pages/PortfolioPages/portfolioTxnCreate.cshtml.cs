@@ -47,6 +47,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 {
                     portfolioMasterName = masterRec.PORTFOLIO_NAME.ToString();
                     portfolioTxn.portfolioMaster = masterRec;
+                    portfolioTxn.PURCHASE_DATE= DateTime.Now;
                 }
             }
             parentpageIndex = (int)pageIndex;

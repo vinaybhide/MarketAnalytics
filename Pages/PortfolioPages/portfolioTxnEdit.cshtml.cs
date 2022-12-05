@@ -19,6 +19,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         [BindProperty]
         public int pageIndex { get; set; }
 
+        public DateTime txnDate { get; set; }
         public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int? stockid, int? pageIndex)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
@@ -32,7 +33,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
             portfolioTxn = selectedrecord;
-            
+            txnDate = selectedrecord.PURCHASE_DATE;
             pageIndex = (int)pageIndex;
 
             return Page();

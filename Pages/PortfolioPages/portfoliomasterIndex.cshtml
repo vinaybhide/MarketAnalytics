@@ -35,7 +35,9 @@
                                 <option value="">Select Portfolio</option>
                             </select>
 
-                            <input type="submit" value="Get txns for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*<a asp-page="./portfolioTxnIndex" asp-route-masterid=masterid class="btn btn-sm btn-primary" style="font-size:small">Txn Details</a>*@
+
+                            <input asp-page="./portfolioTxnIndex" type="submit" value="Get txns for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
                     </div>
                 </form>
@@ -60,31 +62,69 @@
 <table class="table">
     <thead>
         <tr style="text-align:center; font-size:small;">
-            <th>
-                @Html.DisplayNameFor(model => model.portfolioMaster[0].PORTFOLIO_MASTER_ID)
-            </th>
+            @*<th>
+            @Html.DisplayNameFor(model => model.portfolioMaster[0].PORTFOLIO_MASTER_ID)
+            </th>*@
             <th>
                 <a asp-page="./portfoliomasterIndex" asp-route-sortOrder="@Model.nameSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.portfolioMaster[0].PORTFOLIO_NAME)
                 </a>
             </th>
-            <th></th>
-        </tr>
+            <th>
+                Total Cost
+            </th>
+            <th>
+                Total Value
+            </th>
+            <th>
+                Total Gain P/L
+            </th>
+            <th>
+                Gain PCT
+            </th>
+@*            <th></th>
+*@        </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.portfolioMaster)
+        @*@foreach (var item in Model.portfolioMaster)*@
+        @for (int i = 0; i < Model.portfolioMaster.Count; i++)
         {
             <tr style="text-align:center; font-size:small;">
+                @*<td>
+            @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_MASTER_ID)
+            </td>*@
                 <td>
-                    @Html.DisplayFor(modelItem => item.PORTFOLIO_MASTER_ID)
+                    @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_NAME)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.PORTFOLIO_NAME)
+                    @string.Format("{0:0.00}", @Model.portfolioCost.ElementAt(i))
                 </td>
                 <td>
-                    <a asp-page="./portfoliomasterEdit" asp-route-masterid="@item.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a> |
-                    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID">Txn Details</a> |
-                    <a asp-page="./portfoliomasterDelete" asp-route-masterid="@item.PORTFOLIO_MASTER_ID">Delete</a> |
+                    @string.Format("{0:0.00}", @Model.portfolioValue.ElementAt(i))
+                </td>
+                <td>
+                    @string.Format("{0:0.00}", @Model.portfolioGain.ElementAt(i))
+                </td>
+                <td>
+                    @string.Format("{0:0.00}%", @Model.portfolioGainPct.ElementAt(i))
+                </td>
+                @*<td>
+            <a asp-page="./portfoliomasterEdit" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a> |
+            <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Txn Details</a> |
+            <a asp-page="./portfoliomasterDelete" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a> |
+            </td>*@
+                <td>
+                    <ul class="list-unstyled" >
+                        <li>
+                            <a asp-page="./portfoliomasterEdit" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a>
+                        </li>
+                        <li>
+                            <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Txn Details</a>
+                        </li>
+                        <li>
+                            <a asp-page="./portfoliomasterDelete" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a>
+                        </li>
+                    </ul>
                 </td>
             </tr>
         }
