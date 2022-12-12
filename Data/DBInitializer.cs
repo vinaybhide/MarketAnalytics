@@ -85,7 +85,7 @@ namespace MarketAnalytics.Data
                 //We want to skip the first line, which is column headings
                 record = new StringBuilder(sourceLines[recCounter++].Trim());
 
-                IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
+                //IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
                 IQueryable<StockMaster> currentMaster;
                 while (recCounter < sourceLines.Length)
                 {
@@ -103,7 +103,7 @@ namespace MarketAnalytics.Data
                         if (quoteDate != null)
                         { //find if stock exist in StockMaster, if not add it to context
                             var recTOAdd = new StockMaster();
-                            currentMaster = stockmasterIQ.Where(s => s.Symbol.ToUpper().Equals(fields[0].ToUpper())
+                            currentMaster = context.StockMaster.Where(s => s.Symbol.ToUpper().Equals(fields[0].ToUpper())
                                                 && s.CompName.ToUpper().Equals(fields[1].ToUpper()));
                             if (currentMaster.Count() <= 0)
                             //if (!context.StockMaster.Any(o => o.Symbol.ToUpper().Equals(fields[0].ToUpper())
@@ -181,7 +181,7 @@ namespace MarketAnalytics.Data
                 //read first line which is list of fields
                 if ((quoteDate != null) && (quoteDate.Length > 0))
                 {
-                    IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                    //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                     IQueryable<StockPriceHistory> currentPrice;
                     for (int i = 0; i < quoteDate.Length; i++)
                     {
@@ -195,7 +195,7 @@ namespace MarketAnalytics.Data
                         //currentPrice = stockpriceIQ.Where(s => s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper())
                         //                    && s.StockMaster.Exchange.ToUpper().Equals(exchange.ToUpper())
                         //                    && s.PriceDate.Equals(quoteDate[i]));
-                        currentPrice = stockpriceIQ.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
+                        currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
                                             (s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper()))
                                             && (s.StockMaster.Exchange.ToUpper().Equals(exchange.ToUpper()))
                                             && (s.PriceDate.Date.Equals(quoteDate[i].Date))));
@@ -329,9 +329,9 @@ namespace MarketAnalytics.Data
             try
             {
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-                IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
+                //IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
 
-                IQueryable<StockMaster> currentStockIQ = stockmasterIQ.Where(s => (s.Symbol.Equals(symbol)) && (s.CompName.Equals(compname)) &&
+                IQueryable<StockMaster> currentStockIQ = context.StockMaster.Where(s => (s.Symbol.Equals(symbol)) && (s.CompName.Equals(compname)) &&
                                                                                   (s.Exchange.Equals(exchange)));
                 if (currentStockIQ.Count() > 0)
                 {
@@ -373,8 +373,13 @@ namespace MarketAnalytics.Data
                 .Max(a => a.Close);
             low = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
                 .Min(a => a.Close);
-            //high = (from s in context.StockPriceHistory select s).Max(c => c.Close);
-            //low = (from s in context.StockPriceHistory select s).Min(c => c.Close);
+
+            stockMaster.LIFETIME_HIGH = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+                                                                    .Max(a => a.Close);
+            stockMaster.LIFETIME_LOW = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+                                                                    .Min(a => a.Close);
+            context.StockMaster.Update(stockMaster);
+            context.SaveChanges();
         }
 
         public static string IsHistoryUpdated(DBContext context, StockMaster stockMaster, int? stockMasterID)
@@ -382,9 +387,9 @@ namespace MarketAnalytics.Data
             string lastPriceDate = string.Empty;
             try
             {
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
 
-                IQueryable<StockPriceHistory> givenStockIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID));
+                IQueryable<StockPriceHistory> givenStockIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID));
 
                 StockPriceHistory lastHistoryRec = givenStockIQ.OrderBy(p => p.PriceDate).LastOrDefault();
                 if (lastHistoryRec != null)
@@ -432,12 +437,12 @@ namespace MarketAnalytics.Data
                     InitializeHistory(context, stockMaster, symbol, compname, exchange, lastPriceDate);
                 }
 
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
 
                 //IQueryable<StockPriceHistory> rsiIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID));
 
-                IQueryable<StockPriceHistory> rsiIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID) &&
+                IQueryable<StockPriceHistory> rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
                                 s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
 
                 //StockPriceHistory lastHistoryRec = symbolIQ.OrderBy(p => p.PriceDate).LastOrDefault();
@@ -678,10 +683,10 @@ namespace MarketAnalytics.Data
                     InitializeHistory(context, stockMaster, symbol, compname, exchange, lastPriceDate);
                 }
 
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
 
-                IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID) &&
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
                                 s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
 
 
@@ -791,13 +796,13 @@ namespace MarketAnalytics.Data
             GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodmid, 1);
             GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodlong, 2);
 
-            IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
-            IQueryable<StockMaster> symbolmasterIQ = stockmasterIQ.Where(s => (s.StockMasterID == stockMasterID));
+            //IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
+            IQueryable<StockMaster> symbolmasterIQ = context.StockMaster.Where(s => (s.StockMasterID == stockMasterID));
 
             StockMaster currentMaster = symbolmasterIQ.First();
 
-            IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-            IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID));
+            //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+            IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID));
 
             //StockPriceHistory currentHist = symbolIQ.AsEnumerable().ElementAt(symbolIQ.Count() - 1);
             StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
@@ -859,10 +864,10 @@ namespace MarketAnalytics.Data
                     InitializeHistory(context, stockMaster, symbol, compname, exchange, lastPriceDate);
                 }
 
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
 
-                IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID));
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID));
 
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
@@ -1077,6 +1082,216 @@ namespace MarketAnalytics.Data
             }
             return recordList;
         }
+
+        //public static void GetRHS(DBContext context, StockMaster stockMaster, DateTime fromDate, int period)
+        //{
+        //    StockPriceHistory third, current, second, first;
+        //    try
+        //    {
+        //        string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
+        //        if (string.IsNullOrEmpty(lastPriceDate) == false)
+        //        {
+        //            InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
+        //        }
+
+        //        IQueryable<StockPriceHistory> historyIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+
+        //        current = historyIQ.LastOrDefault();
+        //        if(IsGreenCandle(current))
+        //        {
+        //            if(IsHandleExist(current))
+        //            {
+
+        //            }
+        //        }
+
+        //    }
+        //    catch
+        //    {
+
+        //    }
+
+        //}
+
+        //public static bool IsGreenCandle(StockPriceHistory record)
+        //{
+        //    bool breturn = false;
+        //    try
+        //    {
+        //        if(record.Close > record.Open)
+        //        {
+        //            breturn = true;
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        breturn = false;
+        //    }
+        //    return breturn;
+        //}
+
+        //public static StockPriceHistory IsHandleExist(DBContext context, StockMaster stockMaster, int daystoBacktrack)
+        //{
+        //    //LOOP START
+        //    //backtrack from today till you find a green candle
+        //    //save the record #5
+
+        //    //Now check if there uptrend up to green candle date, backtrack from #4 to start of up trend
+        //    //if up trend found then save the record from where up trend started #4
+        //    //Now from this record back track to start of down trend
+        //    //if down trend was found then save the record from where downtrend started #3
+        //    //ELSE
+        //    //  GOTO LOOP START
+        //    //else
+        //    //GO TO LOOP START
+        //    //Comparer the price range of #5, #3 - Close price should be equal.
+        //    //If NOT then GOTO LOOP START
+        //    //ELSE 
+        //    //REPEAT above process to find a CUP
+
+        //    double lowestClose = 0;
+        //    int foundCounter = 0;
+        //    StockPriceHistory bottomCup = null, currentRec = null;
+        //    IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == currentRecord.StockMasterID) && (s.PriceDate.Date <= DateTime.Today.Date) && (s.PriceDate.Date >= DateTime.Today.AddDays(-daystoBacktrack).Date)).OrderBy(a => a.PriceDate);
+        //    for (int j = symbolIQ.Count() - 1; j > 0; j--)
+        //    {
+        //        currentRec = symbolIQ.AsEnumerable().ElementAt(j);
+        //        if (IsGreenCandle(currentRec))
+        //        {
+        //            bottomCup = BacktrackToStartOfUpTrend(context, currentRec.StockMaster, daystoBacktrack, 0, currentRec.PriceDate, out lowestClose, out foundCounter, trendSpan: 2);
+        //            if (bottomCup != null)
+        //            {
+        //                //we found start of up trend
+
+
+        //            }
+        //            else
+        //            {
+        //                continue;
+        //            }
+        //        }
+        //    }
+        //}
+
+        //public static StockPriceHistory BacktrackToStartOfUpTrend(DBContext context, StockMaster stockMaster, int daystoBacktrack,
+        //            int startCounter, DateTime fromDate, out double lowestClose, out int foundCounter, int trendSpan = 2)
+        //{
+        //    StockPriceHistory breturn = null;
+        //    int positivediff = 0;
+        //    int counter = 1;
+        //    lowestClose = 0.00;
+        //    foundCounter = -1;
+        //    StockPriceHistory currentRec = null;
+        //    try
+        //    {
+        //        IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date <= fromDate.Date) && (s.PriceDate.Date >= fromDate.AddDays(-daystoBacktrack).Date)).OrderBy(a => a.PriceDate);
+        //        for (int j = symbolIQ.Count() - 1; j > 0; j--)
+        //        {
+        //            currentRec = symbolIQ.AsEnumerable().ElementAt(j);
+        //            if (currentRec.Close < lowestClose)
+        //            {
+        //                lowestClose = currentRec.Close;
+        //                foundCounter = j;
+        //            }
+        //            if (currentRec.Change >= 0)
+        //            {
+        //                positivediff++;
+        //            }
+        //            if (counter >= trendSpan)
+        //            {
+        //                if (positivediff >= ((trendSpan / 2) + 1))
+        //                {
+        //                    breturn = currentRec;
+        //                }
+        //                else
+        //                {
+        //                    if (breturn != null)
+        //                    {
+        //                        break;
+        //                    }
+        //                    else
+        //                    {
+        //                        foundCounter = -1;
+        //                        lowestClose = 0.00;
+        //                        breturn = null;
+        //                        break;
+        //                    }
+        //                }
+        //                counter = 1;
+        //                positivediff = 0;
+        //            }
+        //            else
+        //            {
+        //                counter++;
+        //            }
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        breturn = null;
+        //    }
+        //    return breturn;
+        //}
+
+        //public static StockPriceHistory BacktrackToStartOfDownTrend(DBContext context, StockMaster stockMaster, int daystoBacktrack,
+        //            int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 2)
+        //{
+        //    StockPriceHistory breturn = null;
+        //    int negativediff = 0;
+        //    int counter = 1;
+        //    highestClose = 0.00;
+        //    foundCounter = -1;
+        //    StockPriceHistory currentRec = null;
+        //    try
+        //    {
+        //        IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date <= fromDate.Date) && (s.PriceDate.Date >= fromDate.AddDays(-daystoBacktrack).Date)).OrderBy(a => a.PriceDate);
+        //        for (int j = symbolIQ.Count() - 1; j > 0; j--)
+        //        {
+        //            currentRec = symbolIQ.AsEnumerable().ElementAt(j);
+        //            if (currentRec.Close > highestClose)
+        //            {
+        //                highestClose = currentRec.Close;
+        //                foundCounter = j;
+        //            }
+        //            if (currentRec.Change <= 0)
+        //            {
+        //                negativediff++;
+        //            }
+        //            if (counter >= trendSpan)
+        //            {
+        //                if (negativediff >= ((trendSpan / 2) + 1))
+        //                {
+        //                    breturn = currentRec;
+        //                }
+        //                else
+        //                {
+        //                    if (breturn != null)
+        //                    {
+        //                        break;
+        //                    }
+        //                    else
+        //                    {
+        //                        foundCounter = -1;
+        //                        highestClose = 0.00;
+        //                        breturn = null;
+        //                        break;
+        //                    }
+        //                }
+        //                counter = 1;
+        //                negativediff = 0;
+        //            }
+        //            else
+        //            {
+        //                counter++;
+        //            }
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        breturn = null;
+        //    }
+        //    return breturn;
+        //}
         /// <summary>
         /// Given a date this method will backtrack and find if we have a down trend
         /// It will try to use "Change" field to check the difference current close & prev close
@@ -1241,8 +1456,8 @@ namespace MarketAnalytics.Data
 
             try
             {
-                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
-                IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = v20CandleIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+                //IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
+                IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = context.V20_CANDLE_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
                 context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
                 context.SaveChanges();
@@ -1254,9 +1469,9 @@ namespace MarketAnalytics.Data
                     InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
                 }
 
-                IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
 
-                IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
                                                                 (s.PriceDate >= DateTime.Today.AddDays(-365))));
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
