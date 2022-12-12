@@ -37,7 +37,7 @@ namespace MarketAnalytics.Pages.BuySell
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => x.V200 == true).Select(a =>
+            symbolList = _context.StockMaster.Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
                                                           new SelectListItem
                                                           {
                                                               Value = a.StockMasterID.ToString(),
@@ -116,7 +116,9 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
+                                                                              || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                                                                              && (s.StockMaster.Close < s.BUY_PRICE));
                 currentSymbolList.Clear();
 
                 currentSymbolList = bullishengulfingCandleIQ //.Where(x => x.StockMaster.V200 == true)
@@ -136,7 +138,8 @@ namespace MarketAnalytics.Pages.BuySell
                                                             || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
                     if(bullishengulfingCandleIQ.Count() == 0)
                     {
-                        bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                        bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
+                                                    || (s.StockMaster.V40N == true) || (s.StockMaster.V40 == true)));
                     }
                     if (currentSymbolList.Exists(a => (a.Value.Equals(searchString) == true)))
                     {
@@ -184,7 +187,7 @@ namespace MarketAnalytics.Pages.BuySell
 
         public void RefreshAllBuySellIndicators()
         {
-            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true));
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
             try
             {
                 foreach (var item in stockmasterIQ)

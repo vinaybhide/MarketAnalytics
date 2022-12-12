@@ -150,8 +150,8 @@
         var prevDisabled = !Model.BULLISH_ENGULFING_STRATEGYies.HasPreviousPage ? "disabled" : "";
         var nextDisabled = !Model.BULLISH_ENGULFING_STRATEGYies.HasNextPage ? "disabled" : "";
     
-<a asp-page="./v20BuySell" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex - 1)"
+    <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled" style="font-size:small">Previous</a>
-<a asp-page="./v20BuySell" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex + 1)"
+    <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled" style="font-size:small">Next</a>
    }

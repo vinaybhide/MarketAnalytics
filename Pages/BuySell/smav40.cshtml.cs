@@ -139,10 +139,10 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
+                //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
                 //stockmasterIQ = stockmasterIQ.Where(s => ((s.V40 == true) && (s.SMA_BUY_SIGNAL == true 
                 //                                            || s.SMA_SELL_SIGNAL == true)));
-                stockmasterIQ = stockmasterIQ.Where(s => (s.V40 == true));
+                IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
@@ -177,8 +177,8 @@ namespace MarketAnalytics.Pages.BuySell
 
         public void RefreshAllBuySellIndicators()
         {
-            IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            stockmasterIQ = stockmasterIQ.Where(s => (s.V40 == true));
+            //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
 
             foreach (var item in stockmasterIQ)
             {

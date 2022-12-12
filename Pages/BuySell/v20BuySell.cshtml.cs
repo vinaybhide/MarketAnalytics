@@ -45,7 +45,7 @@ namespace MarketAnalytics.Pages.BuySell
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => x.V200 == true).Select(a =>
+            symbolList = _context.StockMaster.Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
                                                           new SelectListItem
                                                           {
                                                               Value = a.StockMasterID.ToString(),
@@ -129,7 +129,9 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => ((s.StockMaster.V200 == true) || 
+                                                                             (s.StockMaster.V40==true) || (s.StockMaster.V40N == true))
+                                                                             && (s.StockMaster.Close < s.BUY_PRICE));
                 currentSymbolList.Clear();
                 //currentSymbolList = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true))
                 //    .OrderBy(x => x.StockMaster.Symbol)
@@ -208,8 +210,8 @@ namespace MarketAnalytics.Pages.BuySell
 
         public void RefreshAllBuySellIndicators()
         {
-            IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            stockmasterIQ = stockmasterIQ.Where(s => (s.V200 == true));
+            //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
             try
             {
                 foreach (var item in stockmasterIQ)
