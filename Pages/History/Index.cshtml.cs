@@ -101,9 +101,9 @@ namespace MarketAnalytics.Pages.History
 
                     CurrentFilter = searchString;
 
-                    IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
+                    //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
 
-                    stockpriceIQ = stockpriceIQ.Where(s => (s.StockMasterID == CurrentID));
+                    IQueryable<StockPriceHistory> stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID));
 
                     if (!String.IsNullOrEmpty(searchString))
                     {
