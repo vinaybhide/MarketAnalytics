@@ -36,6 +36,7 @@
                             <input asp-for="@Model.MasterId" type="hidden" />
                             <input name="getQuote=false" type="hidden" />
                             <input name="updateBuySell=false" type="hidden" />
+                            <input name="lifetimeHighLow=false" type="hidden" />
                             <select name="stockid" asp-items="Model.symbolList" style="font-size:small">
                                 <option value="">Select Symbol</option>
                             </select>
@@ -78,7 +79,8 @@
         <tr style="text-align:center; font-size:small;">
             <th>
                 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.DateSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.portfolioTxn[0].PURCHASE_DATE)
+                    @*@Html.DisplayNameFor(model => model.portfolioTxn[0].PURCHASE_DATE)*@
+                    TXN Date
                 </a>
             </th>
             @*<th>
@@ -97,14 +99,17 @@
             </a>
             </th>*@
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)*@
+                QTY
             </th>
             <th></th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)*@
+                Cost/Share
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)*@
+                Cost
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].CMP)
@@ -113,16 +118,20 @@
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_PCT)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_PCT)*@
+                %Gain
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_AMT)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_AMT)*@
+                Gain
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)*@
+                High
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)*@
+                Low
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
@@ -183,7 +192,7 @@
                            asp-route-sortOrder="@Model.CurrentSort"
                            asp-route-pageIndex="@Model.portfolioTxn.PageIndex"
                            asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll="false">Edit</a>
+                           asp-route-refreshAll="false" asp-route-lifetimeHighLow="false">Edit</a>
                             </li>
                             <li>
                                 <a asp-page="./portfolioTxnDetails" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
@@ -194,7 +203,7 @@
                            asp-route-currentFilter="@Model.CurrentFilter"
                            asp-route-getQuote="false"
                            asp-route-updateBuySell="false"
-                           asp-route-refreshAll="false">Details</a>
+                           asp-route-refreshAll="false" asp-route-lifetimeHighLow="false">Details</a>
                             </li>
                             <li>
                                 <a asp-page="./portfolioTxnDelete" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
@@ -205,7 +214,7 @@
                            asp-route-currentFilter="@Model.CurrentFilter"
                            asp-route-getQuote="false"
                            asp-route-updateBuySell="false"
-                           asp-route-refreshAll="false">Delete</a>
+                           asp-route-refreshAll="false" asp-route-lifetimeHighLow="false">Delete</a>
                             </li>
                             <li>
                                 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
@@ -216,7 +225,7 @@
                            asp-route-currentFilter="@Model.CurrentFilter"
                            asp-route-getQuote="true"
                            asp-route-updateBuySell="false"
-                           asp-route-refreshAll="false">Get Quote</a>
+                           asp-route-refreshAll="false" asp-route-lifetimeHighLow="false">Get Quote</a>
                             </li>
                             <li>
                                 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
@@ -241,14 +250,14 @@
                            asp-route-currentFilter="@Model.CurrentFilter"
                            asp-route-getQuote="true"
                            asp-route-updateBuySell="true"
-                           asp-route-refreshAll="false">Update Buy/Sell </a>
+                           asp-route-refreshAll="false" asp-route-lifetimeHighLow="false">Update Buy/Sell </a>
                                 </li>
                             }
                             <li>
                                 <a asp-page="/History/Index" asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
                            asp-route-txnid="@item.PORTFOLIOTXN_ID"
                            asp-route-id="@item.StockMasterID"
-                           asp-route-refreshAll=false
+                           asp-route-refreshAll=false asp-route-lifetimeHighLow="false"
                            asp-route-history=true>History</a>
                             </li>
                         </ul>
