@@ -103,8 +103,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (stockid != null)
                 {
                     await GetQuoteAndUpdate(stockid, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
-                    if (((getQuote == null) || (getQuote == false)) && ((updateBuySell == null) || (updateBuySell == false))
-                        && ((lifetimeHighLow != null) || (lifetimeHighLow == false)))
+                    if (((getQuote != null) && (getQuote == false)) && ((updateBuySell != null) && (updateBuySell == false))
+                        && ((lifetimeHighLow != null) && (lifetimeHighLow == false)))
                     {
                         var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == stockid)));
                         searchString = selectedRecord.stockMaster.Symbol;
