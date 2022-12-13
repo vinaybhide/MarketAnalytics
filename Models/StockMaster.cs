@@ -58,5 +58,6 @@ namespace MarketAnalytics.Models
 
         public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
         //public List<PortfolioTxn> portfolioTxns { get; set; }
+        //public ICollection<BULLISH_ENGULFING_STRATEGY> collectionEngulfing { get; set; }
     }
 }
