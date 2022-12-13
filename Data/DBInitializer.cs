@@ -370,14 +370,17 @@ namespace MarketAnalytics.Data
             }
 
             high = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
-                .Max(a => a.Close);
+                .Max(a => a.High);
             low = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
-                .Min(a => a.Close);
+                .Min(a => a.Low);
 
-            stockMaster.LIFETIME_HIGH = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
-                                                                    .Max(a => a.Close);
-            stockMaster.LIFETIME_LOW = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
-                                                                    .Min(a => a.Close);
+            //stockMaster.LIFETIME_HIGH = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+            //                                                        .Max(a => a.Close);
+            //stockMaster.LIFETIME_LOW = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
+            //                                                        .Min(a => a.Close);
+            stockMaster.LIFETIME_HIGH = high;
+            stockMaster.LIFETIME_LOW = low;
+
             context.StockMaster.Update(stockMaster);
             context.SaveChanges();
         }
@@ -1054,8 +1057,8 @@ namespace MarketAnalytics.Data
                                     {
                                         var recEngulfing = new BULLISH_ENGULFING_STRATEGY();
 
-                                        recEngulfing.BIG_CANDLE_DATE = currentHist.PriceDate;
-                                        recEngulfing.SMALL_CANDLE_DATE = prevHist.PriceDate;
+                                        recEngulfing.BUY_CANDLE_DATE = currentHist.PriceDate;
+                                        recEngulfing.SELL_CANDLE_DATE = symbolIQ.First(a => a.StockPriceHistoryID == foundCounter).PriceDate; //prevHist.PriceDate;
                                         recEngulfing.BUY_PRICE = currentHist.Close;
                                         recEngulfing.SELL_PRICE = sellPrice;
                                         recEngulfing.StockMasterID = currentHist.StockMasterID;
@@ -1328,7 +1331,7 @@ namespace MarketAnalytics.Data
                     if(currentRec.Close > highestClose) 
                     {
                         highestClose = currentRec.Close;
-                        foundCounter = j;
+                        foundCounter = currentRec.StockPriceHistoryID;//j;
                     }
                     if (currentRec.Change <= 0)
                     {
