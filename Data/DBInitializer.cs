@@ -975,7 +975,8 @@ namespace MarketAnalytics.Data
         /// <param name="context"></param>
         /// <param name="stockMaster"></param>
         /// <param name="periodsmall"></param>
-        public static List<BULLISH_ENGULFING_STRATEGY> GetBullishEngulfingBuySellList(DBContext context, StockMaster stockMaster, DateTime fromDate, int period)
+        //public static List<BULLISH_ENGULFING_STRATEGY> GetBullishEngulfingBuySellList(DBContext context, StockMaster stockMaster, DateTime fromDate, int period)
+        public static void GetBullishEngulfingBuySellList(DBContext context, StockMaster stockMaster, DateTime fromDate, int period, int trendSpan)
         {
             //double currentClosePrice = 0;
             double smaValue = 0;
@@ -1007,8 +1008,11 @@ namespace MarketAnalytics.Data
 
                 IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingIQ = context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
-                context.BULLISH_ENGULFING_STRATEGY.RemoveRange(bullishengulfingIQ.AsEnumerable());
-                context.SaveChanges();
+                if (bullishengulfingIQ.Count() > 0)
+                {
+                    context.BULLISH_ENGULFING_STRATEGY.RemoveRange(bullishengulfingIQ.AsEnumerable());
+                    context.SaveChanges();
+                }
 
                 IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
 
@@ -1029,15 +1033,17 @@ namespace MarketAnalytics.Data
                         }
 
                         //currentHist.Close = System.Convert.ToDouble(currentHist.Close);
-                        if (period > 0)
+                        if (period >= 0)
                         {
                             //subtract the oldest CLOSE PRICE from the previous SUM and then add the current CLOSE PRICE
-                            sumSmall = sumSmall - valuesSmall[indexSmall] + currentHist.Close;
-                            valuesSmall[indexSmall] = currentHist.Close;
-                            smaValue = Math.Round((sumSmall / period), 2);
-                            indexSmall = (indexSmall + 1) % period;
-
-                            if ((currentHist.Open < smaValue) && (currentHist.Close < smaValue))
+                            if (period > 0)
+                            {
+                                sumSmall = sumSmall - valuesSmall[indexSmall] + currentHist.Close;
+                                valuesSmall[indexSmall] = currentHist.Close;
+                                smaValue = Math.Round((sumSmall / period), 2);
+                                indexSmall = (indexSmall + 1) % period;
+                            }
+                            if((period == 0) || ((currentHist.Open < smaValue) && (currentHist.Close < smaValue)))
                             {
                                 //means current candle is below SMA_SMALL
                                 //currentHist.LOWER_THAN_SMA_SMALL = 1;
@@ -1052,8 +1058,8 @@ namespace MarketAnalytics.Data
                                     //currentHist.BULLISH_ENGULFING = 1;
                                     //now backtrack & find the buy price
 
-                                    if(FindIfDownTrendExist(context, stockMaster,
-                                                        (rownum - 1), fromDate, out sellPrice, out foundCounter, trendSpan: 5))
+                                    if (FindIfDownTrendExist(context, stockMaster,
+                                                        (rownum - 1), fromDate, out sellPrice, out foundCounter, trendSpan: trendSpan))
                                     {
                                         var recEngulfing = new BULLISH_ENGULFING_STRATEGY();
 
@@ -1081,11 +1087,114 @@ namespace MarketAnalytics.Data
             }
             catch
             {
-                recordList.Clear();
+                //recordList.Clear();
             }
-            return recordList;
+            //return recordList;
+            recordList.Clear();
         }
 
+        public static void GetBearishEngulfingBuySellList(DBContext context, StockMaster stockMaster, DateTime fromDate, int period, int trendSpan)
+        {
+            double smaValue = 0;
+            double sumSmall = 0;
+            double[] valuesSmall = (period > 0) ? new double[period] : null; //array of CLOSE PRICE for the current iteration
+            int indexSmall = 0; //we will increment it till specifid period and then reset it to 0
+
+            double buyPrice = 0;
+            int foundCounter = -1;
+
+            List<BEARISH_ENGULFING> recordList = new List<BEARISH_ENGULFING>();
+
+            StockPriceHistory currentHist = null, prevHist = null;
+
+            //bool bBuyFlagSet = false;
+            //bool bSellFlagSet = false;
+            try
+            {
+                string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
+                if (string.IsNullOrEmpty(lastPriceDate) == false)
+                {
+                    InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
+                }
+
+                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
+
+                //IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+
+                IQueryable<BEARISH_ENGULFING> bearishengulfingIQ = context.BEARISH_ENGULFING.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+                if (bearishengulfingIQ.Count() > 0)
+                {
+                    context.BEARISH_ENGULFING.RemoveRange(bearishengulfingIQ.AsEnumerable());
+                    context.SaveChanges();
+                }
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+
+                if ((symbolIQ != null) && (symbolIQ.Count() > 0))
+                {
+                    //for (int rownum = symbolIQ.Count() - period; rownum < symbolIQ.Count(); rownum++)
+                    for (int rownum = 0; rownum < symbolIQ.Count(); rownum++)
+                    {
+                        currentHist = symbolIQ.AsEnumerable().ElementAt(rownum);
+
+                        if (rownum > 0)
+                        {
+                            prevHist = symbolIQ.AsEnumerable().ElementAt(rownum - 1);
+                        }
+                        else
+                        {
+                            prevHist = null;
+                        }
+                        if (period >= 0)
+                        {
+                            if (period > 0)
+                            { //subtract the oldest CLOSE PRICE from the previous SUM and then add the current CLOSE PRICE
+                                sumSmall = sumSmall - valuesSmall[indexSmall] + currentHist.Close;
+                                valuesSmall[indexSmall] = currentHist.Close;
+                                smaValue = Math.Round((sumSmall / period), 2);
+                                indexSmall = (indexSmall + 1) % period;
+                            }
+                            if ((period == 0) || ((currentHist.Open < smaValue) && (currentHist.Close < smaValue)))
+                            {
+
+                                if ((prevHist != null) && (prevHist.Close > prevHist.Open) && (currentHist.Close < currentHist.Open) &&
+                                    (prevHist.Close < currentHist.Open) && (prevHist.Close > currentHist.Close) && (prevHist.Open > currentHist.Close) &&
+                                    (prevHist.Open < currentHist.Open))
+                                {
+                                    //this means prev candle is green and curent candle is red
+                                    //means previous day candle is green = stock closed above open indicating a red candle
+                                    //also the prev candle is engulfed by current candle as prev open/close are withing current open/close
+                                    //now backtrack & find the buy price
+
+                                    if (FindIfUpTrendExist(context, stockMaster,
+                                                        (rownum + 1), fromDate, out buyPrice, out foundCounter, trendSpan: trendSpan))
+                                    {
+                                        var recEngulfing = new BEARISH_ENGULFING();
+
+                                        recEngulfing.BUY_CANDLE_DATE = symbolIQ.First(a => a.StockPriceHistoryID == foundCounter).PriceDate; //prevHist.PriceDate;
+                                        recEngulfing.SELL_CANDLE_DATE = prevHist.PriceDate;//currentHist.PriceDate;
+                                        recEngulfing.BUY_PRICE = buyPrice;
+                                        recEngulfing.SELL_PRICE = currentHist.Close;
+                                        recEngulfing.StockMasterID = currentHist.StockMasterID;
+                                        recEngulfing.StockMaster = currentHist.StockMaster;
+                                        recordList.Add(recEngulfing);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (recordList.Count > 0)
+                    {
+                        context.BEARISH_ENGULFING.AddRange(recordList);
+                    }
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+            }
+            recordList.Clear();
+        }
         //public static void GetRHS(DBContext context, StockMaster stockMaster, DateTime fromDate, int period)
         //{
         //    StockPriceHistory third, current, second, first;
@@ -1313,8 +1422,8 @@ namespace MarketAnalytics.Data
         /// <param name="foundCounter"></param>
         /// <param name="trendSpan"></param>
         /// <returns></returns>
-        public static bool FindIfDownTrendExist(DBContext context, StockMaster stockMaster, 
-                    int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 5 )
+        public static bool FindIfDownTrendExist(DBContext context, StockMaster stockMaster,
+                    int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 5)
         {
             bool breturn = false;
             int negativediff = 0;
@@ -1328,7 +1437,7 @@ namespace MarketAnalytics.Data
                 for (int j = startCounter; j > 0; j--)
                 {
                     currentRec = symbolIQ.AsEnumerable().ElementAt(j);
-                    if(currentRec.Close > highestClose) 
+                    if (currentRec.Close > highestClose)
                     {
                         highestClose = currentRec.Close;
                         foundCounter = currentRec.StockPriceHistoryID;//j;
@@ -1393,12 +1502,12 @@ namespace MarketAnalytics.Data
         /// <param name="trendSpan"></param>
         /// <returns></returns>
         public static bool FindIfUpTrendExist(DBContext context, StockMaster stockMaster,
-                    int startCounter, DateTime fromDate, out double highestClose, out int foundCounter, int trendSpan = 5)
+                    int startCounter, DateTime fromDate, out double lowestClose, out int foundCounter, int trendSpan = 5)
         {
             bool breturn = false;
-            int positivediff = 0;
+            int negativediff = 0;
             int counter = 1;
-            highestClose = 0.00;
+            lowestClose = 0.00;
             foundCounter = -1;
             StockPriceHistory currentRec = null;
             try
@@ -1407,18 +1516,18 @@ namespace MarketAnalytics.Data
                 for (int j = startCounter; j > 0; j++)
                 {
                     currentRec = symbolIQ.AsEnumerable().ElementAt(j);
-                    if (currentRec.Close > highestClose)
+                    if ((lowestClose == 0.00) || (currentRec.Close < lowestClose))
                     {
-                        highestClose = currentRec.Close;
-                        foundCounter = j;
+                        lowestClose = currentRec.Close;
+                        foundCounter = currentRec.StockPriceHistoryID;//j;
                     }
-                    if (currentRec.Change >= 0)
+                    if (currentRec.Change <= 0)
                     {
-                        positivediff++;
+                        negativediff++;
                     }
                     if (counter >= trendSpan)
                     {
-                        if (positivediff >= ((trendSpan / 2) + 1))
+                        if (negativediff >= ((trendSpan / 2) + 1))
                         {
                             breturn = true;
                         }
@@ -1431,13 +1540,13 @@ namespace MarketAnalytics.Data
                             else
                             {
                                 foundCounter = -1;
-                                highestClose = 0.00;
+                                lowestClose = 0.00;
                                 breturn = false;
                                 break;
                             }
                         }
                         counter = 1;
-                        positivediff = 0;
+                        negativediff = 0;
                     }
                     else
                     {
@@ -1462,9 +1571,11 @@ namespace MarketAnalytics.Data
                 //IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
                 IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = context.V20_CANDLE_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
-                context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
-                context.SaveChanges();
-
+                if (stockCandleIQ.Count() > 0)
+                {
+                    context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
+                    context.SaveChanges();
+                }
                 //we need to make sure that price history is upto date till yesterday
                 string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
                 if (string.IsNullOrEmpty(lastPriceDate) == false)

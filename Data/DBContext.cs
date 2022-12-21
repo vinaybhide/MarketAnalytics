@@ -23,6 +23,7 @@ namespace MarketAnalytics.Data
         public DbSet<MarketAnalytics.Models.PORTFOLIOTXN> PORTFOLIOTXN { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.V20_CANDLE_STRATEGY> V20_CANDLE_STRATEGY { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.BULLISH_ENGULFING_STRATEGY> BULLISH_ENGULFING_STRATEGY { get; set; } = default!;
+        public DbSet<MarketAnalytics.Models.BEARISH_ENGULFING> BEARISH_ENGULFING { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,6 +53,8 @@ namespace MarketAnalytics.Data
             modelBuilder.Entity<V20_CANDLE_STRATEGY>().ToTable("V20_CANDLE_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
 
             modelBuilder.Entity<BULLISH_ENGULFING_STRATEGY>().ToTable("BULLISH_ENGULFING_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
+
+            modelBuilder.Entity<BEARISH_ENGULFING>().ToTable("BEARISH_ENGULFING").Navigation(e => e.StockMaster).AutoInclude();
         }
     }
 }
