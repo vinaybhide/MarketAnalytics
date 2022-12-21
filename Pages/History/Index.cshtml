@@ -65,7 +65,10 @@
             <th>
                 <div class="form-actions no-color" style="font-size:small">
                     <p>
-                        <a asp-page="./historyChart" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">>Show chart</a>
+                        @*<a asp-page="./historyChart" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">>Show chart</a>*@
+                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@Model.CurrentID"
+                           asp-route-onlyhistory=0 asp-route-history=true
+                           class="btn btn-sm btn-primary" style="font-size:small">Chart</a>
                     </p>
                 </div>
             </th>
