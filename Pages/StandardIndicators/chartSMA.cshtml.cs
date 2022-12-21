@@ -94,9 +94,9 @@ namespace MarketAnalytics.Pages.StandardIndicators
         }
         private List<StockPriceHistory> ChartData(int? id, string fromDate)
         {
-            IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
+            //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-            List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID) &&
+            List<StockPriceHistory> chartDataList = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
                         s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date))).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();
             return chartDataList;
@@ -104,15 +104,15 @@ namespace MarketAnalytics.Pages.StandardIndicators
 
         private void NewChartData(int? id, string fromDate)
         {
-            IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
+            //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-            listSMA = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID) &&
+            listSMA = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
                         s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date))).ToList();
-            listBuy = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID) &&
+            listBuy = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
                         s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date) &&
                         s.BUY_SMA_STRATEGY != null)).ToList();
 
-            listBuy = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID) &&
+            listBuy = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
                         s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date) &&
                         s.SELL_SMA_STRATEGY != null)).ToList();
 

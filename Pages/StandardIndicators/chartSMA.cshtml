@@ -13,6 +13,43 @@
 <script type="text/javascript">
     google.charts.load('current', { 'packages': ['line', 'corechart', 'controls', 'annotationchart'] });
     google.charts.setOnLoadCallback(drawChart);
+    google.charts.setOnLoadCallback(drawSMATimeline);
+
+    function drawSMATimeline() {
+        var chartDiv = document.getElementById('smachart_div');
+
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Low', 'Open', 'Close', 'High', 'SMA_FAST', 'SMA_MID', 'SMA_SLOW'],
+
+            @foreach (var data in Model.listSMA)
+            @*@for (int i = Int32.Parse(Model.SMAPeriod); i < Model.listSMA.Count; i++)*@
+            {
+                <text>[new Date('@data.PriceDate.ToShortDateString()'), @data.Low, @data.Open, @data.Close, @data.High, @data.SMA_SMALL, @data.SMA_MID, @data.SMA_LONG], </text>
+                //<text>[new Date('@Model.listSMA[i].PriceDate.ToString("yyyy-MM-dd")'), @Model.listSMA[i].Low, @Model.listSMA[i].Open, @Model.listSMA[i].Close, @Model.listSMA[i].High, @Model.listSMA[i].SMA_SMALL], @Model.listSMA[i].SMA_MID], @Model.listSMA[i].SMA_LONG], </text>
+            }
+        ]);
+
+        var dateRangeSlider = new google.visualization.ControlWrapper({
+            'controlType': 'ChartRangeFilter',
+            'containerId': 'filter_div',
+            'options': {
+                'filterColumnLabel': 'Date'
+            }
+        });
+
+        var candleChart = new google.visualization.ChartWrapper({
+            chartType: 'CandlestickChart',
+            containerId: 'dashboard_candle_chart_div',
+            options: {
+                candlestick: {
+                    fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+                    risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+                },
+            }
+        });
+
+
+    }
 
     function drawChart() {
 
@@ -28,7 +65,7 @@
         <text>[new Date('@data.PriceDate.ToShortDateString()'), @data.Low, @data.Open, @data.Close, @data.High, @data.SMA_SMALL, @data.SMA_MID, @data.SMA_LONG], </text>
         //<text>[new Date('@Model.listSMA[i].PriceDate.ToString("yyyy-MM-dd")'), @Model.listSMA[i].Low, @Model.listSMA[i].Open, @Model.listSMA[i].Close, @Model.listSMA[i].High, @Model.listSMA[i].SMA_SMALL], @Model.listSMA[i].SMA_MID], @Model.listSMA[i].SMA_LONG], </text>
     }
-            ]);
+                    ]);
         var dualChartOptions = {
             chart: {
                 title: 'Daily Candle Vs SMA'

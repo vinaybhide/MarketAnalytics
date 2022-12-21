@@ -49,9 +49,9 @@ namespace MarketAnalytics.Pages.StandardIndicators
         }
         private List<StockPriceHistory> ChartData(int? id)
         {
-            IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
+            //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-            List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
+            List<StockPriceHistory> chartDataList = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID))).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();
             return chartDataList;
         }
