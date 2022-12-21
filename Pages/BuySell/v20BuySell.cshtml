@@ -143,6 +143,8 @@
                    asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.V20_CANDLE_STRATEGies.PageIndex"
                    asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                     <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
+                    <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@item.StockMasterID"
+                   asp-route-onlyhistory=3 asp-route-history=true>Chart</a>
                 </td>
             </tr>
         }

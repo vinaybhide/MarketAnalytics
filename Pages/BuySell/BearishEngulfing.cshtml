@@ -1,18 +1,19 @@
 ﻿@page
-@model MarketAnalytics.Pages.BuySell.BullishEngulfing
+@model MarketAnalytics.Pages.BuySell.BearishEngulfing
 
 @{
-    ViewData["Title"] = "BullishEngulfingBuySell";
+    ViewData["Title"] = "BearishEngulfingBuySell";
 }
 
-<h4>Bullish Engulfing Strategy</h4>
+<h4>Bearish Engulfing Strategy</h4>
 
 <table class="table">
     <thead>
         <tr>
+        </tr>
+        <tr>
             <th>
-
-                <form asp-page="./BullishEngulfing" method="get">
+                <form asp-page="./BearishEngulfing" method="get">
                     <div class="form-actions no-color">
                         <p>
                             <select name="searchString" asp-items="Model.currentSymbolList" style="font-size:small">
@@ -25,7 +26,7 @@
                 </form>
             </th>
             <th>
-                <form asp-page="./BullishEngulfing" method="get">
+                <form asp-page="./BearishEngulfing" method="get">
                     <div class="form-actions no-color">
                         <p>
                             <label style="font-size:smaller; font-style:normal;">SMA :</label>
@@ -39,22 +40,22 @@
                                 <option value="">Select Symbol</option>
                             </select>
 
-                            <input type="submit" value="Update buy-sell for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <input type="submit" value="Find Bearish Engulfing Trend" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
                     </div>
                 </form>
             </th>
             @*<th>
-                <div class="form-actions no-color">
-                    <p>
-                        <a asp-page="./BullishEngulfing" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
-                    </p>
-                </div>
+            <div class="form-actions no-color">
+            <p>
+            <a asp-page="./BearishEngulfing" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Get Bearish Engulfing for All</a>
+            </p>
+            </div>
             </th>*@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./BullishEngulfing" style="font-size:small">Back to full List</a>
+                        <a asp-page="./BearishEngulfing" style="font-size:small">Back to full List</a>
                     </p>
                 </div>
             </th>
@@ -65,49 +66,46 @@
     <thead>
         <tr style="text-align:center; font-size:small;">
             <th>
-                <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].StockMaster.Symbol)
+                <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].StockMaster.Symbol)
                 </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].StockMaster.QuoteDateTime)
+                @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].StockMaster.QuoteDateTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].StockMaster.Close)
+                @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].StockMaster.Close)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].StockMaster.PrevClose)
+                @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].StockMaster.PrevClose)
             </th>
             <th>
-                <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.FromDtSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].BUY_CANDLE_DATE)
+                <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.FromDtSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].BUY_CANDLE_DATE)
                 </a>
             </th>
             <th>
-                <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.ToDtSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].SELL_CANDLE_DATE)
+                <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.ToDtSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].SELL_CANDLE_DATE)
                 </a>
             </th>
             <th>
-                <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].BUY_PRICE)
+                <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].BUY_PRICE)
                 </a>
             </th>
             <th>
-                <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].SELL_PRICE)
+                <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.listBEARISH_ENGULFING[0].SELL_PRICE)
                 </a>
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].AVG_BUY_PRICE)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @if (Model.BULLISH_ENGULFING_STRATEGYies != null)
+        @if (Model.listBEARISH_ENGULFING != null)
         {
-            @foreach (var item in Model.BULLISH_ENGULFING_STRATEGYies)
+            @foreach (var item in Model.listBEARISH_ENGULFING)
             {
                 <tr style="text-align:center; font-size:small;">
                     <td>
@@ -135,33 +133,29 @@
                         @Html.DisplayFor(modelItem => item.SELL_PRICE)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.AVG_BUY_PRICE)
-                    </td>
-                    <td>
-                        <a asp-page="./BullishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="false" asp-route-updateBuySell="true"
-                           asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.BULLISH_ENGULFING_STRATEGYies.PageIndex"
+                        <a asp-page="./BearishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="false" asp-route-updateBuySell="true"
+                           asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.listBEARISH_ENGULFING.PageIndex"
                            asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
-                        <a asp-page="./BullishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
-                           asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.BULLISH_ENGULFING_STRATEGYies.PageIndex"
+                        <a asp-page="./BearishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
+                           asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.listBEARISH_ENGULFING.PageIndex"
                            asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                         <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@item.StockMasterID"
-                           asp-route-onlyhistory=2 asp-route-history=true>Chart</a>
-
+                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@item.StockMasterID" 
+                            asp-route-onlyhistory=1 asp-route-history=true>Chart</a>
                     </td>
                 </tr>
             }
         }
     </tbody>
 </table>
-@if (Model.BULLISH_ENGULFING_STRATEGYies != null)
+@if (Model.listBEARISH_ENGULFING != null)
 {
-    
-        var prevDisabled = !Model.BULLISH_ENGULFING_STRATEGYies.HasPreviousPage ? "disabled" : "";
-        var nextDisabled = !Model.BULLISH_ENGULFING_STRATEGYies.HasNextPage ? "disabled" : "";
-    
-    <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex - 1)"
+
+    var prevDisabled = !Model.listBEARISH_ENGULFING.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.listBEARISH_ENGULFING.HasNextPage ? "disabled" : "";
+
+    <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.listBEARISH_ENGULFING.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled" style="font-size:small">Previous</a>
-    <a asp-page="./BullishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.BULLISH_ENGULFING_STRATEGYies.PageIndex + 1)"
+    <a asp-page="./BearishEngulfing" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.listBEARISH_ENGULFING.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled" style="font-size:small">Next</a>
-   }
+}

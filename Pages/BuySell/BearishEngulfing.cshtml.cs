@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace MarketAnalytics.Pages.BuySell
 {
-    public class BullishEngulfing : PageModel
+    public class BearishEngulfing : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
@@ -21,14 +21,16 @@ namespace MarketAnalytics.Pages.BuySell
         public string FromDtSort { get; set; }
         public string ToDtSort { get; set; }
         public string CurrentFilter { get; set; }
-        public string CurrentSort { get; set; }
         public int TrendSpan { get; set; }
         public int DaysBehind { get; set; }
-        public int SMAValue { get; set; }
+public int SMAValue { get; set; }
+        public string CurrentSort { get; set; }
+
         //public bool RefreshAllStocks { get; set; } = false;
         public int CurrentID { get; set; }
-        public PaginatedList<BULLISH_ENGULFING_STRATEGY> BULLISH_ENGULFING_STRATEGYies { get; set; } = default!;
-        public BullishEngulfing(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
+        public PaginatedList<BEARISH_ENGULFING> listBEARISH_ENGULFING { get; set; } = default!;
+
+        public BearishEngulfing(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
@@ -39,7 +41,7 @@ namespace MarketAnalytics.Pages.BuySell
             SMAValue = 30;
         }
 
-//        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
+        //public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate,
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? getQuote, bool? updateBuySell, int? symbolToUpdate,
             int? trendSpan, int? daysBehind, int? smaValue)
         {
@@ -50,10 +52,11 @@ namespace MarketAnalytics.Pages.BuySell
                                                               Value = a.StockMasterID.ToString(),
                                                               Text = a.Symbol
                                                           }).ToList();
-            SelectListItem selectAll = new SelectListItem("-- Select All --", "-99");
-            symbolList.Insert(0, selectAll);
 
-            if (_context.BULLISH_ENGULFING_STRATEGY != null)
+            SelectListItem selectAll = new SelectListItem("-- Select All --", "-99");
+            symbolList.Insert(0,selectAll);
+
+            if (_context.BEARISH_ENGULFING != null)
             {
                 CurrentSort = sortOrder;
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
@@ -69,7 +72,8 @@ namespace MarketAnalytics.Pages.BuySell
                 {
                     searchString = currentFilter;
                 }
-                if ((trendSpan != null) && (trendSpan > 0))
+
+                if((trendSpan!= null) && (trendSpan > 0))
                 {
                     TrendSpan = (int)trendSpan;
                 }
@@ -77,7 +81,7 @@ namespace MarketAnalytics.Pages.BuySell
                 {
                     TrendSpan = 10;
                 }
-                if ((daysBehind != null) && (daysBehind > 0))
+                if((daysBehind != null) && (daysBehind > 0))
                 {
                     DaysBehind = (int)daysBehind;
                 }
@@ -85,7 +89,7 @@ namespace MarketAnalytics.Pages.BuySell
                 {
                     DaysBehind = 180;
                 }
-                if ((smaValue != null) && (smaValue >= 0))
+                if((smaValue != null) && (smaValue >= 0))
                 {
                     SMAValue = (int)smaValue;
                 }
@@ -95,14 +99,14 @@ namespace MarketAnalytics.Pages.BuySell
                 }
 
                 //if (refreshAll == true)
-                if ((symbolToUpdate != null) && (symbolToUpdate == -99))
+                if((symbolToUpdate != null) &&  (symbolToUpdate == -99))
                 {
                     RefreshAllBuySellIndicators();
                     //RefreshAllStocks = false;
                     //refreshAll = false;
                 }
 
-                if ((id != null) || ((symbolToUpdate != null) && (symbolToUpdate != -99)))
+                if ( (id != null) || ((symbolToUpdate != null) && (symbolToUpdate != -99)))
                 {
                     if ((id == null) && (symbolToUpdate != null))
                     {
@@ -139,7 +143,7 @@ namespace MarketAnalytics.Pages.BuySell
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
+                            DbInitializer.GetBearishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -150,12 +154,12 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
+                IQueryable<BEARISH_ENGULFING> bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
                                                                               || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                                                                               && (s.StockMaster.Close <= s.BUY_PRICE));
                 currentSymbolList.Clear();
 
-                currentSymbolList = bullishengulfingCandleIQ //.Where(x => x.StockMaster.V200 == true)
+                currentSymbolList = bearishengulfingCandleIQ //.Where(x => x.StockMaster.V200 == true)
                                                              //.GroupBy(a => a.StockMaster.Symbol)
                                             .OrderBy(a => a.StockMasterID)
                                             .Distinct()
@@ -168,13 +172,13 @@ namespace MarketAnalytics.Pages.BuySell
                
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    bullishengulfingCandleIQ = bullishengulfingCandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
+                    bearishengulfingCandleIQ = bearishengulfingCandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
-                    if(bullishengulfingCandleIQ.Count() == 0)
+                    if(bearishengulfingCandleIQ.Count() == 0)
                     {
-                        //bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
+                        //bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
                         //                            || (s.StockMaster.V40N == true) || (s.StockMaster.V40 == true)));
-                        bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
+                        bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
                                                                               || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                                                                               && (s.StockMaster.Close <= s.BUY_PRICE));
                     }
@@ -187,38 +191,38 @@ namespace MarketAnalytics.Pages.BuySell
                 switch (sortOrder)
                 {
                     case "symbol_desc":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.StockMaster.Symbol);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderByDescending(s => s.StockMaster.Symbol);
                         break;
                     case "BUY_PRICE":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.BUY_PRICE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderBy(s => s.BUY_PRICE);
                         break;
                     case "buyprice_desc":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.BUY_PRICE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderByDescending(s => s.BUY_PRICE);
                         break;
                     case "SELL_PRICE":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.SELL_PRICE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderBy(s => s.SELL_PRICE);
                         break;
                     case "sellprice_desc":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.SELL_PRICE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderByDescending(s => s.SELL_PRICE);
                         break;
                     case "FROM_DT":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.BUY_CANDLE_DATE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderBy(s => s.BUY_CANDLE_DATE);
                         break;
                     case "fromdt_desc":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.BUY_CANDLE_DATE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderByDescending(s => s.BUY_CANDLE_DATE);
                         break;
                     case "TO_DT":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.SELL_CANDLE_DATE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderBy(s => s.SELL_CANDLE_DATE);
                         break;
                     case "todt_desc":
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderByDescending(s => s.SELL_CANDLE_DATE);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderByDescending(s => s.SELL_CANDLE_DATE);
                         break;
                     default:
-                        bullishengulfingCandleIQ = bullishengulfingCandleIQ.OrderBy(s => s.StockMaster.Symbol);
+                        bearishengulfingCandleIQ = bearishengulfingCandleIQ.OrderBy(s => s.StockMaster.Symbol);
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
-                BULLISH_ENGULFING_STRATEGYies = await PaginatedList<BULLISH_ENGULFING_STRATEGY>.CreateAsync(bullishengulfingCandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
+                listBEARISH_ENGULFING = await PaginatedList<BEARISH_ENGULFING>.CreateAsync(bearishengulfingCandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
 
@@ -229,7 +233,7 @@ namespace MarketAnalytics.Pages.BuySell
             {
                 foreach (var item in stockmasterIQ)
                 {
-                    DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), SMAValue, TrendSpan);
+                    DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
                 }
             }
             catch (Exception ex)
