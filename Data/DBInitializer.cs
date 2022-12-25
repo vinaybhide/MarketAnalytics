@@ -11,6 +11,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.ComponentModel;
 using SQLitePCL;
 using System.Net.NetworkInformation;
+using NuGet.Versioning;
+using MarketAnalytics.Pages.BuySell;
 
 namespace MarketAnalytics.Data
 {
@@ -195,10 +197,12 @@ namespace MarketAnalytics.Data
                         //currentPrice = stockpriceIQ.Where(s => s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper())
                         //                    && s.StockMaster.Exchange.ToUpper().Equals(exchange.ToUpper())
                         //                    && s.PriceDate.Equals(quoteDate[i]));
+                        //currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
+                        //                    (s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper()))
+                        //                    && (s.StockMaster.Exchange.ToUpper().Equals(exchange.ToUpper()))
+                        //                    && (s.PriceDate.Date.Equals(quoteDate[i].Date))));
                         currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
-                                            (s.StockMaster.Symbol.ToUpper().Equals(symbol.ToUpper()))
-                                            && (s.StockMaster.Exchange.ToUpper().Equals(exchange.ToUpper()))
-                                            && (s.PriceDate.Date.Equals(quoteDate[i].Date))));
+                                            (s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0)));
                         if (currentPrice.Count() <= 0)
                         {
                             //this is new price history record
@@ -357,11 +361,10 @@ namespace MarketAnalytics.Data
             }
             return breturn;
         }
-        public static void GetLifetimeHighLow(DBContext context, StockMaster stockMaster,
-                                            out double high, out double low)
+        public static void GetLifetimeHighLow(DBContext context, StockMaster stockMaster)
         {
-            high = -1;
-            low = -1;
+            double high = -1;
+            double low = -1;
             string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
             if (string.IsNullOrEmpty(lastPriceDate) == false)
             {
@@ -418,7 +421,7 @@ namespace MarketAnalytics.Data
 
         //public static void InitializeHistory(DBContext context, StockMaster stockMaster, string symbol, string compname, string exchange)
         public static void getRSIDataTableFromDaily(DBContext context, StockMaster stockMaster, string symbol, string exchange, int? stockMasterID, string compname,
-                                    string seriestype = "CLOSE", string time_interval = "1d", string fromDate = null,
+                                    DateTime fromDate, string seriestype = "CLOSE", string time_interval = "1d",
                                     string period = "14", bool stochRSI = false, bool refreshHistory = false)
         {
             //DataTable rsiDataTable = null;
@@ -430,41 +433,31 @@ namespace MarketAnalytics.Data
             StockPriceHistory currentHist = null, prevHist = null;
             try
             {
-                //if (refreshHistory)
-                //{
-                //    InitializeHistory(context, stockMaster, symbol, compname, exchange);
-                //}
                 string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMasterID);
                 if (string.IsNullOrEmpty(lastPriceDate) == false)
                 {
                     InitializeHistory(context, stockMaster, symbol, compname, exchange, lastPriceDate);
                 }
 
-                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-                //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-
-                //IQueryable<StockPriceHistory> rsiIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID));
 
                 IQueryable<StockPriceHistory> rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
-                                s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
-
-                //StockPriceHistory lastHistoryRec = symbolIQ.OrderBy(p => p.PriceDate).LastOrDefault();
-
-                //if (Convert.ToDateTime(lastHistoryRec.PriceDate).Date.CompareTo(DateTime.Today.Date) < 0)
-                //{
-                //    InitializeHistory(context, stockMaster, symbol, compname, exchange, lastHistoryRec.PriceDate.ToString("yyyy-MM-dd"));
-                //}
-
-                //stockpriceIQ = from s in context.StockPriceHistory select s;
-                ////List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-
-                //rsiIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID) &&
-                //                s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
-
-                //rsiList = (stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID))).ToList();
-                if ((rsiIQ != null) && (rsiIQ.Count() > 0))
+                                s.PriceDate.Date >= (fromDate.Date));
+                //if (rsiIQ.Select(s => (s.RSI_CLOSE > 0) || (s.RSI_HIGH > 0) || (s.RSI_LOW > 0) || (s.RSI_OPEN > 0)).Count() > 0)
+                if(rsiIQ.Select(s => (s.RSI_CLOSE > 0)).Count() != rsiIQ.Count())
                 {
-                    iPeriod = System.Convert.ToInt32(period);
+                    rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
+                                (s.PriceDate.Date >= (fromDate.Date)));
+                }
+                else
+                {
+                    rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
+                                                    (s.PriceDate.Date >= (fromDate.Date)) && (s.RSI_CLOSE == 0) );
+                    //(s.RSI_CLOSE == 0) && (s.RSI_HIGH == 0) && (s.RSI_LOW == 0) && (s.RSI_OPEN == 0));
+                }
+                iPeriod = System.Convert.ToInt32(period);
+
+                if ((rsiIQ != null) && ((rsiIQ.Count() - iPeriod) > 0))
+                {
                     if (stochRSI == false)
                     {
                         seriesNameList = new List<string> { seriestype };
@@ -479,8 +472,6 @@ namespace MarketAnalytics.Data
                         sumOfGain = sumOfLoss = 0.00;
                         for (int rownum = 1; rownum < rsiIQ.Count(); rownum++)
                         {
-
-
                             currentHist = rsiIQ.AsEnumerable().ElementAt(rownum);
                             prevHist = rsiIQ.AsEnumerable().ElementAt(rownum - 1);
 
@@ -649,7 +640,7 @@ namespace MarketAnalytics.Data
         //}
         public static void GetSMA_EMA_MACD_BBANDS_Table(DBContext context, StockMaster stockMaster, string symbol, string exchange,
                                     int? stockMasterID, string compname,
-                                    string seriestype = "CLOSE", string time_interval = "1d", string fromDate = null,
+                                    DateTime fromDate, string seriestype = "CLOSE", string time_interval = "1d",
                                     int small_fast_Period = 20, int mid_period = 50, int long_slow_Period = 200, bool emaRequired = false, bool macdRequired = false,
                                     //string fastperiod = "12", string slowperiod = "26", 
                                     int signalperiod = 9, bool bbandsRequired = false, int stddeviation = 2, bool refreshHistory = false)
@@ -676,40 +667,97 @@ namespace MarketAnalytics.Data
             bool bSellFlagSet = false;
             try
             {
-                //if (refreshHistory)
-                //{
-                //    InitializeHistory(context, stockMaster, symbol, compname, exchange);
-                //}
                 string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMasterID);
                 if (string.IsNullOrEmpty(lastPriceDate) == false)
                 {
                     InitializeHistory(context, stockMaster, symbol, compname, exchange, lastPriceDate);
                 }
 
-                //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-                //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
+                //bulk update columns
+                //db.tblTemp.Where(x => x.ProductID == parmProductID && x.IsActive == true).ToList().ForEach(x =>
+                //{
+                //    x.IsActive = false; x.UpdatedTimeStamp = DateTime.Now;
+                //});
+                //db.SaveChanges();
+
+                //context.StockPriceHistory
+                //    .Where(s => (s.StockMasterID == stockMasterID))
+                //    .ToList()
+                //    .ForEach(s =>
+                //    { s.BUY_SMA_STRATEGY = 0; s.SELL_SMA_STRATEGY = 0; s.BULLISH_ENGULFING = false; 
+                //        s.LOWER_THAN_SMA_SMALL = false; s.SMA_LONG = 0; s.SMA_SMALL = 0; s.SMA_MID= 0;
+                //    });
+
+                //context.SaveChanges();
 
                 IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
-                                s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
+                                (s.PriceDate.Date >= (fromDate.Date)));
 
-
-
-                ////find last date and if its not TODAY then refreshHistory
-                //StockPriceHistory lastHistoryRec = symbolIQ.OrderBy(p => p.PriceDate).LastOrDefault();
-
-                //if (Convert.ToDateTime(lastHistoryRec.PriceDate).Date.CompareTo(DateTime.Today.Date) < 0)
-                //{
-                //    InitializeHistory(context, stockMaster, symbol, compname, exchange, lastHistoryRec.PriceDate.ToString("yyyy-MM-dd"));
-                //}
-
-                //stockpriceIQ = from s in context.StockPriceHistory select s;
-                ////List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-
-                //symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMasterID) &&
-                //                s.PriceDate.Date >= (Convert.ToDateTime(fromDate).Date));
+                //if(symbolIQ.Select(s => (s.SMA_SMALL > 0) || (s.SMA_MID > 0) || (s.SMA_LONG > 0)).Count() > 0)
+                if (symbolIQ.Select(s => (s.SMA_SMALL > 0)).Count() != symbolIQ.Count())
+                {
+                    //we need to reset existing sma values from earlier operation
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
+                                (s.PriceDate.Date >= (fromDate.Date)));
+                }
+                else
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
+                                                    (s.PriceDate.Date >= (fromDate.Date)) && (s.SMA_SMALL == 0));
+                                                    //(s.SMA_SMALL == 0) && (s.SMA_MID == 0) && (s.SMA_LONG == 0));
+                }
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
+                    StockPriceHistory firstRec = context.StockPriceHistory.First();
+                    StockPriceHistory seqFirstRec = symbolIQ.First();
+                    StockPriceHistory prevRec = null;
+
+                    if (firstRec.PriceDate.CompareTo(seqFirstRec.PriceDate) < 0)
+                    {
+                        prevRec = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) && (s.PriceDate.Date < seqFirstRec.PriceDate.Date))
+                                    .OrderBy(s => s.PriceDate).LastOrDefault();
+                        if (prevRec != null)
+                        {
+                            if (small_fast_Period > 0)
+                            {
+                                if(prevRec.SMA_SMALL == 0)
+                                {
+                                    sumSmall = (double)prevRec.Close * small_fast_Period;
+                                }
+                                else
+                                {
+                                    sumSmall = (double)prevRec.SMA_SMALL * small_fast_Period;
+                                }
+                                valuesSmall[indexSmall] = prevRec.Close;
+                            }
+                            if (mid_period > 0)
+                            {
+                                if(prevRec.SMA_MID == 0)
+                                {
+                                    sumMid = (double)prevRec.Close * mid_period;
+                                }
+                                else
+                                {
+                                    sumMid = (double)prevRec.SMA_MID * mid_period;
+                                }
+                                valuesMid[indexMid] = prevRec.Close;
+                            }
+                            if (long_slow_Period > 0)
+                            {
+                                if(prevRec.SMA_LONG == 0)
+                                {
+                                    sumLong = (double)prevRec.Close * long_slow_Period;
+                                }
+                                else
+                                {
+                                    sumLong = (double)prevRec.SMA_LONG * long_slow_Period;
+                                }
+                                valuesLong[indexLong] = prevRec.Close;
+                            }
+                        }
+                    }
+
                     for (int rownum = 0; rownum < symbolIQ.Count(); rownum++)
                     {
                         currentHist = symbolIQ.AsEnumerable().ElementAt(rownum);
@@ -723,7 +771,7 @@ namespace MarketAnalytics.Data
                             prevHist = null;
                         }
 
-                        currentClosePrice = System.Convert.ToDouble(currentHist.Close);
+                        currentClosePrice = currentHist.Close;
                         if (small_fast_Period > 0)
                         {    //subtract the oldest CLOSE PRICE from the previous SUM and then add the current CLOSE PRICE
                             sumSmall = sumSmall - valuesSmall[indexSmall] + currentClosePrice;
@@ -795,9 +843,12 @@ namespace MarketAnalytics.Data
                             int? stockMasterID, string compname, int periodsmall, int periodmid, int periodlong)
         {
             //first get the SMA for three periods
-            GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodsmall, 0);
-            GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodmid, 1);
-            GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodlong, 2);
+            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(context, stockMaster, stockMaster.Symbol, stockMaster.Exchange, stockMasterID,
+                        stockMaster.CompName, fromDate: DateTime.Today.Date);
+
+            //GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodsmall, 0);
+            //GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodmid, 1);
+            //GetSMA(context, stockMaster, symbol, exchange, stockMasterID, compname, periodlong, 2);
 
             //IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
             IQueryable<StockMaster> symbolmasterIQ = context.StockMaster.Where(s => (s.StockMasterID == stockMasterID));
@@ -811,8 +862,9 @@ namespace MarketAnalytics.Data
             StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
 
             //now set BUY FLGA if the current close < smallsma < midsma < longsma
-            currentHist.BUY_SMA_STRATEGY = 0;
-            currentHist.SELL_SMA_STRATEGY = 0;
+            
+            //currentHist.BUY_SMA_STRATEGY = 0;
+            //currentHist.SELL_SMA_STRATEGY = 0;
             currentMaster.SMA_SLOW = (double)currentHist.SMA_LONG;
             currentMaster.SMA_MID = (double)currentHist.SMA_MID;
             currentMaster.SMA_FAST = (double)currentHist.SMA_SMALL;
@@ -822,7 +874,7 @@ namespace MarketAnalytics.Data
             if ((currentHist.Close < currentHist.SMA_SMALL) && (currentHist.SMA_SMALL < currentHist.SMA_MID) &&
                 (currentHist.SMA_MID < currentHist.SMA_LONG))
             {
-                currentHist.BUY_SMA_STRATEGY = currentHist.Close;
+                //currentHist.BUY_SMA_STRATEGY = currentHist.Close;
                 currentMaster.SMA_SLOW = (double)currentHist.SMA_LONG;
                 currentMaster.SMA_MID = (double)currentHist.SMA_MID;
                 currentMaster.SMA_FAST = (double)currentHist.SMA_SMALL;
@@ -832,14 +884,14 @@ namespace MarketAnalytics.Data
             else if ((currentHist.Close > currentHist.SMA_SMALL) && (currentHist.SMA_SMALL > currentHist.SMA_MID) &&
                 (currentHist.SMA_MID > currentHist.SMA_LONG))
             {
-                currentHist.SELL_SMA_STRATEGY = currentHist.Close;
+                //currentHist.SELL_SMA_STRATEGY = currentHist.Close;
                 currentMaster.SMA_SLOW = (double)currentHist.SMA_LONG;
                 currentMaster.SMA_MID = (double)currentHist.SMA_MID;
                 currentMaster.SMA_FAST = (double)currentHist.SMA_SMALL;
                 currentMaster.SMA_SELL_SIGNAL = true;
 
             }
-            context.StockPriceHistory.Update(currentHist);
+            //context.StockPriceHistory.Update(currentHist);
             context.StockMaster.Update(currentMaster);
 
             context.SaveChanges();
@@ -1007,15 +1059,25 @@ namespace MarketAnalytics.Data
                 //IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
                 IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingIQ = context.BULLISH_ENGULFING_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
-
+                DateTime lastBuyDate = DateTime.MinValue;
                 if (bullishengulfingIQ.Count() > 0)
                 {
-                    context.BULLISH_ENGULFING_STRATEGY.RemoveRange(bullishengulfingIQ.AsEnumerable());
-                    context.SaveChanges();
+                    //commenting delete rows as we will only check history post buy date
+                    //context.BULLISH_ENGULFING_STRATEGY.RemoveRange(bullishengulfingIQ.AsEnumerable());
+                    //context.SaveChanges();
+                    lastBuyDate = bullishengulfingIQ.OrderBy(s => s.BUY_CANDLE_DATE).Last().BUY_CANDLE_DATE;
                 }
 
-                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+                IQueryable<StockPriceHistory> symbolIQ = null;
 
+                if(lastBuyDate == DateTime.MinValue)
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+                }
+                else
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= lastBuyDate.Date));
+                }
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
                     //for (int rownum = symbolIQ.Count() - period; rownum < symbolIQ.Count(); rownum++)
@@ -1030,6 +1092,7 @@ namespace MarketAnalytics.Data
                         else
                         {
                             prevHist = null;
+                            sumSmall = (double)currentHist.Close * period;
                         }
 
                         //currentHist.Close = System.Convert.ToDouble(currentHist.Close);
@@ -1043,14 +1106,14 @@ namespace MarketAnalytics.Data
                                 smaValue = Math.Round((sumSmall / period), 2);
                                 indexSmall = (indexSmall + 1) % period;
                             }
-                            if((period == 0) || ((currentHist.Open < smaValue) && (currentHist.Close < smaValue)))
+                            if ((period == 0) || ((currentHist.Open < smaValue) && (currentHist.Close < smaValue)))
                             {
                                 //means current candle is below SMA_SMALL
                                 //currentHist.LOWER_THAN_SMA_SMALL = 1;
                                 //recSMA.LOWER_THAN_SMA_SMALL = true;
 
-                                if ((prevHist != null) && (prevHist.Open < smaValue) && (prevHist.Close < smaValue) && (prevHist.Close < prevHist.Open) &&
-                                    (prevHist.Close > currentHist.Open) && (prevHist.Close < currentHist.Close) && (prevHist.Open < currentHist.Close) &&
+                                if ((prevHist != null) && (prevHist.Close < prevHist.Open) && (currentHist.Close > currentHist.Open) &&
+                                    (prevHist.Close > currentHist.Open) &&  (prevHist.Close < currentHist.Close) && (prevHist.Open < currentHist.Close) &&
                                     (prevHist.Open > currentHist.Open))
                                 {
                                     //means previous day candle below SMA_SMALL and stock closed below open indicating a red candle
@@ -1059,7 +1122,7 @@ namespace MarketAnalytics.Data
                                     //now backtrack & find the buy price
 
                                     if (FindIfDownTrendExist(context, stockMaster,
-                                                        (rownum - 1), fromDate, out sellPrice, out foundCounter, trendSpan: trendSpan))
+                                                        (rownum - 1), (lastBuyDate == DateTime.MinValue)? fromDate : lastBuyDate, out sellPrice, out foundCounter, trendSpan: trendSpan))
                                     {
                                         var recEngulfing = new BULLISH_ENGULFING_STRATEGY();
 
@@ -1123,12 +1186,25 @@ namespace MarketAnalytics.Data
                 //IQueryable<StockPriceHistory> symbolIQ = stockpriceIQ.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
                 IQueryable<BEARISH_ENGULFING> bearishengulfingIQ = context.BEARISH_ENGULFING.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+                DateTime lastBuyDate = DateTime.MinValue;
                 if (bearishengulfingIQ.Count() > 0)
                 {
-                    context.BEARISH_ENGULFING.RemoveRange(bearishengulfingIQ.AsEnumerable());
-                    context.SaveChanges();
+                    //commenting delete rows as we will only check history post buy date
+                    //context.BEARISH_ENGULFING.RemoveRange(bearishengulfingIQ.AsEnumerable());
+                    //context.SaveChanges();
+                    lastBuyDate = bearishengulfingIQ.OrderBy(s => s.BUY_CANDLE_DATE).Last().BUY_CANDLE_DATE;
+
                 }
-                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+                IQueryable<StockPriceHistory> symbolIQ = null;
+
+                if (lastBuyDate == DateTime.MinValue)
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
+                }
+                else
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= lastBuyDate.Date));
+                }
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
@@ -1144,6 +1220,8 @@ namespace MarketAnalytics.Data
                         else
                         {
                             prevHist = null;
+                            sumSmall = (double)currentHist.Close * period;
+
                         }
                         if (period >= 0)
                         {
@@ -1167,7 +1245,7 @@ namespace MarketAnalytics.Data
                                     //now backtrack & find the buy price
 
                                     if (FindIfUpTrendExist(context, stockMaster,
-                                                        (rownum + 1), fromDate, out buyPrice, out foundCounter, trendSpan: trendSpan))
+                                                        (rownum + 1), (lastBuyDate == DateTime.MinValue)? fromDate: lastBuyDate, out buyPrice, out foundCounter, trendSpan: trendSpan))
                                     {
                                         var recEngulfing = new BEARISH_ENGULFING();
 
@@ -1568,25 +1646,45 @@ namespace MarketAnalytics.Data
 
             try
             {
-                //IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
-                IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = context.V20_CANDLE_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
-
-                if (stockCandleIQ.Count() > 0)
-                {
-                    context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
-                    context.SaveChanges();
-                }
-                //we need to make sure that price history is upto date till yesterday
                 string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
                 if (string.IsNullOrEmpty(lastPriceDate) == false)
                 {
                     InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
                 }
 
+                //IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
+                IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = context.V20_CANDLE_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+                
+                DateTime lastBuyDate = DateTime.MinValue;
+
+                if (stockCandleIQ.Count() > 0)
+                {
+                    //context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
+                    //context.SaveChanges();
+                    lastBuyDate = stockCandleIQ.OrderBy(s => s.TO_DATE).Last().TO_DATE;
+                    if(lastBuyDate.Date.CompareTo(DateTime.Today.Date.AddDays(-365).Date) <= 0)
+                    {
+                        //that means last buy date is beyond one year
+                        lastBuyDate = DateTime.MinValue;
+                    }
+                }
+                //we need to make sure that price history is upto date till yesterday
+
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
 
-                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
+                IQueryable<StockPriceHistory> symbolIQ = null;
+
+                if (lastBuyDate == DateTime.MinValue)
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
                                                                 (s.PriceDate >= DateTime.Today.AddDays(-365))));
+                }
+                else
+                {
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && 
+                                                                (s.PriceDate.Date >= lastBuyDate.Date));
+                }
+
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
                 {
