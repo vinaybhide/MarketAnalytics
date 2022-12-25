@@ -339,7 +339,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 if(((refreshAll != null) && (refreshAll == true)) || ((lifetimeHighLow != null) && (lifetimeHighLow == true)))
                 {
-                    DbInitializer.GetLifetimeHighLow(_context, selectedRecord.stockMaster, out lifetimehigh, out lifetimelow);
+                    DbInitializer.GetLifetimeHighLow(_context, selectedRecord.stockMaster);
                 }
             }
         }
