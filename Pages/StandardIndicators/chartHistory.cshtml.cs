@@ -22,6 +22,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
         public DateTime FromDate { get; set; }
         public string Symbol { get; set; }
         public string CompanyName { get; set; }
+        public string ChartContent { get; set; }
         public chartHistory(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
@@ -82,12 +83,14 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 {
                     FromDate = DateTime.MinValue;
                 }
+                ChartContent = "Stock history - ";
                 if (onlyHistory == 1)
                 {
                     listBuyDates = _context.BEARISH_ENGULFING.Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.BUY_CANDLE_DATE.Year, a.BUY_CANDLE_DATE.Month, a.BUY_CANDLE_DATE.Day)).ToList();
                     listSellDates = _context.BEARISH_ENGULFING.Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.SELL_CANDLE_DATE.Year, a.SELL_CANDLE_DATE.Month, a.SELL_CANDLE_DATE.Day)).ToList();
+                    ChartContent = "Bearish Engulfing Strategy: ";
                 }
                 else if (onlyHistory == 2)
                 {
@@ -95,6 +98,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
                                                                 .Select(a => new DateTime(a.BUY_CANDLE_DATE.Year, a.BUY_CANDLE_DATE.Month, a.BUY_CANDLE_DATE.Day)).ToList();
                     listSellDates = _context.BULLISH_ENGULFING_STRATEGY.Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.SELL_CANDLE_DATE.Year, a.SELL_CANDLE_DATE.Month, a.SELL_CANDLE_DATE.Day)).ToList();
+                    ChartContent = "Bullish Engulfing Strategy: ";
                 }
                 else if (onlyHistory == 3)
                 {
@@ -102,6 +106,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
                                                                 .Select(a => new DateTime(a.FROM_DATE.Year, a.FROM_DATE.Month, a.FROM_DATE.Day)).ToList();
                     listSellDates = _context.V20_CANDLE_STRATEGY.Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.TO_DATE.Year, a.TO_DATE.Month, a.TO_DATE.Day)).ToList();
+                    ChartContent = "V20 Strategy: ";
                 }
 
                 if (onlyHistory == 0)

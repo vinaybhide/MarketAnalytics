@@ -1,5 +1,5 @@
 ﻿@page
-@model MarketAnalytics.Pages.StandardIndicators.chartSMAModel
+@model MarketAnalytics.Pages.StandardIndicators.chartSMARSIModel
 @{
     ViewData["Title"] = "Daily Price Vs SMA";
     string chartTitleLine = "Line chart";
@@ -12,33 +12,33 @@
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
     google.charts.load('current', { 'packages': ['line', 'corechart', 'controls', 'annotationchart'] });
-    google.charts.setOnLoadCallback(drawBuySellSMA);
+    google.charts.setOnLoadCallback(drawBuySellSMARSI);
 
     let listenerHandler = null;
-    function drawBuySellSMA() {
+    function drawBuySellSMARSI() {
         var dashboard = new google.visualization.Dashboard(document.getElementById('historychart_div'));
         var dataTable = google.visualization.arrayToDataTable([
 
-            ['Date', 'Low', 'Open', 'Close', 'High', 'SMA_SMALL', 'SMA_MID', 'SMA_LONG', 'BuySell'],
+            ['Date', 'Low', 'Open', 'Close', 'High', 'SMA_SMALL', 'SMA_MID', 'SMA_LONG', 'RSI', 'BuySell'],
 
     @foreach (var item in Model.listSMA)
     {
         if (item.BUY_SMA_STRATEGY > 0)
         {
-            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, 'BUY'], </text>
+            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, @item.RSI_CLOSE, 'BUY'], </text>
         }
         else if (item.SELL_SMA_STRATEGY > 0)
         {
-            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, 'SELL'], </text>
+            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, @item.RSI_CLOSE, 'SELL'], </text>
         }
         else
         {
-            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, null], </text>
+            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, @item.RSI_CLOSE, null], </text>
         }
     }
-            ]);
+                    ]);
 
-        dataTable.setColumnProperty(8, 'role', 'tooltip');
+        dataTable.setColumnProperty(9, 'role', 'tooltip');
 
         var dateRangeSlider = new google.visualization.ControlWrapper({
             //'controlType': 'ChartRangeFilter',
@@ -91,6 +91,11 @@
                     3: {
                         'type': 'line', 'view': { 'columns': [0, 7] }, 'lineWidth': 1, 'pointSize': 1, 'color': '#000000'
                     }
+                    //,
+                    //4: {
+                    //    'type': 'line', 'view': { 'columns': [0, 8] }, 'lineWidth': 1, 'pointSize': 1
+                    //}
+
                 },
                 'tooltip': {
                     'textStyle': {
@@ -100,9 +105,49 @@
                 }
             }
         });
+
+        var lineChart = new google.visualization.ChartWrapper({
+            'chartType': 'LineChart',
+            'containerId': 'dashboard_line_chart_div',
+            'options': {
+                'curveType': 'function',
+                'pointsVisible': true,
+                'lineWidth': 3,
+                'legend': 'none',
+                'hAxis': {
+                    'title': 'Date',
+                    'format': 'd-MMM-y',
+                    'textStyle': {
+                        'fontSize': 10
+                    }
+                },
+                'vAxis': {
+                    'title': 'RSI',
+                    'textStyle': {
+                        'fontSize': 10
+                    }
+                },
+                'width': '100%',
+                'height': '100%',
+                'chartArea': { width: '85%', height: '75%' },
+                'tooltip': {
+                    'textStyle': {
+                        'fontSize': 10,
+                        'color': 'red'
+                    }
+                }
+            }
+        });
+
         //do drawing here
         //dashboard.bind(dateRangeSlider, [candleChart, smaFastChartLine, smaMidChartLine, smaSlowChartLine]);
-        dashboard.bind(dateRangeSlider, candleChart);
+        candleChart.setView({
+            columns:[0,1,2,3,4,5,6,7]
+        });
+        lineChart.setView({
+            columns: [0, 8]
+        });
+        dashboard.bind(dateRangeSlider, [candleChart, lineChart]);
         //dashboard.bind(dateRangeSlider, candleChart);
         google.visualization.events.addListener(candleChart, 'ready', onReady);
         dashboard.draw(dataTable);
@@ -128,7 +173,7 @@
                 alert("Date: " + date.toDateString() + "\n low: " + low + "\n open: " + open + "\n close: " + close + "\n high: " + high);
             }
         }
-        
+
     }
     function drawAdditionalHAxis(chart, dataTable) {
         var layout = chart.getChartLayoutInterface();
@@ -232,8 +277,8 @@
 
 </script>
 
-<form asp-page="./chartSMA" method="get">
-    <h4>History Chart - @Model.StockMasterRec.CompName (@Model.StockMasterRec.Symbol)</h4>
+<form asp-page="./chartSMARSI" method="get">
+    <h4>History Vs SMA Vs RSI - @Model.StockMasterRec.CompName (@Model.StockMasterRec.Symbol)</h4>
     <div class="form-actions no-color" style="font-size:small">
         <p>
             <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
@@ -251,12 +296,16 @@
             SMA Slow Period:
             <input id="smaSlowPeriod" type="text" name="inputSlowPeriod" value="@Model.SMASlowPeriod" />
 
+            RSI Period:
+            <input id="rsiPeriod" type="text" name="inputRsiPeriod" value="@Model.RSIPeriod" />
+
             <input type="submit" value="Get SMA" class="btn btn-primary" style="font-size:small" />
         </p>
     </div>
     <div id="historychart_div" style="border: 1px solid #ccc">
         <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
         <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
+        <div id="dashboard_line_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
     </div>
 </form>
 
