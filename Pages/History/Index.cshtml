@@ -24,54 +24,81 @@
                             </select>
 
                             <input type="submit" value="Select symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @if (Model.CurrentID > 0)
+                            {
+                                <a asp-page="./Index" asp-route-refreshAll="true" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">Refresh Current</a>
+                            }
                         </p>
                     </div>
                 </form>
             </th>
-            <th>
-                <form asp-page="./Index" method="get" style="font-size:small">
-                    <div class="form-actions no-color">
+            @if (Model.CurrentID > 0)
+            {
+                <th>
+                    <form asp-page="./Index" method="get" style="font-size:small">
+                        <div class="form-actions no-color">
+                            <p>
+                                Find price from date:
+                                <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
+                                <input id="searchDate" type="date" name="SearchString" value="@Model.CurrentFilter" />
+                                <input type="submit" value="Search" class="btn btn-primary" style="font-size:small" /> |
+                                <a asp-page="./Index" asp-route-id="@Model.CurrentID">Back to full List</a>
+                            </p>
+                        </div>
+                    </form>
+                </th>
+                <th>
+                    <div class="form-actions no-color" style="font-size:small">
                         <p>
-                            Find price from date:
-                            <input id="searchid" type="hidden" name="id" value="@Model.CurrentID" />
-                            <input id="searchDate" type="date" name="SearchString" value="@Model.CurrentFilter" />
-                            <input type="submit" value="Search" class="btn btn-primary" style="font-size:small" /> |
-                            <a asp-page="./Index" asp-route-id="@Model.CurrentID">Back to full List</a>
-                        </p>
-                    </div>
-                </form>
-            </th>
-            <th>
-                <div class="form-actions no-color" style="font-size:small">
-                    <p>
-                        <a asp-page="./Index" asp-route-refreshAll="true" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">Refresh All</a>
-                    </p>
-                </div>
-            </th>
-            <th>
-                <div class="form-actions no-color" style="font-size:small">
-                    <p>
-                        <a asp-page="/StandardIndicators/chartRSI" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">RSI</a>
-                    </p>
-                </div>
-            </th>
-            <th>
-                <div class="form-actions no-color" style="font-size:small">
-                    <p>
-                        <a asp-page="/StandardIndicators/chartSMA" asp-route-id="@Model.CurrentID" asp-route-fromdate="@Model.CurrentFilter" class="btn btn-sm btn-primary" style="font-size:small">SMA</a>
-                    </p>
-                </div>
-            </th>
-            <th>
-                <div class="form-actions no-color" style="font-size:small">
-                    <p>
-                        @*<a asp-page="./historyChart" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">>Show chart</a>*@
-                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@Model.CurrentID"
+                            <a target="_blank" asp-page="/StandardIndicators/chartSMARSI" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">RSI</a>
+                            <a target="_blank" asp-page="/StandardIndicators/chartSMA" asp-route-id="@Model.CurrentID" asp-route-fromdate="@Model.CurrentFilter" class="btn btn-sm btn-primary" style="font-size:small">SMA</a>
+                            <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@Model.CurrentID"
                            asp-route-onlyhistory=0 asp-route-history=true
                            class="btn btn-sm btn-primary" style="font-size:small">Chart</a>
-                    </p>
-                </div>
+                        </p>
+                    </div>
+                </th>
+            }
+            @*<th>
+            <div class="form-actions no-color" style="font-size:small">
+            <p>
+            <a asp-page="./Index" asp-route-refreshAll="true" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">Refresh Current</a>
+            </p>
+            </div>
+            </th>*@
+        </tr>
+        <tr>
+            <th>
+                <form asp-page="./Index" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <select name="id" asp-items="Model.groupList" style="font-size:small">
+                                <option value="">Select Group</option>
+                            </select>
+
+                            <input type="submit" value="Refresh Group" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
             </th>
+
+            @*<th>
+            <div class="form-actions no-color" style="font-size:small">
+            <p>
+            <a target="_blank" asp-page="/StandardIndicators/chartSMA" asp-route-id="@Model.CurrentID" asp-route-fromdate="@Model.CurrentFilter" class="btn btn-sm btn-primary" style="font-size:small">SMA</a>
+            </p>
+            </div>
+            </th>
+            <th>
+            <div class="form-actions no-color" style="font-size:small">
+            <p>
+            @*<a asp-page="./historyChart" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">>Show chart</a>*@
+            @*<a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@Model.CurrentID"
+            asp-route-onlyhistory=0 asp-route-history=true
+            class="btn btn-sm btn-primary" style="font-size:small">Chart</a>
+            </p>
+            </div>
+            </th>*@
         </tr>
     </thead>
 </table>
@@ -120,7 +147,7 @@
                 @Html.DisplayNameFor(model => model.StockPriceHistory[0].PrevClose)
             </th>
             @*<th>
-                @Html.DisplayNameFor(model => model.StockPriceHistory[0].StockMaster)
+            @Html.DisplayNameFor(model => model.StockPriceHistory[0].StockMaster)
             </th>*@
             @*<th></th>*@
         </tr>
@@ -159,13 +186,13 @@
                         @Html.DisplayFor(modelItem => item.PrevClose)
                     </td>
                     @*<td>
-                        @Html.DisplayFor(modelItem => item.StockMaster.CompName)
-                    </td>*@
+            @Html.DisplayFor(modelItem => item.StockMaster.CompName)
+            </td>*@
                     @*<td>
-                        <a asp-page="./Edit" asp-route-id="@item.StockPriceHistoryID" asp-route-pageIndex="@Model.StockPriceHistory.PageIndex" asp-route-id="@Model.CurrentID">Edit</a> |
-                        <a asp-page="./Details" asp-route-id="@item.StockPriceHistoryID" asp-route-id="@Model.CurrentID">Details</a> |
-                        <a asp-page="./Delete" asp-route-id="@item.StockPriceHistoryID" asp-route-id="@Model.CurrentID">Delete</a> |
-                    </td>*@
+            <a asp-page="./Edit" asp-route-id="@item.StockPriceHistoryID" asp-route-pageIndex="@Model.StockPriceHistory.PageIndex" asp-route-id="@Model.CurrentID">Edit</a> |
+            <a asp-page="./Details" asp-route-id="@item.StockPriceHistoryID" asp-route-id="@Model.CurrentID">Details</a> |
+            <a asp-page="./Delete" asp-route-id="@item.StockPriceHistoryID" asp-route-id="@Model.CurrentID">Delete</a> |
+            </td>*@
                 </tr>
             }
         }
@@ -174,8 +201,8 @@
 @if (Model.StockPriceHistory != null)
 {
     @*@{*@
-        var prevDisabled = !Model.StockPriceHistory.HasPreviousPage ? "disabled" : "";
-        var nextDisabled = !Model.StockPriceHistory.HasNextPage ? "disabled" : "";
+    var prevDisabled = !Model.StockPriceHistory.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.StockPriceHistory.HasNextPage ? "disabled" : "";
     @*}*@
     <a asp-page="./Index" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockPriceHistory.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" asp-route-id="@Model.CurrentID" class="btn btn-primary @prevDisabled" style="font-size:small">Previous</a>
