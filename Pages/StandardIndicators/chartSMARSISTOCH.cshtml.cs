@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MarketAnalytics.Pages.StandardIndicators
 {
-    public class chartSMAModel : PageModel
+    public class chartSMARSISTOCHModel : PageModel
     {
         public List<StockPriceHistory> listSMA = new List<StockPriceHistory>();
         public List<StockPriceHistory> listBuy = new List<StockPriceHistory>();
@@ -24,9 +24,12 @@ namespace MarketAnalytics.Pages.StandardIndicators
         public string SMAFastPeriod { get; set; } = default(string);
         public string SMAMidPeriod { get; set; } = default(string);
         public string SMASlowPeriod { get; set; } = default(string);
+        public string RSIPeriod { get; set; } = default(string);
+        public string FastK { get; set; } = default(string);
+        public string SlowD { get; set; } = default(string);
         public StockMaster StockMasterRec { get; set; }
 
-        public chartSMAModel(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
+        public chartSMARSISTOCHModel(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
@@ -34,11 +37,15 @@ namespace MarketAnalytics.Pages.StandardIndicators
             SMAFastPeriod = "20";
             SMAMidPeriod = "50";
             SMASlowPeriod = "200";
+            RSIPeriod = "14";
+            FastK = "20";
+            SlowD = "20";
+
             symbolList = new List<SelectListItem>();
         }
 
-        public async Task OnGetAsync(int? id, string fromDate, string inputFastPeriod, string inputMidPeriod, 
-            string inputSlowPeriod, int? symbolToUpdate)
+        public async Task OnGetAsync(int? id, string fromDate, string inputFastPeriod, string inputMidPeriod,
+            string inputSlowPeriod, string inputRsiPeriod, string inputFastK, string inputSlowD, int? symbolToUpdate)
         {
             listSMA.Clear();
             symbolList.Clear();
@@ -59,7 +66,8 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     {
                         id = symbolToUpdate;
                     }
-                    //else if ((id != null) && (symbolToUpdate == null))
+
+                    //if ((id != null) && (symbolToUpdate == null))
                     //{
                     if (symbolList.Exists(a => (a.Value.Equals(id.ToString()) == true)))
                     {
@@ -110,12 +118,41 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     {
                         SMASlowPeriod = inputSlowPeriod;
                     }
-                    //if ((CurrentID != null) && (string.IsNullOrEmpty(fromDate) == false))
+
+                    if (string.IsNullOrEmpty(inputRsiPeriod))
+                    {
+                        RSIPeriod = "14";
+                    }
+                    else
+                    {
+                        RSIPeriod = inputRsiPeriod;
+                    }
+
+                    if (string.IsNullOrEmpty(inputFastK))
+                    {
+                        FastK = "20";
+                    }
+                    else
+                    {
+                        FastK = inputFastK;
+                    }
+                    if (string.IsNullOrEmpty(inputSlowD))
+                    {
+                        SlowD = "20";
+                    }
+                    else
+                    {
+                        SlowD = inputSlowD;
+                    }
+                    //if ((CurrentID != null) && (string.IsNullOrEmpty(FromDate) == false))
                     //{
-                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID,
+                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID,
                                     StockMasterRec.CompName, FromDate, small_fast_Period: int.Parse(SMAFastPeriod),
                                     mid_period: int.Parse(SMAMidPeriod), long_slow_Period: int.Parse(SMASlowPeriod), refreshHistory: false);
-                        listSMA = ChartData(CurrentID, FromDate);
+                    DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID,
+                                                            StockMasterRec.CompName, FromDate, period: RSIPeriod);
+                    DbInitializer.getStochasticDataTableFromDaily(_context, StockMasterRec, FromDate, fastkperiod: FastK, slowdperiod: SlowD);
+                    listSMA = ChartData(CurrentID, FromDate);
                     //}
                 }
             }
