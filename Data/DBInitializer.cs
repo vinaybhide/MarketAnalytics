@@ -443,7 +443,8 @@ namespace MarketAnalytics.Data
                 IQueryable<StockPriceHistory> rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
                                 s.PriceDate.Date >= (fromDate.Date));
                 //if (rsiIQ.Select(s => (s.RSI_CLOSE > 0) || (s.RSI_HIGH > 0) || (s.RSI_LOW > 0) || (s.RSI_OPEN > 0)).Count() > 0)
-                if(rsiIQ.Select(s => (s.RSI_CLOSE > 0)).Count() != rsiIQ.Count())
+
+                if (rsiIQ.Select(s => (s.RSI_CLOSE > 0)).Count() != rsiIQ.Count())
                 {
                     rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
                                 (s.PriceDate.Date >= (fromDate.Date)));
@@ -451,7 +452,7 @@ namespace MarketAnalytics.Data
                 else
                 {
                     rsiIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
-                                                    (s.PriceDate.Date >= (fromDate.Date)) && (s.RSI_CLOSE == 0) );
+                                                    (s.PriceDate.Date >= (fromDate.Date)) && (s.RSI_CLOSE == 0));
                     //(s.RSI_CLOSE == 0) && (s.RSI_HIGH == 0) && (s.RSI_LOW == 0) && (s.RSI_OPEN == 0));
                 }
                 iPeriod = System.Convert.ToInt32(period);
@@ -554,12 +555,105 @@ namespace MarketAnalytics.Data
                     context.SaveChanges();
                 }
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
-                Console.WriteLine("getRSIDataTableFromDaily exception: " + ex.Message);
+                //Console.WriteLine("getRSIDataTableFromDaily exception: " + ex.Message);
             }
         }
 
+        public static void getStochasticDataTableFromDaily(DBContext context, StockMaster stockMaster, DateTime fromDate,
+            string seriestype = "CLOSE", string time_interval = "1d", string fastkperiod = "20", string slowdperiod = "20")
+        {
+            int iFastKPeriod, iSlowDPeriod;
+            int startFastK, startSlowD;
+            double fastK = 0.00, slowD = 0.00, highestHigh = 0.00, lowestLow = 0.00;
+            DateTime dateCurrentRow = DateTime.Today;
+            List<double> listHigh = new List<double>();
+            List<double> listClose = new List<double>();
+            List<double> listLow = new List<double>();
+            List<double> listHighestHigh = new List<double>();
+            List<double> listLowestLow = new List<double>();
+            List<double> listSlowK = new List<double>();
+
+            StockPriceHistory currentHist = null;
+            try
+            {
+                string lastPriceDate = IsHistoryUpdated(context, stockMaster, stockMaster.StockMasterID);
+                if (string.IsNullOrEmpty(lastPriceDate) == false)
+                {
+                    InitializeHistory(context, stockMaster, stockMaster.Symbol, stockMaster.CompName, stockMaster.Exchange, lastPriceDate);
+                }
+
+                iFastKPeriod = System.Convert.ToInt32(fastkperiod);
+                iSlowDPeriod = System.Convert.ToInt32(slowdperiod);
+                startFastK = 0; startSlowD = 0;
+
+                IQueryable<StockPriceHistory> stochIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) &&
+                                                                s.PriceDate.Date >= (fromDate.Date));
+                int countFastK = stochIQ.Where(s => (s.FastK > 0)).Count();
+                int countSlowD = stochIQ.Where(s => (s.SlowD > 0)).Count();
+
+                //if ((countFastK != (stochIQ.Count() - (iFastKPeriod + iSlowDPeriod - 2))) || (countSlowD != (stochIQ.Count() - (iFastKPeriod + iSlowDPeriod - 2))))
+                if (countFastK != (stochIQ.Count() - (iFastKPeriod + iSlowDPeriod - 2)))// || (countSlowD != (stochIQ.Count() - (iFastKPeriod + iSlowDPeriod - 2))))
+                {
+                    stochIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) &&
+                                                    (s.PriceDate.Date >= (fromDate.Date)));
+                }
+                else if (stochIQ.Where(s => (s.FastK == 0)).Count() != (iFastKPeriod + iSlowDPeriod - 2))
+                {
+                    stochIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) &&
+                                                    (s.PriceDate.Date >= (fromDate.Date)) && (s.SlowD == 0) && (s.FastK == 0));
+                }
+                else
+                {
+                    stochIQ = null;
+                }
+
+                if ((stochIQ != null) && ((stochIQ.Count() - (iFastKPeriod + iSlowDPeriod)) > 0))
+                {
+                    for (int rownum = 0; rownum < stochIQ.Count(); rownum++)
+                    {
+                        currentHist = stochIQ.AsEnumerable().ElementAt(rownum);
+
+                        listClose.Add(currentHist.Close);
+                        listHigh.Add(currentHist.High);
+                        listLow.Add(currentHist.Low);
+                        if ((rownum + 1) >= iFastKPeriod) //CASE of iFastKPeriod = 5: rownum = 4, 5th or higher row
+                        {
+                            highestHigh = FindHighestHigh(listHigh, startFastK, iFastKPeriod);
+                            listHighestHigh.Add(highestHigh);
+
+                            lowestLow = FindLowestLow(listLow, startFastK, iFastKPeriod);
+                            listLowestLow.Add(lowestLow);
+
+                            startFastK++;
+
+                            fastK = FindSlowK(listClose, listHighestHigh, listLowestLow);
+                            listSlowK.Add(fastK);
+
+                            /*if (((rownum - rsiIndexAdjustor) + 1) >= (iFastKPeriod + iSlowDPeriod))*/ //CASE of iSlowDPeriod = 3: rownum = 7, 8th or higher row
+                            if ((rownum + 2) >= (iFastKPeriod + iSlowDPeriod))
+                            {
+                                slowD = FindSlowD(listSlowK, startSlowD, iSlowDPeriod);
+                                startSlowD++;
+
+                                //now save the datat
+                                //dateCurrentRow = System.Convert.ToDateTime(dailyTable.Rows[rownum]["TIMESTAMP"]);
+
+                                currentHist.SlowD = Math.Round(slowD, 2);
+                                currentHist.FastK = Math.Round(fastK, 2);
+                                context.StockPriceHistory.Update(currentHist);
+                            }
+                        }
+                    }
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+
+            }
+        }
         /// <summary>
         /// In the first step:
         ///     Find downtrend upto the point where price starts moving up
@@ -704,7 +798,7 @@ namespace MarketAnalytics.Data
                 {
                     symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMasterID) &&
                                                     (s.PriceDate.Date >= (fromDate.Date)) && (s.SMA_SMALL == 0));
-                                                    //(s.SMA_SMALL == 0) && (s.SMA_MID == 0) && (s.SMA_LONG == 0));
+                    //(s.SMA_SMALL == 0) && (s.SMA_MID == 0) && (s.SMA_LONG == 0));
                 }
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))
@@ -721,7 +815,7 @@ namespace MarketAnalytics.Data
                         {
                             if (small_fast_Period > 0)
                             {
-                                if(prevRec.SMA_SMALL == 0)
+                                if (prevRec.SMA_SMALL == 0)
                                 {
                                     sumSmall = (double)prevRec.Close * small_fast_Period;
                                 }
@@ -733,7 +827,7 @@ namespace MarketAnalytics.Data
                             }
                             if (mid_period > 0)
                             {
-                                if(prevRec.SMA_MID == 0)
+                                if (prevRec.SMA_MID == 0)
                                 {
                                     sumMid = (double)prevRec.Close * mid_period;
                                 }
@@ -745,7 +839,7 @@ namespace MarketAnalytics.Data
                             }
                             if (long_slow_Period > 0)
                             {
-                                if(prevRec.SMA_LONG == 0)
+                                if (prevRec.SMA_LONG == 0)
                                 {
                                     sumLong = (double)prevRec.Close * long_slow_Period;
                                 }
@@ -862,7 +956,7 @@ namespace MarketAnalytics.Data
             StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
 
             //now set BUY FLGA if the current close < smallsma < midsma < longsma
-            
+
             //currentHist.BUY_SMA_STRATEGY = 0;
             //currentHist.SELL_SMA_STRATEGY = 0;
             currentMaster.SMA_SLOW = (double)currentHist.SMA_LONG;
@@ -1070,7 +1164,7 @@ namespace MarketAnalytics.Data
 
                 IQueryable<StockPriceHistory> symbolIQ = null;
 
-                if(lastBuyDate == DateTime.MinValue)
+                if (lastBuyDate == DateTime.MinValue)
                 {
                     symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.PriceDate.Date >= fromDate.Date));
                 }
@@ -1113,7 +1207,7 @@ namespace MarketAnalytics.Data
                                 //recSMA.LOWER_THAN_SMA_SMALL = true;
 
                                 if ((prevHist != null) && (prevHist.Close < prevHist.Open) && (currentHist.Close > currentHist.Open) &&
-                                    (prevHist.Close > currentHist.Open) &&  (prevHist.Close < currentHist.Close) && (prevHist.Open < currentHist.Close) &&
+                                    (prevHist.Close > currentHist.Open) && (prevHist.Close < currentHist.Close) && (prevHist.Open < currentHist.Close) &&
                                     (prevHist.Open > currentHist.Open))
                                 {
                                     //means previous day candle below SMA_SMALL and stock closed below open indicating a red candle
@@ -1122,7 +1216,7 @@ namespace MarketAnalytics.Data
                                     //now backtrack & find the buy price
 
                                     if (FindIfDownTrendExist(context, stockMaster,
-                                                        (rownum - 1), (lastBuyDate == DateTime.MinValue)? fromDate : lastBuyDate, out sellPrice, out foundCounter, trendSpan: trendSpan))
+                                                        (rownum - 1), (lastBuyDate == DateTime.MinValue) ? fromDate : lastBuyDate, out sellPrice, out foundCounter, trendSpan: trendSpan))
                                     {
                                         var recEngulfing = new BULLISH_ENGULFING_STRATEGY();
 
@@ -1245,7 +1339,7 @@ namespace MarketAnalytics.Data
                                     //now backtrack & find the buy price
 
                                     if (FindIfUpTrendExist(context, stockMaster,
-                                                        (rownum + 1), (lastBuyDate == DateTime.MinValue)? fromDate: lastBuyDate, out buyPrice, out foundCounter, trendSpan: trendSpan))
+                                                        (rownum + 1), (lastBuyDate == DateTime.MinValue) ? fromDate : lastBuyDate, out buyPrice, out foundCounter, trendSpan: trendSpan))
                                     {
                                         var recEngulfing = new BEARISH_ENGULFING();
 
@@ -1654,7 +1748,7 @@ namespace MarketAnalytics.Data
 
                 //IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = from s in context.V20_CANDLE_STRATEGY select s;
                 IQueryable<V20_CANDLE_STRATEGY> stockCandleIQ = context.V20_CANDLE_STRATEGY.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
-                
+
                 DateTime lastBuyDate = DateTime.MinValue;
 
                 if (stockCandleIQ.Count() > 0)
@@ -1662,7 +1756,7 @@ namespace MarketAnalytics.Data
                     //context.V20_CANDLE_STRATEGY.RemoveRange(stockCandleIQ.AsEnumerable());
                     //context.SaveChanges();
                     lastBuyDate = stockCandleIQ.OrderBy(s => s.TO_DATE).Last().TO_DATE;
-                    if(lastBuyDate.Date.CompareTo(DateTime.Today.Date.AddDays(-365).Date) <= 0)
+                    if (lastBuyDate.Date.CompareTo(DateTime.Today.Date.AddDays(-365).Date) <= 0)
                     {
                         //that means last buy date is beyond one year
                         lastBuyDate = DateTime.MinValue;
@@ -1681,7 +1775,7 @@ namespace MarketAnalytics.Data
                 }
                 else
                 {
-                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && 
+                    symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID) &&
                                                                 (s.PriceDate.Date >= lastBuyDate.Date));
                 }
 
@@ -1985,6 +2079,99 @@ namespace MarketAnalytics.Data
             DateTimeOffset dtoffset = new DateTimeOffset(new DateTime(dtToConvert.Year, dtToConvert.Month, dtToConvert.Day, 0, 0, 0, DateTimeKind.Utc));
 
             return dtoffset.ToUnixTimeSeconds();
+        }
+
+        public static double FindHighestHigh(List<double> listHigh, int start, int count)
+        {
+            double highestHigh = (listHigh.GetRange(start, count)).Max();
+            return highestHigh;
+        }
+        public static double FindLowestLow(List<double> listLow, int start, int count)
+        {
+            double lowestLow = (listLow.GetRange(start, count)).Min();
+            return lowestLow;
+        }
+        public static double FindSlowK(List<double> listClose, List<double> listHighestHigh, List<double> listLowestLow)
+        {
+            double slowK = ((listClose.Last() - listLowestLow.Last()) / (listHighestHigh.Last() - listLowestLow.Last())) * 100;
+            return Math.Round(slowK, 4);
+        }
+
+        public static double FindSlowD(List<double> listSlowK, int start, int count)
+        {
+            double slowD = listSlowK.GetRange(start, count).Average();
+            return Math.Round(slowD, 4);
+        }
+
+        public static void GetQuoteAndUpdateAllPortfolioTxn(DBContext context, Portfolio_Master masterRec,
+                    PORTFOLIOTXN txnRec, bool? getQuote, bool? updateBuySell, bool? lifetimeHighLow)
+        {
+            DateTime[] quoteDate = null;
+            double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+            IQueryable<PORTFOLIOTXN> txnIQ = context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
+            IQueryable<PORTFOLIOTXN> distinctIQ = null;
+
+            if ((txnRec == null) && (masterRec != null))
+            {
+                distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol)
+                                                        .Select(x => x.FirstOrDefault());
+            }
+            else if ((txnRec != null) && (masterRec == null))
+            {
+                distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol == txnRec.stockMaster.Symbol)
+                                                        .Select(x => x.FirstOrDefault());
+            }
+            foreach (var item in distinctIQ)
+            {
+                if ((getQuote != null) && (getQuote == true))
+                {
+                    DbInitializer.GetQuote(item.stockMaster.Symbol + "." + item.stockMaster.Exchange, out quoteDate, out open,
+                    out high, out low, out close,
+                    out volume, out change, out changepercent, out prevclose);
+                    if (quoteDate != null)
+                    {
+                        item.stockMaster.Close = close[0];
+                        item.stockMaster.Open = open[0];
+                        item.stockMaster.High = high[0];
+                        item.stockMaster.Low = low[0];
+                        item.stockMaster.Volume = volume[0];
+                        item.stockMaster.Change = change[0];
+                        item.stockMaster.ChangePercent = changepercent[0];
+                        item.stockMaster.PrevClose = prevclose[0];
+                        context.StockMaster.Update(item.stockMaster);
+
+                        item.CMP = close[0];
+                        item.VALUE = close[0] * item.QUANTITY;
+                        item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
+                        item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
+                        context.PORTFOLIOTXN.Update(item);
+                        //now find txn for same symbol in this portfolio
+                        IQueryable<PORTFOLIOTXN> duplicateIQ = context.PORTFOLIOTXN.Where(a => (a.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                            && (a.stockMaster.Symbol == item.stockMaster.Symbol)
+                            && (a.PORTFOLIOTXN_ID != item.PORTFOLIOTXN_ID));
+                        foreach (var duplicateitem in duplicateIQ)
+                        {
+                            duplicateitem.CMP = close[0];
+                            duplicateitem.VALUE = duplicateitem.QUANTITY * close[0];
+                            duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
+                            duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
+
+                            context.PORTFOLIOTXN.Update(duplicateitem);
+                        }
+                        context.SaveChanges();
+                    }
+                }
+                if ((updateBuySell != null) && (updateBuySell == true))
+                {
+                    DbInitializer.GetSMA_BUYSELL(context, item.stockMaster, item.stockMaster.Symbol,
+                        item.stockMaster.Exchange,
+                        item.StockMasterID, item.stockMaster.CompName, 20, 50, 200);
+                }
+                if ((lifetimeHighLow != null) && (lifetimeHighLow == true))
+                {
+                    DbInitializer.GetLifetimeHighLow(context, item.stockMaster);
+                }
+            }
         }
 
     }
