@@ -260,6 +260,15 @@
                            asp-route-refreshAll=false asp-route-lifetimeHighLow="false"
                            asp-route-history=true>History</a>
                             </li>
+                            <li>
+                                <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH" 
+                           asp-route-id="@item.StockMasterID"
+                           asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
+                           asp-route-txnid="@item.PORTFOLIOTXN_ID"
+                           asp-route-refreshAll=false asp-route-lifetimeHighLow="false"
+                           asp-route-history=true>SMA vs RSI vs STOCH</a>
+                            </li>
+
                         </ul>
                     </td>
 

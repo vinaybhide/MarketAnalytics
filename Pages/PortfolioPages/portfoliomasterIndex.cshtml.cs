@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Models;
 using System.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using MarketAnalytics.Data;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -90,25 +91,32 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
                 portfolioMaster = await PaginatedList<Portfolio_Master>.CreateAsync(portfolioIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
-                foreach (var item in portfolioMaster)
+                if (sortOrder == null && currentFilter == null && searchString == null && pageIndex == null &&
+                    masterid == null)
                 {
-                    portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                            .Sum(a => a.TOTAL_COST));
-                    portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                                            .Sum(a => a.VALUE));
-                    portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                                            .Sum(a => a.GAIN_AMT));
-                    if (portfolioValue.Last() == 0)
+                    foreach (var item in portfolioMaster)
                     {
-                        portfolioGainPct.Add(0);
-                    }
-                    else
-                    {
-                        portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioValue.Last() * 100);
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item, null, true, true, true);
+
+                        portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                                .Sum(a => a.TOTAL_COST));
+                        portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                                                .Sum(a => a.VALUE));
+                        portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                                                .Sum(a => a.GAIN_AMT));
+                        if (portfolioValue.Last() == 0)
+                        {
+                            portfolioGainPct.Add(0);
+                        }
+                        else
+                        {
+                            portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioValue.Last() * 100);
+                        }
                     }
                 }
 
             }
         }
+
     }
 }

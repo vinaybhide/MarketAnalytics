@@ -41,6 +41,9 @@
         <input type="hidden" asp-for="portfolioTxn.PORTFOLIOTXN_ID" />
         <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
         <input type="hidden" asp-for="@Model.parentpageIndex" />
+        <input type="hidden" asp-for="@Model.parentFilter" />
+        <input type="hidden" asp-for="@Model.parentSearchString" />
+        <input type="hidden" asp-for="@Model.parentSortOrder" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentpageIndex">Back to List</a>
     </form>

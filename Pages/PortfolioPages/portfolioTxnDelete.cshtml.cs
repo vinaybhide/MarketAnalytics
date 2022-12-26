@@ -19,8 +19,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         [BindProperty]
         public int parentpageIndex { get; set; }
-
-        public async Task<IActionResult> OnGetAsync(int? txnid, int? pageIndex)
+        [BindProperty]
+        public string parentSortOrder { get; set; }
+        [BindProperty]
+        public string parentFilter { get; set; }
+        [BindProperty]
+        public string parentSearchString { get; set; }
+        public async Task<IActionResult> OnGetAsync(int? txnid, int? pageIndex, 
+            string sortOrder, string currentFilter, string searchString)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
             {
@@ -35,6 +41,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
             portfolioTxn = selectedrecord;
             parentpageIndex = (int)pageIndex;
+            parentSortOrder = sortOrder;
+            parentFilter = currentFilter;
+            parentSearchString= searchString;
             return Page();
         }
 
@@ -53,7 +62,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToPage("./portfolioTxnIndex", new {masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex});
+            return RedirectToPage("./portfolioTxnIndex", new {masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString});
         }
     }
 }

@@ -16,6 +16,9 @@
             <input type="hidden" asp-for="portfolioTxn.StockMasterID" />
             <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
             <input type="hidden" asp-for="@Model.pageIndex" />
+            <input type="hidden" asp-for="@Model.parentFilter" />
+            <input type="hidden" asp-for="@Model.parentSearchString" />
+            <input type="hidden" asp-for="@Model.parentSortOrder" />
 
             <div class="form-group">
                 <label asp-for="portfolioTxn.PURCHASE_DATE" class="control-label"></label>

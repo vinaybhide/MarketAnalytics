@@ -18,9 +18,16 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public PORTFOLIOTXN portfolioTxn { get; set; }
         [BindProperty]
         public int pageIndex { get; set; }
+        [BindProperty]
+        public string parentSortOrder { get; set; }
+        [BindProperty]
+        public string parentFilter { get; set; }
+        [BindProperty]
+        public string parentSearchString { get; set; }
 
         public DateTime txnDate { get; set; }
-        public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int? stockid, int? pageIndex)
+        public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int? stockid, int? pageIndex,
+            string sortOrder, string currentFilter, string searchString)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
             {
@@ -35,6 +42,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
             portfolioTxn = selectedrecord;
             txnDate = selectedrecord.PURCHASE_DATE;
             pageIndex = (int)pageIndex;
+            parentSortOrder = sortOrder;
+            parentFilter = currentFilter;
+            parentSearchString = searchString;
 
             return Page();
         }
@@ -82,7 +92,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
 
             //return RedirectToPage("./portfolioTxnIndex");
-            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = pageIndex });
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = pageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString });
 
         }
 
