@@ -109,11 +109,11 @@ namespace MarketAnalytics.Pages.Master
                         {
                             double high, low = 0;
 
-                            DbInitializer.GetLifetimeHighLow(_context, selectedRecord, out high, out low);
-                            selectedRecord.LIFETIME_HIGH = high;
-                            selectedRecord.LIFETIME_LOW = low;
-                            _context.StockMaster.Update(selectedRecord);
-                            _context.SaveChanges();
+                            DbInitializer.GetLifetimeHighLow(_context, selectedRecord);
+                            //selectedRecord.LIFETIME_HIGH = high;
+                            //selectedRecord.LIFETIME_LOW = low;
+                            //_context.StockMaster.Update(selectedRecord);
+                            //_context.SaveChanges();
                         }
                     }
                 }
