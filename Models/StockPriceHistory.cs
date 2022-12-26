@@ -40,6 +40,9 @@ namespace MarketAnalytics.Models
         public bool V20_CANDLE { get; set; } = false;
         public double? V20_CANDLE_BUY_PRICE { get; set; } = default(double);
         public double? V20_CANDLE_SELL_PRICE { get; set; } = default(double);
+        public double? SlowD { get; set; } = default(double);
+        public double? FastK { get; set; } = default(double);
+
 
         //[DisplayName(displayName:  "StockMaster")]
         //public virtual int StockMasterID { get; set; }
