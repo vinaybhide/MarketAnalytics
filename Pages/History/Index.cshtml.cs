@@ -24,6 +24,7 @@ namespace MarketAnalytics.Pages.History
         public List<SelectListItem> groupList { get; set; }
 
         public string PriceDateSort { get; set; }
+        public string SymbolSort { get; set; }
         public int? CurrentID { get; set; }
         public string CurrentSort { get; set; }
         public string CurrentFilter { get; set; }
@@ -57,9 +58,13 @@ namespace MarketAnalytics.Pages.History
                                                     Text = a.Symbol
                                                 }
                                             ).ToList();
+
+                SelectListItem selectAll = new SelectListItem("-- Show All --", "-1");
+                symbolList.Insert(0, selectAll);
+
                 groupList.Clear();
 
-                SelectListItem selectAll = new SelectListItem("-- Select All --", "-99");
+                selectAll = new SelectListItem("-- Select All --", "-99");
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("Refresh V40", "-98");
@@ -75,7 +80,11 @@ namespace MarketAnalytics.Pages.History
 
                 //CurrentID = id;
                 CurrentSort = sortOrder;
+                SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
+                PriceDateSort = sortOrder == "PriceDate" ? "pricedate_desc" : "PriceDate";
+
                 PriceDateSort = String.IsNullOrEmpty(sortOrder) ? "pricedate_desc" : "";
+
                 if (searchString != null)
                 {
                     pageIndex = 1;
@@ -86,9 +95,14 @@ namespace MarketAnalytics.Pages.History
                 }
 
                 StockMasterRec = null;
+                if(id == null)
+                {
+                    id = -1;
+                }
+                CurrentID = id;
                 if ((id != null) && (id > 0))
                 {
-                    CurrentID = id;
+                    //CurrentID = id;
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     symbolList.FirstOrDefault(a => a.Value.Equals(CurrentID.ToString())).Selected = true;
@@ -144,7 +158,7 @@ namespace MarketAnalytics.Pages.History
                                                                 && (s.StockMasterID == CurrentID));
                     }
                 }
-                else if((id != null) && (id < 0))
+                else if((id != null) && (id < -1))
                 {
                     RefreshHistoryForGroup((int)id);
                     if (id == -99)
@@ -170,6 +184,12 @@ namespace MarketAnalytics.Pages.History
                         CompanyName = "V200";
                     }
                 }
+                else
+                {
+                    //show all
+                    CompanyName = "All";
+                    stockpriceIQ = _context.StockPriceHistory;
+                }
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
 
 
@@ -177,11 +197,17 @@ namespace MarketAnalytics.Pages.History
                 {
                     switch (sortOrder)
                     {
+                        case "symbol_desc":
+                            stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.StockMaster.Symbol);
+                            break;
+                        case "PriceDate":
+                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
+                            break;
                         case "pricedate_desc":
                             stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.PriceDate);
                             break;
                         default:
-                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
+                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.StockMaster.Symbol);
                             break;
                     }
                     var pageSize = Configuration.GetValue("PageSize", 10);
