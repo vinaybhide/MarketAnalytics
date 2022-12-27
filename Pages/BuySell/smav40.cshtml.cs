@@ -127,8 +127,7 @@ namespace MarketAnalytics.Pages.BuySell
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         { 
-                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, selectedRecord.Symbol, selectedRecord.Exchange,
-                                selectedRecord.StockMasterID, selectedRecord.CompName, 20, 50, 200);
+                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, 20, 50, 200);
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -182,7 +181,7 @@ namespace MarketAnalytics.Pages.BuySell
 
             foreach (var item in stockmasterIQ)
             {
-                DbInitializer.GetSMA_BUYSELL(_context, item, item.Symbol, item.Exchange, item.StockMasterID, item.CompName, 20, 50, 200);
+                DbInitializer.GetSMA_BUYSELL(_context, item, 20, 50, 200);
             }
         }
         //public void GetQuote(string symbol, out DateTime quoteDate, out double open, out double high, out double low, out double close, 
