@@ -21,7 +21,8 @@
     
     <form method="post">
         <input type="hidden" asp-for="portfolioMaster.PORTFOLIO_MASTER_ID" />
+        <input type="hidden" asp-for="@Model.FirstTimeMaster" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-page="./portfoliomasterIndex">Back to List</a>
+        <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false">Back to List</a>
     </form>
 </div>

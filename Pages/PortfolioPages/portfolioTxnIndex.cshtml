@@ -127,11 +127,19 @@
             </th>
             <th>
                 @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)*@
-                High
+                Lifetime High
             </th>
             <th>
                 @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)*@
-                Low
+                Lifetime Low
+            </th>
+            <th>
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LESSTHAN_67PC_ON)*@
+                67% Less On
+            </th>
+            <th>
+                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_LEFETIME_HIGH)*@
+                Diff from Lifetime High
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
@@ -297,6 +305,12 @@
                         @Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_LOW)
                     </td>
                     <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.LESSTHAN_67PCT_ON)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_LIFETIME_HIGH)
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.V40)
                     </td>
                     <td>
@@ -355,5 +369,5 @@
 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
 <div>
-    <a asp-page="./portfoliomasterIndex">Back to portfolio list</a>
+    <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false">Back to portfolio list</a>
 </div>

@@ -16,10 +16,12 @@ namespace MarketAnalytics.Pages.PortfolioPages
         }
         [BindProperty]
         public Portfolio_Master portfolioMaster { get; set; }
-        
+        [BindProperty]
+        public bool FirstTimeMaster { get; set; }
+
         public bool bNameUnique = true;
         public string errorMessage = "Portfolio name exists! Please use unique portfolio name.";
-        public async Task<IActionResult> OnGetAsync(int? masterid)
+        public async Task<IActionResult> OnGetAsync(int? masterid, bool? firsttimemaster)
         {
             if (masterid == null || _context.PORTFOLIO_MASTER == null)
             {
@@ -32,6 +34,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
             portfolioMaster = selectedrecord;
+            FirstTimeMaster = (bool)firsttimemaster;
+
             return Page();
         }
 
@@ -62,7 +66,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         throw;
                     }
                 }
-                return RedirectToPage("./portfoliomasterIndex", new { masterid = portfolioMaster.PORTFOLIO_MASTER_ID});
+                return RedirectToPage("./portfoliomasterIndex", new { masterid = portfolioMaster.PORTFOLIO_MASTER_ID, firsttimemaster=FirstTimeMaster});
             }
             else
             {

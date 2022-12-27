@@ -25,7 +25,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             masterList = new List<SelectListItem>();
             portfolioCost = new List<double>();
             portfolioValue = new List<double>();
-            portfolioGain= new List<double>();
+            portfolioGain = new List<double>();
             portfolioGainPct = new List<double>();
         }
 
@@ -36,7 +36,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public int CurrentID { get; set; }
         public PaginatedList<Portfolio_Master> portfolioMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid)
+        public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString, int? pageIndex, int? masterid)
         {
             masterList.Clear();
             masterList = _context.PORTFOLIO_MASTER.Select(a =>
@@ -70,7 +70,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (masterid != null)
                 {
                     var currentrecord = portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
-                    if(currentrecord != null)
+                    if (currentrecord != null)
                     {
                         searchString = currentrecord.PORTFOLIO_NAME;
                     }
@@ -78,6 +78,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     portfolioIQ = portfolioIQ.Where(s => s.PORTFOLIO_NAME.ToUpper().Contains(searchString.ToUpper()));
+
+                    var searchRecord = portfolioIQ.First();
+
+                    if (masterList.Exists(a => (a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString()) == true)))
+                    {
+                        masterList.FirstOrDefault(a => a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString())).Selected = true;
+                    }
+                    CurrentFilter = searchString;
                 }
 
                 switch (sortOrder)
@@ -91,30 +99,30 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
                 portfolioMaster = await PaginatedList<Portfolio_Master>.CreateAsync(portfolioIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
-                if (sortOrder == null && currentFilter == null && searchString == null && pageIndex == null &&
-                    masterid == null)
+                //if (sortOrder == null && currentFilter == null && searchString == null && pageIndex == null &&
+                //    masterid == null)
+                if ((firsttimemaster == null) || (firsttimemaster == true))
                 {
-                    foreach (var item in portfolioMaster)
-                    {
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item, null, true, true, true);
+                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null, true, true, true);
+                }
+                foreach (var item in portfolioMaster)
+                {
 
-                        portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                                .Sum(a => a.TOTAL_COST));
-                        portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                                                .Sum(a => a.VALUE));
-                        portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
-                                                                .Sum(a => a.GAIN_AMT));
-                        if (portfolioValue.Last() == 0)
-                        {
-                            portfolioGainPct.Add(0);
-                        }
-                        else
-                        {
-                            portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioValue.Last() * 100);
-                        }
+                    portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                            .Sum(a => a.TOTAL_COST));
+                    portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                                            .Sum(a => a.VALUE));
+                    portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                                                            .Sum(a => a.GAIN_AMT));
+                    if (portfolioValue.Last() == 0)
+                    {
+                        portfolioGainPct.Add(0);
+                    }
+                    else
+                    {
+                        portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioValue.Last() * 100);
                     }
                 }
-
             }
         }
 

@@ -13,7 +13,7 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./portfolioMasterCreate" style="font-size:small">Create New Portfolio</a>
+                        <a asp-page="./portfolioMasterCreate" asp-route-firsttimemaster="false" class="btn btn-sm btn-primary" style="font-size:small">New</a>
                     </p>
                 </div>
             </th>
@@ -21,6 +21,7 @@
                 <form asp-page="./portfoliomasterIndex" method="get">
                     <div class="form-actions no-color">
                         <p>
+                            <input name="firsttimemaster=false" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
                             <input type="submit" value="Search portfolio" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
@@ -31,6 +32,7 @@
                 <form asp-page="./portfoliomasterIndex" method="get">
                     <div class="form-actions no-color">
                         <p>
+                            <input name="firsttimemaster=false" type="hidden" />
                             <select name="masterid" asp-items="Model.masterList" style="font-size:small">
                                 <option value="">Select Portfolio</option>
                             </select>
@@ -42,17 +44,17 @@
                     </div>
                 </form>
             </th>
-            <th>
+            @*<th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./portfoliomasterIndex" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+                        <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
                     </p>
                 </div>
-            </th>
+            </th>*@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./portfoliomasterIndex" style="font-size:small">Back to full List</a>
+                        <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false" style="font-size:small">Back to full List</a>
                     </p>
                 </div>
             </th>
@@ -116,13 +118,13 @@
                 <td>
                     <ul class="list-unstyled" >
                         <li>
-                            <a asp-page="./portfoliomasterEdit" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a>
+                            <a asp-page="./portfoliomasterEdit" asp-route-firsttimemaster="false" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a>
                         </li>
                         <li>
                             <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Txn Details</a>
                         </li>
                         <li>
-                            <a asp-page="./portfoliomasterDelete" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a>
+                            <a asp-page="./portfoliomasterDelete" asp-route-firsttimemaster="false" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a>
                         </li>
                     </ul>
                 </td>

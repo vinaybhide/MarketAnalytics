@@ -16,8 +16,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         [BindProperty]
       public Portfolio_Master portfolioMaster { get; set; }
-
-        public async Task<IActionResult> OnGetAsync(int? masterid)
+        [BindProperty]
+        public bool FirstTimeMaster { get; set; }
+        public async Task<IActionResult> OnGetAsync(int? masterid, bool? firsttimemaster)
         {
             if (masterid == null || _context.PORTFOLIO_MASTER == null)
             {
@@ -34,6 +35,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 portfolioMaster = selectedrecord;
             }
+            FirstTimeMaster = (bool)firsttimemaster;
             return Page();
         }
 
@@ -52,7 +54,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToPage("./portfoliomasterIndex");
+            return RedirectToPage("./portfoliomasterIndex", new { firsttimemaster = FirstTimeMaster });
         }
     }
 }

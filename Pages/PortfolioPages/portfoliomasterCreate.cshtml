@@ -16,6 +16,7 @@
     <div class="col-md-4">
         <form asp-page="./portfoliomasterCreate" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="@Model.FirstTimeMaster" />
             <div class="form-group">
                 <label asp-for="portfolioMaster.PORTFOLIO_NAME" class="control-label"></label>
                 <input asp-for="portfolioMaster.PORTFOLIO_NAME" class="form-control" />
@@ -29,7 +30,7 @@
 </div>
 
 <div>
-    <a asp-page="./portfoliomasterIndex">Back to full List</a>
+    <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false">Back to full List</a>
 </div>
 
 @section Scripts {

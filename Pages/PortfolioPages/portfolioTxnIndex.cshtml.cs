@@ -103,7 +103,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (stockid != null)
                 {
                     var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == stockid)));
-                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null, selectedRecord, getQuote, updateBuySell, lifetimeHighLow);
+                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord, getQuote, updateBuySell, lifetimeHighLow);
                     //await GetQuoteAndUpdate(stockid, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
                     searchString = selectedRecord.stockMaster.Symbol;
                 }
@@ -224,9 +224,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 if (((refreshAll != null) && (refreshAll == true)) || ((updateBuySell != null) && (updateBuySell == true)))
                 {
-                    DbInitializer.GetSMA_BUYSELL(_context, selectedRecord.stockMaster, selectedRecord.stockMaster.Symbol,
-                        selectedRecord.stockMaster.Exchange,
-                        selectedRecord.StockMasterID, selectedRecord.stockMaster.CompName, 20, 50, 200);
+                    DbInitializer.GetSMA_BUYSELL(_context, selectedRecord.stockMaster, 20, 50, 200);
                 }
                 if (((refreshAll != null) && (refreshAll == true)) || ((lifetimeHighLow != null) && (lifetimeHighLow == true)))
                 {

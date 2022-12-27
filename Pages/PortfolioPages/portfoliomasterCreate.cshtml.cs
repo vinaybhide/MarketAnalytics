@@ -14,6 +14,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         private readonly MarketAnalytics.Data.DBContext _context;
         [BindProperty]
         public Portfolio_Master portfolioMaster { get; set; }
+        [BindProperty]
+        public bool FirstTimeMaster { get; set; }
 
         public bool bNameUnique = true;
         public string errorMessage = "Portfolio name exists! Please use unique portfolio name.";
@@ -22,9 +24,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
             _context = context;
         }
 
-        public IActionResult OnGet()
+        public IActionResult OnGet(bool? firsttimemaster)
         {
             portfolioMaster = new Portfolio_Master();
+            FirstTimeMaster = (bool)firsttimemaster;
             return Page();
         }
 
@@ -43,7 +46,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 _context.PORTFOLIO_MASTER.Add(portfolioMaster);
                 await _context.SaveChangesAsync();
 
-                return RedirectToPage("./portfoliomasterIndex", new {masterid = portfolioMaster.PORTFOLIO_MASTER_ID});
+                return RedirectToPage("./portfoliomasterIndex", new {masterid = portfolioMaster.PORTFOLIO_MASTER_ID, firsttimemaster=FirstTimeMaster});
             }
             else
             {
