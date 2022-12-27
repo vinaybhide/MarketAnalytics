@@ -26,6 +26,7 @@ namespace MarketAnalytics.Models
         public double? GAIN_PCT { get; set; } = default(double);
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double? GAIN_AMT { get; set; } = default(double);
+        public DateTime LastUpDt { get; set; } = default(DateTime);
 
         public int PORTFOLIO_MASTER_ID { get; set; }
 

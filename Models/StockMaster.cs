@@ -54,6 +54,21 @@ namespace MarketAnalytics.Models
 
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double LIFETIME_LOW { get; set; } = default(double);
+        
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
+        public DateTime LESSTHAN_67PCT_ON { get; set; } = default(DateTime);
+
+        [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
+        public double DIFF_FROM_LIFETIME_HIGH { get; set; } = default(double);
+        public DateTime HI_LOW_67_50_LastUpDt { get; set; } = default(DateTime);
+        public DateTime SMA_LastUpDt { get; set; } = default(DateTime);
+        public DateTime RSI_LastUpDt { get; set; } = default(DateTime);
+        public DateTime STOCH_LastUpDt { get; set; } = default(DateTime);
+        public DateTime BULL_ENGULF_LastUpDt { get; set; } = default(DateTime);
+        public DateTime BEAR_ENGULF_LastUpDt { get; set; } = default(DateTime);
+        public DateTime V20_LastUpDt { get; set; } = default(DateTime);
+        public DateTime SMA_BUYSELL_LastUpDt { get; set; } = default(DateTime);
+
         public ICollection<V20_CANDLE_STRATEGY> collection_V20_buysell { get; set; }
 
         public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
