@@ -42,8 +42,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == CurrentID);
                 }
 
-                DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID, 
-                                                        StockMasterRec.CompName, DateTime.Today.Date);
+                DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, DateTime.Today.Date);
                 listRSI = ChartData(CurrentID);
             }
         }
