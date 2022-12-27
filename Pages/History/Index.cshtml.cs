@@ -122,21 +122,18 @@ namespace MarketAnalytics.Pages.History
                         //DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange);
                         //RefreshAllStocks = false;
 
-                        string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, StockMasterRec, CurrentID);
+                        string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, StockMasterRec);
                         if (string.IsNullOrEmpty(lastPriceDate) == false)
                         {
-                            DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange, lastPriceDate);
+                            DbInitializer.InitializeHistory(_context, StockMasterRec, lastPriceDate);
 
-                            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID,
-                                StockMasterRec.CompName, System.Convert.ToDateTime(lastPriceDate));
+                            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, System.Convert.ToDateTime(lastPriceDate));
 
-                            DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange, CurrentID,
-                                                                    StockMasterRec.CompName, System.Convert.ToDateTime(lastPriceDate), period: "14");
+                            DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, System.Convert.ToDateTime(lastPriceDate), period: "14");
 
                             DbInitializer.V20CandlesticPatternFinder(_context, StockMasterRec);
 
-                            DbInitializer.GetSMA_BUYSELL(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.Exchange,
-                                StockMasterRec.StockMasterID, StockMasterRec.CompName, 20, 50, 200);
+                            DbInitializer.GetSMA_BUYSELL(_context, StockMasterRec, 20, 50, 200);
 
                             DbInitializer.GetBullishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 30, 10);
                             DbInitializer.GetBearishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 30, 10);
@@ -240,21 +237,18 @@ namespace MarketAnalytics.Pages.History
                 }
                 foreach (var item in stockmasterIQ)
                 {
-                    lastPriceDate = DbInitializer.IsHistoryUpdated(_context, item, item.StockMasterID);
+                    lastPriceDate = DbInitializer.IsHistoryUpdated(_context, item);
                     if (string.IsNullOrEmpty(lastPriceDate) == false)
                     {
-                        DbInitializer.InitializeHistory(_context, item, item.Symbol, item.CompName, item.Exchange, lastPriceDate);
+                        DbInitializer.InitializeHistory(_context, item, lastPriceDate);
 
-                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item, item.Symbol, item.Exchange, item.StockMasterID,
-                            item.CompName, System.Convert.ToDateTime(lastPriceDate));
+                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item, System.Convert.ToDateTime(lastPriceDate));
 
-                        DbInitializer.getRSIDataTableFromDaily(_context, item, item.Symbol, item.Exchange, CurrentID,
-                                                                item.CompName, System.Convert.ToDateTime(lastPriceDate), period: "14");
+                        DbInitializer.getRSIDataTableFromDaily(_context, item, System.Convert.ToDateTime(lastPriceDate), period: "14");
 
                         DbInitializer.V20CandlesticPatternFinder(_context, item);
 
-                        DbInitializer.GetSMA_BUYSELL(_context, item, item.Symbol, item.Exchange,
-                            item.StockMasterID, item.CompName, 20, 50, 200);
+                        DbInitializer.GetSMA_BUYSELL(_context, item, 20, 50, 200);
 
                         DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 30, 10);
                         DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 30, 10);
