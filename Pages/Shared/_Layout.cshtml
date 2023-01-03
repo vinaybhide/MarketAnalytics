@@ -98,7 +98,13 @@
             .my_sticky + .my_content {
                 padding-top: 60px;
             }
-    </style>
+
+/*        .selected {
+            background-color: darkslategrey;
+            font-weight: bold;
+            color: #fff
+        }
+*/    </style>
 </head>
 <body>
     <header>
@@ -216,6 +222,21 @@
                 navbar.classList.remove("my_sticky");
             }
         }
+        
+        //function selectedRow(x) {
+        //    var table = document.getElementById("test");
+        //    for (var i = 0; i < table.rows.length; i++){
+        //        if (table.rows[i].classList.contains("selected")){
+        //            table.rows[i].classList.remove("selected");
+        //        }
+        //    }
+        //    var index = x.rowIndex - 1;
+        //    table.rows[index].classList.add("selected");
+        //    console.log('index =' + index);
+        //    //for (var i = 0; i < table.rows[index].classList.length; i++) {
+        //    //    console.log(table.rows[index].classList.item(i));
+        //    //}
+        //}
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
