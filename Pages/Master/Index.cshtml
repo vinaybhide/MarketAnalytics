@@ -128,6 +128,12 @@
     <tbody>
         @foreach (var item in Model.StockMaster)
         {
+                //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
+
+            //<tr style="text-align:center; font-size:small;" onclick="location.href = '@(Url.Action("./portfolioTxnIndex/SelectedRow"))'">
+
+            //<tr style="text-align:center; font-size:small;" onclick="onselectedrow(this); location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})' ">
+            @*<tr style="text-align:center; font-size:small;" onclick="location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})';selectedRow(this); ">*@
             <tr style="text-align:center; font-size:small;">
                 <td>
                     @Html.DisplayFor(modelItem => item.Exchange)

@@ -11,6 +11,7 @@ using MarketAnalytics.Models;
 using System.Data;
 using System.Net;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace MarketAnalytics.Pages.Master
 {
@@ -35,11 +36,12 @@ namespace MarketAnalytics.Pages.Master
         public string CurrentSort { get; set; }
 
         public bool RefreshAllStocks { get; set; } = false;
+        [BindProperty]
         public int CurrentID { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, 
-                    bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N, 
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id,
+                    bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N,
                     bool? v200, bool? lifetimeHighLow)
         {
             if (_context.StockMaster != null)
@@ -63,7 +65,7 @@ namespace MarketAnalytics.Pages.Master
                     searchString = currentFilter;
                 }
 
-                if(refreshAll == true)
+                if (refreshAll == true)
                 {
                     string fetchedData = await DbInitializer.FetchMasterData();
                     DbInitializer.Initialize(_context, fetchedData);
@@ -72,12 +74,12 @@ namespace MarketAnalytics.Pages.Master
                     RefreshAllStocks = false;
                 }
 
-                if(id != null)
+                if (id != null)
                 {
                     var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
-                        if(getQuote == true)
+                        if (getQuote == true)
                         {
                             //DateTime quoteDate;
                             //double open, high, low, close, volume, change, changepercent, prevclose;
@@ -105,7 +107,7 @@ namespace MarketAnalytics.Pages.Master
                             //List<BULLISH_ENGULFING_STRATEGY> listEngulfing = DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord,
                             //    DateTime.Today.AddDays(-180), 30);
                         }
-                        if((lifetimeHighLow != null) && (lifetimeHighLow == true))
+                        if ((lifetimeHighLow != null) && (lifetimeHighLow == true))
                         {
                             double high, low = 0;
 
@@ -171,203 +173,10 @@ namespace MarketAnalytics.Pages.Master
                 StockMaster = await PaginatedList<StockMaster>.CreateAsync(stockmasterIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
-
-        public void RefreshAllStockMaster()
+        public IActionResult SelectedRow(int id, int stockid)
         {
-
-        }
-        public void GetQuote(string symbol, out DateTime quoteDate, out double open, out double high, out double low, out double close, 
-                            out double volume, out double change, out double changepercent, out double prevclose)
-        {
-            try
-            {
-                quoteDate = DateTime.Now;
-                open = high = low = close = volume = change = changepercent = prevclose = 0;
-
-                string webservice_url = "";
-                WebResponse wr;
-                Stream receiveStream = null;
-                StreamReader reader = null;
-                //DataRow r;
-
-                //https://query1.finance.yahoo.com/v7/finance/chart/HDFC.BO?range=1m&interval=1m&indicators=quote&timestamp=true
-                webservice_url = string.Format(DbInitializer.urlGlobalQuote, symbol);
-
-                Uri url = new Uri(webservice_url);
-                var webRequest = WebRequest.Create(url);
-                webRequest.Method = "GET";
-                webRequest.ContentType = "application/json";
-                wr = webRequest.GetResponseAsync().Result;
-                receiveStream = wr.GetResponseStream();
-                reader = new StreamReader(receiveStream);
-
-                getQuoteTableFromJSON(reader.ReadToEnd(), symbol, out quoteDate, out open, out high, out low, out close, out volume,
-                                        out change, out changepercent, out prevclose);
-                reader.Close();
-                if (receiveStream != null)
-                    receiveStream.Close();
-            }
-            catch (Exception ex)
-            {
-                quoteDate = DateTime.Now;
-                open = high = low = close = volume = change = changepercent = prevclose = 0;
-            }
-        }
-
-        public void getQuoteTableFromJSON(string record, string symbol, out DateTime quoteDate, out double open, out double high, 
-                        out double low, out double close, out double volume, out double change, out double changepercent, out double prevclose)
-        {
-            quoteDate = DateTime.Now;
-            open = high = low = close = volume = change = changepercent = prevclose = 0;
-
-            if (record.ToUpper().Contains("NOT FOUND"))
-            {
-                return;
-            }
-            DateTime myDate;
-            var errors = new List<string>();
-            try
-            {
-                Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(record, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DefaultValueHandling = DefaultValueHandling.Populate,
-                    Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-                    {
-                        errors.Add(args.ErrorContext.Error.Message);
-                        args.ErrorContext.Handled = true;
-                        //args.ErrorContext.Handled = false;
-                    }
-                    //Converters = { new IsoDateTimeConverter() }
-
-                });
-
-                Chart myChart = myDeserializedClass.chart;
-
-                Result myResult = myChart.result[0];
-
-                Meta myMeta = myResult.meta;
-
-                Indicators myIndicators = myResult.indicators;
-
-                //this will be typically only 1 row and quote will have list of close, high, low, open, volume
-                Quote myQuote = myIndicators.quote[0];
-
-                //this will be typically only 1 row and adjClose will have list of adjClose
-                //Adjclose myAdjClose = null;
-                //if (bIsDaily)
-                //{
-                //    myAdjClose = myIndicators.adjclose[0];
-                //}
-
-                if (myResult.timestamp != null)
-                {
-                    //for (int i = 0; i < myResult.timestamp.Count; i++)
-                    for (int i = 0; i <= 0; i++)
-                    {
-                        if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
-                            && (myQuote.volume[i] == null))
-                        {
-                            continue;
-                        }
-
-                        //myDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(myResult.timestamp[i]).ToLocalTime();
-                        myDate = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
-
-                        //myDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(myResult.timestamp[i]);
-                        //string formatedDate = myDate.ToString("dd-MM-yyyy");
-                        //formatedDate = myDate.ToString("yyyy-dd-MM");
-
-                        //myDate = System.Convert.ToDateTime(myResult.timestamp[i]);
-
-                        //if all are null do not enter this row
-
-                        if (myQuote.close[i] == null)
-                        {
-                            close = 0.00;
-                        }
-                        else
-                        {
-                            //close = (double)myQuote.close[i];
-                            close = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
-                        }
-
-                        if (myQuote.high[i] == null)
-                        {
-                            high = 0.00;
-                        }
-                        else
-                        {
-                            //high = (double)myQuote.high[i];
-                            high = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
-                        }
-
-                        if (myQuote.low[i] == null)
-                        {
-                            low = 0.00;
-                        }
-                        else
-                        {
-                            //low = (double)myQuote.low[i];
-                            low = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
-                        }
-
-                        if (myQuote.open[i] == null)
-                        {
-                            open = 0.00;
-                        }
-                        else
-                        {
-                            //open = (double)myQuote.open[i];
-                            open = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
-                        }
-                        if (myQuote.volume[i] == null)
-                        {
-                            volume = 0;
-                        }
-                        else
-                        {
-                            volume = (int)myQuote.volume[i];
-                        }
-                        prevclose = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
-                        change = close - prevclose;
-                        changepercent = (change / prevclose) * 100;
-                        change = System.Convert.ToDouble(string.Format("{0:0.00}", change));
-                        changepercent = System.Convert.ToDouble(string.Format("{0:0.00}", changepercent));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                quoteDate = DateTime.Now;
-                open = high = low = close = volume = change = changepercent = prevclose = 0;
-            }
-        }
-        public string findTimeZoneId(string zoneId)
-        {
-            string returnTimeZoneId = "";
-            switch (zoneId)
-            {
-                case "IST":
-                    returnTimeZoneId = "India Standard Time";
-                    break;
-                default:
-                    returnTimeZoneId = "India Standard Time";
-                    break;
-            }
-            return returnTimeZoneId;
-        }
-
-        public DateTime convertUnixEpochToLocalDateTime(long dateEpoch, string zoneId)
-        {
-            DateTime localDateTime;
-
-            DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(dateEpoch);
-            string timeZoneId = findTimeZoneId(zoneId);
-            TimeZoneInfo currentTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            localDateTime = TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, currentTimeZone);
-
-            return localDateTime;
+            CurrentID = stockid;
+            return Page();
         }
 
     }
