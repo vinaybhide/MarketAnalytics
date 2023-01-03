@@ -76,6 +76,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
 
             portfolioTxn.TOTAL_COST = portfolioTxn.QUANTITY * portfolioTxn.COST_PER_SHARE;
+            portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+            portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
 
             _context.PORTFOLIOTXN.Add(portfolioTxn);
             await _context.SaveChangesAsync();

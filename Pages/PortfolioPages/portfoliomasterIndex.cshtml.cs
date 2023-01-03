@@ -36,7 +36,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public int CurrentID { get; set; }
         public PaginatedList<Portfolio_Master> portfolioMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString, int? pageIndex, int? masterid)
+        public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString, 
+                                        int? pageIndex, int? masterid, bool? updateBuySell)
         {
             masterList.Clear();
             masterList = _context.PORTFOLIO_MASTER.Select(a =>

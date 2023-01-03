@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Microsoft.JSInterop;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -49,6 +50,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         [BindProperty]
         public int MasterId { get; set; }
+        [BindProperty]
+        public int TransId { get; set; }
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? masterid,
             bool? refreshAll, bool? getQuote, int? stockid, bool? updateBuySell, bool? lifetimeHighLow)
         {
@@ -102,10 +105,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                 if (stockid != null)
                 {
-                    var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == stockid)));
-                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord, getQuote, updateBuySell, lifetimeHighLow);
-                    //await GetQuoteAndUpdate(stockid, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
-                    searchString = selectedRecord.stockMaster.Symbol;
+                    //var selectedRecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => ((m.PORTFOLIO_MASTER_ID == masterid) && (m.StockMasterID == stockid)));
+                    var selectedRecord = txnIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
+                    if (selectedRecord != null)
+                    {
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord, true, updateBuySell, lifetimeHighLow);
+                        //await GetQuoteAndUpdate(stockid, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
+                        searchString = selectedRecord.stockMaster.Symbol;
+                    }
                 }
                 //else if (string.IsNullOrEmpty(searchString))
                 //{
@@ -119,12 +126,15 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 //    txnIQ = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterid);
                 //}
 
-                portfolioTotalCost = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
-                                                            .Sum(a => a.TOTAL_COST);
-                portfolioTotalGain = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
-                                                            .Sum(a => a.GAIN_AMT);
-                portfolioTotalValue = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
-                                                            .Sum(a => a.VALUE);
+                //portfolioTotalCost = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                //                                            .Sum(a => a.TOTAL_COST);
+                portfolioTotalCost = txnIQ.Sum(a => a.TOTAL_COST);
+                //portfolioTotalGain = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                //                                            .Sum(a => a.GAIN_AMT);
+                portfolioTotalGain = (double)txnIQ.Sum(a => a.GAIN_AMT);
+                //portfolioTotalValue = (double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
+                //                                            .Sum(a => a.VALUE);
+                portfolioTotalValue = (double)txnIQ.Sum(a => a.VALUE);
 
                 CurrentFilter = searchString;
 
@@ -134,8 +144,12 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 {
                     txnIQ = txnIQ.Where(s => s.stockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                 || s.stockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
-                    var searchRecord = txnIQ.First();
-                    if (symbolList.Exists(a => (a.Value.Equals(searchRecord.StockMasterID.ToString()) == true)))
+                    var searchRecord = txnIQ.FirstOrDefault();
+                    if (searchRecord == null)
+                    {
+                        txnIQ = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterid);
+                    }
+                    else if (symbolList.Exists(a => (a.Value.Equals(searchRecord.StockMasterID.ToString()) == true)))
                     {
                         symbolList.FirstOrDefault(a => a.Value.Equals(searchRecord.StockMasterID.ToString())).Selected = true;
                     }
@@ -172,7 +186,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
-
+        public void SelectedRow()
+        {
+            TransId = 0;
+        }
         public async Task GetQuoteAndUpdate(int? stockid, int? masterid, bool? refreshAll, bool? getQuote,
                                     bool? updateBuySell, bool? lifetimeHighLow)
         {

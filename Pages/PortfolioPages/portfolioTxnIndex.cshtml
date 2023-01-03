@@ -4,7 +4,6 @@
 @{
     ViewData["Title"] = "PortfolioTxnIndex";
 }
-
 <h4>Portfolio - @Model.portfolioMasterName</h4>
 <h7>Total Cost = @string.Format("{0:0.00}", @Model.portfolioTotalCost) | Total Value = @string.Format("{0:0.00}", @Model.portfolioTotalValue) | Total Gain = @string.Format("{0:0.00}", @Model.portfolioTotalGain) | Total Gain PCT = @string.Format("{0:0.00}%", (Model.portfolioTotalValue - Model.portfolioTotalCost)/Model.portfolioTotalValue*100)</h7>
 
@@ -174,8 +173,10 @@
         {
             @foreach (var item in Model.portfolioTxn)
             {
-                <tr style="text-align:center; font-size:small;">
+                //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
 
+                //<tr style="text-align:center; font-size:small;" onclick="location.href = '@(Url.Action("./portfolioTxnIndex/SelectedRow"))'">
+                <tr style="text-align:center; font-size:small;">
                     <td>
                         @Html.DisplayFor(modelItem => item.PURCHASE_DATE)
                     </td>
@@ -269,7 +270,7 @@
                            asp-route-history=true>History</a>
                             </li>
                             <li>
-                                <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH" 
+                                <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH"
                            asp-route-id="@item.StockMasterID"
                            asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
                            asp-route-txnid="@item.PORTFOLIOTXN_ID"
@@ -305,7 +306,10 @@
                         @Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_LOW)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.stockMaster.LESSTHAN_67PCT_ON)
+                        @if (item.stockMaster.LESSTHAN_67PCT_ON.Date.CompareTo(new DateTime(0001, 01, 01).Date) != 0)
+                        {
+                            @Html.DisplayFor(modelItem => item.stockMaster.LESSTHAN_67PCT_ON)
+                        }
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_LIFETIME_HIGH)
