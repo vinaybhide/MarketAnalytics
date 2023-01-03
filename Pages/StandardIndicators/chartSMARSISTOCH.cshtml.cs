@@ -86,7 +86,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     //}
                     if (string.IsNullOrEmpty(fromDate))
                     {
-                        FromDate = DateTime.Today.AddYears(-1);
+                        FromDate = DateTime.Today.AddYears(-10);
                     }
                     else
                     {

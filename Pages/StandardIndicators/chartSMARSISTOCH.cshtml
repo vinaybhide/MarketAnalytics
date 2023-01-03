@@ -36,7 +36,7 @@
             <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, @item.SMA_SMALL, @item.SMA_MID, @item.SMA_LONG, @item.RSI_CLOSE, @item.SlowD, @item.FastK, null], </text>
         }
     }
-                        ]);
+                            ]);
 
         dataTable.setColumnProperty(11, 'role', 'tooltip');
 
@@ -97,6 +97,7 @@
                     //}
 
                 },
+                'explorer': { 'actions': ['dragToZoom', 'rightClickToReset'] },
                 'tooltip': {
                     'textStyle': {
                         'fontSize': 10,
@@ -131,6 +132,7 @@
                 'width': '100%',
                 'height': '100%',
                 'chartArea': { width: '85%', height: '75%' },
+                'explorer': { 'actions': ['dragToZoom', 'rightClickToReset'] },
                 'tooltip': {
                     'textStyle': {
                         'fontSize': 10,
@@ -165,7 +167,7 @@
                 'width': '100%',
                 'height': '100%',
                 'chartArea': { width: '85%', height: '75%' },
-                'series':{
+                'series': {
                     0: {
                         'type': 'line', 'view': { 'columns': [0, 9] }, 'lineWidth': 1, 'pointSize': 1, 'color': '#008000'
                     },
@@ -174,6 +176,7 @@
                         'type': 'line', 'view': { 'columns': [0, 10] }, 'lineWidth': 1, 'pointSize': 1, 'color': '#0000FF'
                     }
                 },
+                'explorer': { 'actions': ['dragToZoom', 'rightClickToReset'] },
                 'tooltip': {
                     'textStyle': {
                         'fontSize': 10,
@@ -246,7 +249,7 @@
         }
 
     }
-    function drawRefHLines(chart, dataTable, yval){
+    function drawRefHLines(chart, dataTable, yval) {
         var layout = chart.getChartLayoutInterface();
         var chartArea = layout.getChartAreaBoundingBox();
         var svg = chart.getContainer().getElementsByTagName('svg')[0];
