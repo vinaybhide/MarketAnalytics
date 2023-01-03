@@ -139,7 +139,7 @@ namespace MarketAnalytics.Pages.BuySell
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
+                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), TrendSpan);
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -229,7 +229,7 @@ namespace MarketAnalytics.Pages.BuySell
             {
                 foreach (var item in stockmasterIQ)
                 {
-                    DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), SMAValue, TrendSpan);
+                    DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), TrendSpan);
                 }
             }
             catch (Exception ex)

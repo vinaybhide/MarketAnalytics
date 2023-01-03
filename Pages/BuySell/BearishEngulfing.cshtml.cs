@@ -143,7 +143,7 @@ public int SMAValue { get; set; }
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            DbInitializer.GetBearishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
+                            DbInitializer.GetBearishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-DaysBehind), TrendSpan);
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -233,7 +233,7 @@ public int SMAValue { get; set; }
             {
                 foreach (var item in stockmasterIQ)
                 {
-                    DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-DaysBehind), SMAValue, TrendSpan);
+                    DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-DaysBehind), TrendSpan);
                 }
             }
             catch (Exception ex)
