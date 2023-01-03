@@ -64,7 +64,7 @@ namespace MarketAnalytics.Pages.History
 
                 groupList.Clear();
 
-                selectAll = new SelectListItem("-- Select All --", "-99");
+                selectAll = new SelectListItem("-- Refresh-V40, V40N, V200 --", "-99");
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("Refresh V40", "-98");
@@ -74,6 +74,9 @@ namespace MarketAnalytics.Pages.History
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("Refresh V200", "-96");
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Refresh All stocks", "-95");
                 groupList.Add(selectAll);
 
                 IQueryable<StockPriceHistory> stockpriceIQ = null;
@@ -95,7 +98,7 @@ namespace MarketAnalytics.Pages.History
                 }
 
                 StockMasterRec = null;
-                if(id == null)
+                if (id == null)
                 {
                     id = -1;
                 }
@@ -126,21 +129,22 @@ namespace MarketAnalytics.Pages.History
                         if (string.IsNullOrEmpty(lastPriceDate) == false)
                         {
                             DbInitializer.InitializeHistory(_context, StockMasterRec, lastPriceDate);
-
-                            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, System.Convert.ToDateTime(lastPriceDate));
-
-                            DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, System.Convert.ToDateTime(lastPriceDate), period: "14");
-
-                            DbInitializer.V20CandlesticPatternFinder(_context, StockMasterRec);
-
-                            DbInitializer.GetSMA_BUYSELL(_context, StockMasterRec, 20, 50, 200);
-
-                            DbInitializer.GetBullishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 30, 10);
-                            DbInitializer.GetBearishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 30, 10);
-                            DbInitializer.GetLifetimeHighLow(_context, StockMasterRec);
-
-                            RefreshAllStocks = false;
                         }
+
+                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, DateTime.Today.AddDays(-365));
+
+                        DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, DateTime.Today.AddDays(-365), period: "14");
+                        DbInitializer.getStochasticDataTableFromDaily(_context, StockMasterRec, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20" );
+
+                        DbInitializer.V20CandlesticPatternFinder(_context, StockMasterRec);
+
+                        DbInitializer.GetSMA_BUYSELL(_context, StockMasterRec, 20, 50, 200);
+
+                        DbInitializer.GetBullishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 10);
+                        DbInitializer.GetBearishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 10);
+                        DbInitializer.GetLifetimeHighLow(_context, StockMasterRec);
+
+                        RefreshAllStocks = false;
                     }
 
 
@@ -155,7 +159,7 @@ namespace MarketAnalytics.Pages.History
                                                                 && (s.StockMasterID == CurrentID));
                     }
                 }
-                else if((id != null) && (id < -1))
+                else if ((id != null) && (id < -1))
                 {
                     RefreshHistoryForGroup((int)id);
                     if (id == -99)
@@ -179,6 +183,11 @@ namespace MarketAnalytics.Pages.History
                     {
                         stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMaster.V200 == true));
                         CompanyName = "V200";
+                    }
+                    else if (id == -95)
+                    {
+                        stockpriceIQ = _context.StockPriceHistory;
+                        CompanyName = "History for all stocks";
                     }
                 }
                 else
@@ -235,25 +244,31 @@ namespace MarketAnalytics.Pages.History
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true));
                 }
+                else if (groupId == -95)
+                {
+                    stockmasterIQ = _context.StockMaster;
+                }
                 foreach (var item in stockmasterIQ)
                 {
                     lastPriceDate = DbInitializer.IsHistoryUpdated(_context, item);
                     if (string.IsNullOrEmpty(lastPriceDate) == false)
                     {
                         DbInitializer.InitializeHistory(_context, item, lastPriceDate);
-
-                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item, System.Convert.ToDateTime(lastPriceDate));
-
-                        DbInitializer.getRSIDataTableFromDaily(_context, item, System.Convert.ToDateTime(lastPriceDate), period: "14");
-
-                        DbInitializer.V20CandlesticPatternFinder(_context, item);
-
-                        DbInitializer.GetSMA_BUYSELL(_context, item, 20, 50, 200);
-
-                        DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 30, 10);
-                        DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 30, 10);
-                        DbInitializer.GetLifetimeHighLow(_context, item);
                     }
+                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item, DateTime.Today.AddDays(-365));
+
+                    DbInitializer.getRSIDataTableFromDaily(_context, item, DateTime.Today.AddDays(-365), period: "14");
+
+                    DbInitializer.getStochasticDataTableFromDaily(_context, item, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20");
+
+                    DbInitializer.V20CandlesticPatternFinder(_context, item);
+
+                    DbInitializer.GetSMA_BUYSELL(_context, item, 20, 50, 200);
+
+                    DbInitializer.GetBullishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 10);
+                    DbInitializer.GetBearishEngulfingBuySellList(_context, item, DateTime.Today.AddDays(-180), 10);
+                    DbInitializer.GetLifetimeHighLow(_context, item);
+
                 }
             }
             catch (Exception ex)
