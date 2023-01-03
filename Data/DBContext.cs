@@ -17,6 +17,7 @@ namespace MarketAnalytics.Data
         }
 
         public DbSet<MarketAnalytics.Models.StockMaster> StockMaster { get; set; } = default!;
+        public DbSet<MarketAnalytics.Models.UpdateTracker> UpdateTracker { get; set; } = default;
         public DbSet<MarketAnalytics.Models.StockPriceHistory> StockPriceHistory { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.Portfolio_Master> PORTFOLIO_MASTER { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.PORTFOLIO> PORTFOLIO { get; set; } = default!;
@@ -27,6 +28,7 @@ namespace MarketAnalytics.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<UpdateTracker>().ToTable(nameof(UpdateTracker));
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster");
             //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory");
             modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory").Navigation(e => e.StockMaster).AutoInclude();
