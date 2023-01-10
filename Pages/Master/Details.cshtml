@@ -86,6 +86,6 @@
     </dl>
 </div>
 <div>
-    <a asp-page="./Edit" asp-route-id="@Model.StockMaster?.StockMasterID" asp-route-pageIndex="@Model.parentPageIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Edit</a> |
-    <a asp-page="./Index" asp-route-pageIndex="@Model.parentPageIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Back to List</a>
+    <a asp-page="./Edit" asp-route-id="@Model.StockMaster?.StockMasterID" asp-route-groupsel="@Model.CurrentGroup" asp-route-pageIndex="@Model.parentPageIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Edit</a> |
+    <a asp-page="./Index" asp-route-pageIndex="@Model.parentPageIndex" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Back to List</a>
 </div>

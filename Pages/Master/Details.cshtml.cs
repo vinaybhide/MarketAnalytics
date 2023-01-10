@@ -21,7 +21,8 @@ namespace MarketAnalytics.Pages.Master
 
         [BindProperty]
         public string CurrentFilter { get; set; }
-
+        [BindProperty]
+        public int? CurrentGroup { get; set; }
         public DetailsModel(MarketAnalytics.Data.DBContext context)
         {
             _context = context;
@@ -29,7 +30,7 @@ namespace MarketAnalytics.Pages.Master
 
         public StockMaster StockMaster { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id, int? pageIndex, string sortOrder, string currentFilter)
+        public async Task<IActionResult> OnGetAsync(int? id, int? groupsel, int? pageIndex, string sortOrder, string currentFilter)
         {
             if (id == null || _context.StockMaster == null)
             {
@@ -43,7 +44,7 @@ namespace MarketAnalytics.Pages.Master
             }
             CurrentSort = sortOrder;
             CurrentFilter = currentFilter;
-
+            CurrentGroup = groupsel;
             parentPageIndex = (int)pageIndex;
             StockMaster = stockmaster;
             return Page();

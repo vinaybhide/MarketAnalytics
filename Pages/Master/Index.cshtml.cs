@@ -12,6 +12,8 @@ using System.Data;
 using System.Net;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace MarketAnalytics.Pages.Master
 {
@@ -19,11 +21,16 @@ namespace MarketAnalytics.Pages.Master
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public List<SelectListItem> menuList { get; set; }
+        public List<SelectListItem> groupList { get; set; }
+
 
         public IndexModel(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
+            menuList = new List<SelectListItem>();
+            groupList = new List<SelectListItem>();
         }
 
         public string ExchangeSort { get; set; }
@@ -32,20 +39,69 @@ namespace MarketAnalytics.Pages.Master
         public string V40Sort { get; set; }
         public string V40NSort { get; set; }
         public string V200Sort { get; set; }
+        [BindProperty]
         public string CurrentFilter { get; set; }
+        [BindProperty]
         public string CurrentSort { get; set; }
 
         public bool RefreshAllStocks { get; set; } = false;
         [BindProperty]
-        public int CurrentID { get; set; }
+        public int? CurrentGroup { get; set; }
+        [BindProperty]
+        public int? CurrentPageIndex { get; set; }
+        [BindProperty]
+        public string CurrentGroupSelection { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id,
-                    bool? refreshAll, bool? history, bool? getQuote, bool? v40, bool? v40N,
-                    bool? v200, bool? lifetimeHighLow)
+                    bool? refreshAll, bool? history, bool? getQuote, bool? lifetimeHighLow, int? groupsel, bool? updateStrategy)
         {
             if (_context.StockMaster != null)
             {
+                groupList.Clear();
+                SelectListItem selectAll = new SelectListItem("-- Show All --", "-1", true);
+                groupList.Insert(0, selectAll);
+
+                selectAll = new SelectListItem("-- Show: V40, V40N, V200 --", "-99");
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show V40", "-98");
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show V40N", "-97");
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show V200", "-96");
+                groupList.Add(selectAll);
+
+                menuList.Clear();
+                SelectListItem menuItem = new SelectListItem("-- Select Action --", "-1");
+                menuList.Add(menuItem);
+
+                menuItem = new SelectListItem("Edit Category", "0");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Show Details", "1");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Get Quote", "2");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Update (HighLow/Strategy)", "3");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Show History", "4");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Chart: History", "5");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Chart: SMA-RSI-STOCH", "6");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("SMA V40 Strategy", "7");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("V20 Strategy", "8");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Bullish Engulfing Strategy", "9");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Bearish Engulfing STrategy", "10");
+                menuList.Add(menuItem);
+
+
                 //StockMaster = await _context.StockMaster.ToListAsync();
                 //Commented above line and Added following for sorting, searching, paging
                 CurrentSort = sortOrder;
@@ -74,7 +130,36 @@ namespace MarketAnalytics.Pages.Master
                     RefreshAllStocks = false;
                 }
 
-                if (id != null)
+                IQueryable<StockMaster> stockmasterIQ = null;
+                
+                CurrentGroup = groupsel;
+
+                if((CurrentGroup != null) && (CurrentGroup == -99))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true)));
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == -98))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true) );
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == -97))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true));
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == -96))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true));
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else
+                {
+                    stockmasterIQ = from s in _context.StockMaster select s;
+                }
+
+                if ((id != null) && (id > 0))
                 {
                     var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
@@ -107,22 +192,32 @@ namespace MarketAnalytics.Pages.Master
                             //List<BULLISH_ENGULFING_STRATEGY> listEngulfing = DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord,
                             //    DateTime.Today.AddDays(-180), 30);
                         }
-                        if ((lifetimeHighLow != null) && (lifetimeHighLow == true))
+                        if((updateStrategy != null) && (updateStrategy == true))
                         {
-                            double high, low = 0;
+                            string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
+                            if (string.IsNullOrEmpty(lastPriceDate) == false)
+                            {
+                                DbInitializer.InitializeHistory(_context, selectedRecord, lastPriceDate);
+                            }
 
+                            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, selectedRecord, DateTime.Today.AddDays(-365));
+
+                            DbInitializer.getRSIDataTableFromDaily(_context, selectedRecord, DateTime.Today.AddDays(-365), period: "14");
+                            DbInitializer.getStochasticDataTableFromDaily(_context, selectedRecord, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20");
+
+                            DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord);
+
+                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, 20, 50, 200);
+
+                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-180), 10);
+                            DbInitializer.GetBearishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-180), 10);
                             DbInitializer.GetLifetimeHighLow(_context, selectedRecord);
-                            //selectedRecord.LIFETIME_HIGH = high;
-                            //selectedRecord.LIFETIME_LOW = low;
-                            //_context.StockMaster.Update(selectedRecord);
-                            //_context.SaveChanges();
                         }
                     }
                 }
 
                 CurrentFilter = searchString;
 
-                IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
 
                 if (!String.IsNullOrEmpty(searchString))
                 {
@@ -170,14 +265,50 @@ namespace MarketAnalytics.Pages.Master
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
+                CurrentPageIndex = pageIndex;
                 StockMaster = await PaginatedList<StockMaster>.CreateAsync(stockmasterIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
-        public IActionResult SelectedRow(int id, int stockid)
-        {
-            CurrentID = stockid;
-            return Page();
-        }
 
+        public IActionResult OnPostStockAction(int? id, string menuitemsel, string sortOrder, int pageIndex, string currentFilter, int? groupsel)
+        {
+            if ((id != null) && (menuitemsel.Equals("-1") == false))
+            {
+                StockMaster stockMaster = _context.StockMaster.FirstOrDefault(m => m.StockMasterID == id);
+
+                switch (menuitemsel)
+                {
+                    case "0"://case of edit category
+                        return RedirectToPage("./Edit", new { id = id, groupsel= groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
+                    case "1"://case of show details
+                        return RedirectToPage("./Details", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
+                    case "2"://case of Get Quote
+                             //DbInitializer.UpdateStockQuote(_context, stockMaster);
+                        return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote=true, updateStrategy = false });
+                    case "3": //case of update high low & strategy
+                              //DbInitializer.GetLifetimeHighLow(_context, stockMaster);
+                        return RedirectToPage("./Index", new { id = id, groupsel=groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = true, updateStrategy = true });
+
+                    case "4": //case of history
+                        return RedirectToPage("/History/Index", new { id = id });
+
+                    case "5": //case of history chart
+                        return RedirectToPage("/StandardIndicators/chartHistory", new { stockid = id, onlyhistory = 0, history = true });
+                    case "6": //case of chart SMA RSI STOCH
+                        return RedirectToPage("/StandardIndicators/chartSMARSISTOCH", new { id = id });
+                    case "7": //case of strategy SMA
+                        return RedirectToPage("/BuySell/smav40", new { symbolToUpdate = id });
+                    case "8": //case of strategy V20
+                        return RedirectToPage("/BuySell/v20BuySell", new { symbolToUpdate = id });
+                    case "9": //case of strategy Bullinsh engulfing
+                        return RedirectToPage("/BuySell/BullishEngulfing", new { symbolToUpdate = id });
+                    case "10": //case of strategy Bearish Engulfing
+                        return RedirectToPage("/BuySell/BearishEngulfing", new { symbolToUpdate = id });
+                    default:
+                        return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
+                }
+            }
+            return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
+        }
     }
 }

@@ -34,7 +34,9 @@ namespace MarketAnalytics.Pages.Master
         [BindProperty]
         public string CurrentFilter { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id, int? pageIndex, string sortOrder, string currentFilter)
+        [BindProperty]
+        public int? CurrentGroup { get; set; }
+        public async Task<IActionResult> OnGetAsync(int? id, int? groupsel, int? pageIndex, string sortOrder, string currentFilter)
         {
             if (id == null || _context.StockMaster == null)
             {
@@ -47,7 +49,7 @@ namespace MarketAnalytics.Pages.Master
             }
             CurrentSort = sortOrder;
             CurrentFilter = currentFilter;
-
+            CurrentGroup = groupsel;
             parentPageIndex = (int)pageIndex;
             StockMaster = stockmaster;
             return Page();
@@ -80,7 +82,7 @@ namespace MarketAnalytics.Pages.Master
                 }
             }
 
-            return RedirectToPage("./Index", new {pageIndex = parentPageIndex, sortOrder = CurrentSort, currentFilter = CurrentFilter});
+            return RedirectToPage("./Index", new {pageIndex = parentPageIndex, groupsel = CurrentGroup, sortOrder = CurrentSort, currentFilter = CurrentFilter});
         }
 
         private bool StockMasterExists(int id)

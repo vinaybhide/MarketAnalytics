@@ -18,19 +18,30 @@
                 <form asp-page="./Index" method="get">
                     <div class="form-actions no-color">
                         <p>
-
+                            <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
                             <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
-                            @*|
-                            <a asp-page="./Index">Back to full List</a>*@
                         </p>
                     </div>
                 </form>
             </th>
             <th>
+                <form asp-page="./Index" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <select name="groupsel" asp-items="Model.groupList" style="font-size:small">
+                            </select>
+
+                            <input type="submit" value="Show Selected Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
+            </th>
+
+            <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh All</a>
+                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Update Master</a>
                     </p>
                 </div>
             </th>
@@ -59,6 +70,7 @@
 <table class="table">
     <thead>
         <tr style="text-align:center; font-size:small;">
+            <th>Action</th>
             <th>
                 <a asp-page="./Index" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
@@ -77,7 +89,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].QuoteDateTime)
             </th>
-            <th></th>
+            @*<th></th>*@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].Open)
             </th>
@@ -126,127 +138,161 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.StockMaster)
+        @if (Model.StockMaster != null)
         {
-                //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
+            @foreach (var item in Model.StockMaster)
+            {
+            //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
 
-            //<tr style="text-align:center; font-size:small;" onclick="location.href = '@(Url.Action("./portfolioTxnIndex/SelectedRow"))'">
+                //<tr style="text-align:center; font-size:small;" onclick="location.href = '@(Url.Action("./portfolioTxnIndex/SelectedRow"))'">
 
-            //<tr style="text-align:center; font-size:small;" onclick="onselectedrow(this); location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})' ">
-            @*<tr style="text-align:center; font-size:small;" onclick="location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})';selectedRow(this); ">*@
-            <tr style="text-align:center; font-size:small;">
-                <td>
-                    @Html.DisplayFor(modelItem => item.Exchange)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Symbol)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CompName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.QuoteDateTime)
-                </td>
-                <td>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a asp-page="./Edit" asp-route-id="@item.StockMasterID"
-                           asp-route-sortOrder="@Model.CurrentSort"
-                           asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll=false
-                           asp-route-getQuote="false">Edit Category</a>
-                        </li>
-                        <li>
-                            <a asp-page="./Details" asp-route-id="@item.StockMasterID"
-                           asp-route-sortOrder="@Model.CurrentSort"
-                           asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll=false
-                           asp-route-getQuote="false">Details</a>
-                        </li>
-                        <li>
-                            <a asp-page="./Delete" asp-route-id="@item.StockMasterID"
-                           asp-route-sortOrder="@Model.CurrentSort"
-                           asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll=false
-                           asp-route-getQuote="false">Delete</a>
-                        </li>
-                        <li>
-                            <a asp-page="./Index" asp-route-id="@item.StockMasterID"
-                           asp-route-sortOrder="@Model.CurrentSort"
-                           asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll=false
-                           asp-route-getQuote="true">Get Quote</a>
-                        </li>
-                        <li>
-                            <a asp-page="./Index" asp-route-id="@item.StockMasterID"
-                           asp-route-sortOrder="@Model.CurrentSort"
-                           asp-route-pageIndex="@Model.StockMaster.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter"
-                           asp-route-refreshAll=false
-                           asp-route-getQuote="false"
-                           asp-route-lifetimeHighLow="true">Lifetime high/low</a>
-                        </li>
-                        <li>
-                            <a asp-page="/History/Index"
-                           asp-route-id="@item.StockMasterID"
-                           asp-route-history=true>History</a>
-                        </li>
-                    </ul>
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Open)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.High)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Low)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Close)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Volume)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Change)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ChangePercent)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.PrevClose)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LIFETIME_HIGH)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LIFETIME_LOW)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.V40)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.V40N)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.V200)
-                </td>
+                //<tr style="text-align:center; font-size:small;" onclick="onselectedrow(this); location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})' ">
+                @*<tr style="text-align:center; font-size:small;" onclick="location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})';selectedRow(this); ">*@
+                <tr style="text-align:center; font-size:small;">
+                    <td>
+                        @*<form id="TheForm" method="post" asp-page-handler="StockAction" asp-route-id="@item.StockMasterID">*@
+                        <form method="post" asp-page-handler="StockAction" asp-route-groupsel="@Model.CurrentGroup" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.CurrentPageIndex" asp-route-currentFilter="@Model.CurrentFilter">
+                            <div class="form-actions no-color">
+                                @*<input type="hidden" name="id" value="@item.StockMasterID" />
+                        <input type="hidden" name="sortOrder" value="@Model.CurrentSort" />
+                        <input type="hidden" name="pageIndex" value="@Model.CurrentPageIndex" />
+                        <input type="hidden" name="currentFilter" value="@Model.CurrentFilter" />*@
+
+                                @*<select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" onchange="document.getElementById('TheForm').submit();" style="font-size:small">*@
+                                <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" style="font-size:small">
+                                    @*<option selected  value="-1">Choose...</option>*@
+                                </select>
+                            </div>
+                        </form>
+
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Exchange)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Symbol)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CompName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.QuoteDateTime)
+                    </td>
+                    @*<td>
+            <ul class="list-unstyled">
+            <li>
+            <a asp-page="./Edit" asp-route-id="@item.StockMasterID"
+            asp-route-sortOrder="@Model.CurrentSort"
+            asp-route-pageIndex="@Model.StockMaster.PageIndex"
+            asp-route-currentFilter="@Model.CurrentFilter"
+            asp-route-refreshAll=false
+            asp-route-getQuote="false">Edit Category</a>
+            </li>
+            <li>
+            <a asp-page="./Details" asp-route-id="@item.StockMasterID"
+            asp-route-sortOrder="@Model.CurrentSort"
+            asp-route-pageIndex="@Model.StockMaster.PageIndex"
+            asp-route-currentFilter="@Model.CurrentFilter"
+            asp-route-refreshAll=false
+            asp-route-getQuote="false">Details</a>
+            </li>
+            <li>
+            <a asp-page="./Delete" asp-route-id="@item.StockMasterID"
+            asp-route-sortOrder="@Model.CurrentSort"
+            asp-route-pageIndex="@Model.StockMaster.PageIndex"
+            asp-route-currentFilter="@Model.CurrentFilter"
+            asp-route-refreshAll=false
+            asp-route-getQuote="false">Delete</a>
+            </li>
+            <li>
+            <a asp-page="./Index" asp-route-id="@item.StockMasterID"
+            asp-route-sortOrder="@Model.CurrentSort"
+            asp-route-pageIndex="@Model.StockMaster.PageIndex"
+            asp-route-currentFilter="@Model.CurrentFilter"
+            asp-route-refreshAll=false
+            asp-route-getQuote="true">Get Quote</a>
+            </li>
+            <li>
+            <a asp-page="./Index" asp-route-id="@item.StockMasterID"
+            asp-route-sortOrder="@Model.CurrentSort"
+            asp-route-pageIndex="@Model.StockMaster.PageIndex"
+            asp-route-currentFilter="@Model.CurrentFilter"
+            asp-route-refreshAll=false
+            asp-route-getQuote="false"
+            asp-route-lifetimeHighLow="true">Lifetime high/low</a>
+            </li>
+            <li>
+            <a asp-page="/History/Index"
+            asp-route-id="@item.StockMasterID"
+            asp-route-history=true>History</a>
+            </li>
+            </ul>
+            </td>*@
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Open)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.High)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Low)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Close)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Volume)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Change)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ChangePercent)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PrevClose)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LIFETIME_HIGH)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LIFETIME_LOW)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.V40)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.V40N)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.V200)
+                    </td>
 
 
-            </tr>
+                </tr>
+            }
         }
     </tbody>
 </table>
 @{
-    var prevDisabled = !Model.StockMaster.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.StockMaster.HasNextPage ? "disabled" : "";
+    var prevDisabled = (Model.StockMaster != null) && (!Model.StockMaster.HasPreviousPage) ? "disabled" : "";
+    var nextDisabled = (Model.StockMaster != null) && (!Model.StockMaster.HasNextPage) ? "disabled" : "";
 }
-<a asp-page="./Index" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
+@if (Model.StockMaster != null)
+{
+    <a asp-page="./Index" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
-<a asp-page="./Index" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
+    <a asp-page="./Index" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+}
+@section scripts{
+    <script>
+        $(function () {
+            $(".menuitemselect").change(function () {
+                $(this).closest("form").submit();
+                //$('#TheForm').submit();
+            })
+        })
+
+    </script>
+}
