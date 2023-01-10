@@ -11,5 +11,6 @@ namespace MarketAnalytics.Models
         public DateTime REF_DATE { get; set; } = default(DateTime);
         public string TYPE { get; set; } = string.Empty;
         public string DATA { get; set; } = string.Empty;
+        public int StockMasterID { get; set; }
     }
 }
