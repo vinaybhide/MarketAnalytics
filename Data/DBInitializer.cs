@@ -164,7 +164,7 @@ namespace MarketAnalytics.Data
                 {
                     context.StockMaster.AddRange(newRecords);
                 }
-                context.SaveChanges();
+                context.SaveChanges(true);
             }
         }
 
@@ -266,7 +266,7 @@ namespace MarketAnalytics.Data
                     {
                         context.StockPriceHistory.AddRange(newRecords);
                     }
-                    context.SaveChanges();
+                    context.SaveChanges(true);
                 }
             }
             catch (Exception ex)
@@ -326,6 +326,7 @@ namespace MarketAnalytics.Data
                 //throw ex;
             }
         }
+
 
         /// <summary>
         /// Fetches price data for given symbol from periodDt1 to periodDt2
@@ -468,6 +469,37 @@ namespace MarketAnalytics.Data
             return breturn;
         }
 
+        public static void UpdateStockQuote(DBContext context, StockMaster stockMaster)
+        {
+            if (stockMaster != null)
+            {
+                try
+                {
+                    DateTime[] quoteDate = null;
+                    double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+
+                    DbInitializer.GetQuote(stockMaster.Symbol + "." + stockMaster.Exchange, out quoteDate, out open,
+                        out high, out low, out close,
+                        out volume, out change, out changepercent, out prevclose);
+                    if (quoteDate != null)
+                    {
+                        stockMaster.QuoteDateTime = quoteDate[0];
+                        stockMaster.Open = open[0];
+                        stockMaster.High = high[0];
+                        stockMaster.Low = low[0];
+                        stockMaster.Close = close[0];
+                        stockMaster.Volume = volume[0];
+                        stockMaster.ChangePercent = changepercent[0];
+                        stockMaster.Change = change[0];
+                        stockMaster.PrevClose = prevclose[0];
+                        context.StockMaster.Update(stockMaster);
+                        context.SaveChanges(true);
+                    }
+                }
+                catch
+                { }
+            }
+        }
         /// <summary>
         /// For given StockMaster finds lifetime high & low from history data 
         /// It also finds if stock closing price was <= 67% of lifetime high
@@ -521,9 +553,9 @@ namespace MarketAnalytics.Data
                 stockMaster.DIFF_FROM_LIFETIME_HIGH = changefromhigh;
                 stockMaster.HI_LOW_67_50_LastUpDt = DateTime.Today.Date;
                 context.StockMaster.Update(stockMaster);
-                context.SaveChanges();
+                context.SaveChanges(true);
             }
-            catch (Exception ex)
+            catch
             { }
         }
 
@@ -612,7 +644,7 @@ namespace MarketAnalytics.Data
                 }
                 iPeriod = System.Convert.ToInt32(period);
 
-                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => s.TYPE.Equals("RSI"));
+                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.TYPE.Equals("RSI")));
                 if (updateTrackerIQ.Count() > 0)
                 {
                     tracker = updateTrackerIQ.FirstOrDefault();
@@ -759,26 +791,30 @@ namespace MarketAnalytics.Data
 
                         }
                     }
-                    stockMaster.RSI_LastUpDt = DateTime.Today.Date;
-                    context.StockMaster.Update(stockMaster);
-
-                    if (tracker == null)
+                    if (currentHist != null)
                     {
-                        tracker = new UpdateTracker();
-                        tracker.TYPE = "RSI";
-                        tracker.REF_DATE = currentHist.PriceDate;
-                        tracker.DATA = rownum + "," + iPeriod;
-                        context.UpdateTracker.Add(tracker);
-                    }
-                    else
-                    {
-                        //tracker.TYPE = "SMA";
-                        tracker.REF_DATE = currentHist.PriceDate;
-                        tracker.DATA = rownum + "," + iPeriod;
-                        context.UpdateTracker.Update(tracker);
-                    }
+                        stockMaster.RSI_LastUpDt = DateTime.Today.Date;
+                        context.StockMaster.Update(stockMaster);
 
-                    context.SaveChanges();
+                        if (tracker == null)
+                        {
+                            tracker = new UpdateTracker();
+                            tracker.StockMasterID = stockMaster.StockMasterID;
+                            tracker.TYPE = "RSI";
+                            tracker.REF_DATE = currentHist.PriceDate;
+                            tracker.DATA = rownum + "," + iPeriod;
+                            context.UpdateTracker.Add(tracker);
+                        }
+                        else
+                        {
+                            //tracker.TYPE = "SMA";
+                            tracker.REF_DATE = currentHist.PriceDate;
+                            tracker.DATA = rownum + "," + iPeriod;
+                            context.UpdateTracker.Update(tracker);
+                        }
+
+                        context.SaveChanges(true);
+                    }
                 }
             }
             catch (Exception ex)
@@ -844,7 +880,7 @@ namespace MarketAnalytics.Data
                 IOrderedQueryable<StockPriceHistory> stochIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(s => s.PriceDate);
                 //&& s.PriceDate.Date >= (fromDate.Date));
 
-                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => s.TYPE.Equals("STOCH"));
+                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.TYPE.Equals("STOCH")));
                 if (updateTrackerIQ.Count() > 0)
                 {
                     tracker = updateTrackerIQ.FirstOrDefault();
@@ -939,26 +975,30 @@ namespace MarketAnalytics.Data
                         }
                     }
                 }
-                stockMaster.STOCH_LastUpDt = DateTime.Today.Date;
-                context.StockMaster.Update(stockMaster);
-
-                if (tracker == null)
+                if (currentHist != null)
                 {
-                    tracker = new UpdateTracker();
-                    tracker.TYPE = "STOCH";
-                    tracker.REF_DATE = currentHist.PriceDate;
-                    tracker.DATA = rownum + "," + startFastK + "," + startSlowD + "," + iFastKPeriod;
-                    context.UpdateTracker.Add(tracker);
-                }
-                else
-                {
-                    //tracker.TYPE = "STOCH";
-                    tracker.REF_DATE = currentHist.PriceDate;
-                    tracker.DATA = rownum + "," + startFastK + "," + startSlowD + "," + iFastKPeriod;
-                    context.UpdateTracker.Update(tracker);
-                }
+                    stockMaster.STOCH_LastUpDt = DateTime.Today.Date;
+                    context.StockMaster.Update(stockMaster);
 
-                context.SaveChanges();
+                    if (tracker == null)
+                    {
+                        tracker = new UpdateTracker();
+                        tracker.StockMasterID = stockMaster.StockMasterID;
+                        tracker.TYPE = "STOCH";
+                        tracker.REF_DATE = currentHist.PriceDate;
+                        tracker.DATA = rownum + "," + startFastK + "," + startSlowD + "," + iFastKPeriod;
+                        context.UpdateTracker.Add(tracker);
+                    }
+                    else
+                    {
+                        //tracker.TYPE = "STOCH";
+                        tracker.REF_DATE = currentHist.PriceDate;
+                        tracker.DATA = rownum + "," + startFastK + "," + startSlowD + "," + iFastKPeriod;
+                        context.UpdateTracker.Update(tracker);
+                    }
+
+                    context.SaveChanges(true);
+                }
                 //}
             }
             catch (Exception ex)
@@ -1044,7 +1084,7 @@ namespace MarketAnalytics.Data
                     InitializeHistory(context, stockMaster, lastPriceDate);
                 }
 
-                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => s.TYPE.Equals("SMA"));
+                IQueryable<UpdateTracker> updateTrackerIQ = context.UpdateTracker.Where(s => (s.StockMasterID == stockMaster.StockMasterID) && (s.TYPE.Equals("SMA")));
                 if (updateTrackerIQ.Count() > 0)
                 {
                     tracker = updateTrackerIQ.FirstOrDefault();
@@ -1224,25 +1264,28 @@ namespace MarketAnalytics.Data
                     context.StockPriceHistory.Update(currentHist);
                 }
 
-                stockMaster.SMA_LastUpDt = DateTime.Today.Date;
-                context.StockMaster.Update(stockMaster);
-
-                if (tracker == null)
+                if (currentHist != null)
                 {
-                    tracker = new UpdateTracker();
-                    tracker.TYPE = "SMA";
-                    tracker.REF_DATE = currentHist.PriceDate;
-                    tracker.DATA = rownum + "," + indexSmall + "," + sumSmall + "," + indexMid + "," + sumMid + "," + indexLong + "," + sumLong + "," + currentClosePrice;
-                    context.UpdateTracker.Add(tracker);
+                    stockMaster.SMA_LastUpDt = DateTime.Today.Date;
+                    context.StockMaster.Update(stockMaster);
+                    if (tracker == null)
+                    {
+                        tracker = new UpdateTracker();
+                        tracker.StockMasterID = stockMaster.StockMasterID;
+                        tracker.TYPE = "SMA";
+                        tracker.REF_DATE = currentHist.PriceDate;
+                        tracker.DATA = rownum + "," + indexSmall + "," + sumSmall + "," + indexMid + "," + sumMid + "," + indexLong + "," + sumLong + "," + currentClosePrice;
+                        context.UpdateTracker.Add(tracker);
+                    }
+                    else
+                    {
+                        //tracker.TYPE = "SMA";
+                        tracker.REF_DATE = currentHist.PriceDate;
+                        tracker.DATA = rownum + "," + indexSmall + "," + sumSmall + "," + indexMid + "," + sumMid + "," + indexLong + "," + sumLong + "," + currentClosePrice;
+                        context.UpdateTracker.Update(tracker);
+                    }
+                    context.SaveChanges(true);
                 }
-                else
-                {
-                    //tracker.TYPE = "SMA";
-                    tracker.REF_DATE = currentHist.PriceDate;
-                    tracker.DATA = rownum + "," + indexSmall + "," + sumSmall + "," + indexMid + "," + sumMid + "," + indexLong + "," + sumLong + "," + currentClosePrice;
-                    context.UpdateTracker.Update(tracker);
-                }
-                context.SaveChanges();
                 //}
             }
             catch (Exception ex)
@@ -1327,7 +1370,7 @@ namespace MarketAnalytics.Data
                 //context.StockPriceHistory.Update(currentHist);
                 context.StockMaster.Update(stockMaster);
 
-                context.SaveChanges();
+                context.SaveChanges(true);
             }
             catch (Exception ex)
             {
@@ -1442,7 +1485,7 @@ namespace MarketAnalytics.Data
                         context.StockPriceHistory.Update(currentHist);
                     }
 
-                    context.SaveChanges();
+                    context.SaveChanges(true);
                 }
             }
             catch (Exception ex)
@@ -1599,7 +1642,7 @@ namespace MarketAnalytics.Data
                 }
                 stockMaster.BULL_ENGULF_LastUpDt = DateTime.Today.Date;
                 context.StockMaster.Update(stockMaster);
-                context.SaveChanges();
+                context.SaveChanges(true);
             }
             catch (Exception ex)
             {
@@ -1729,7 +1772,7 @@ namespace MarketAnalytics.Data
                 }
                 stockMaster.BEAR_ENGULF_LastUpDt = DateTime.Today.Date;
                 context.StockMaster.Update(stockMaster);
-                context.SaveChanges();
+                context.SaveChanges(true);
             }
             catch (Exception ex)
             {
@@ -2046,7 +2089,7 @@ namespace MarketAnalytics.Data
                 }
                 stockMaster.V20_LastUpDt = DateTime.Today.Date;
                 context.StockMaster.Update(stockMaster);
-                context.SaveChanges();
+                context.SaveChanges(true);
 
             }
             catch (Exception ex)
@@ -2279,7 +2322,14 @@ namespace MarketAnalytics.Data
         }
         public static double FindSlowK(List<double> listClose, List<double> listHighestHigh, List<double> listLowestLow)
         {
-            double slowK = ((listClose.Last() - listLowestLow.Last()) / (listHighestHigh.Last() - listLowestLow.Last())) * 100;
+            double diffcloselow = listClose.Last() - listLowestLow.Last();
+            double diffhighlow = listHighestHigh.Last() - listLowestLow.Last();
+
+            double slowK = 0; // ((listClose.Last() - listLowestLow.Last()) / (listHighestHigh.Last() - listLowestLow.Last())) * 100;
+            if (diffhighlow > 0)
+            {
+                slowK = diffcloselow / diffhighlow * 100;
+            }
             return Math.Round(slowK, 4);
         }
 
@@ -2346,7 +2396,7 @@ namespace MarketAnalytics.Data
 
                             context.PORTFOLIOTXN.Update(duplicateitem);
                         }
-                        context.SaveChanges();
+                        context.SaveChanges(true);
                     }
                 }
                 //if ((updateBuySell != null) && (updateBuySell == true))
