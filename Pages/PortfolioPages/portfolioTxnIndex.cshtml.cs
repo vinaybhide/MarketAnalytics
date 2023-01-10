@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Routing;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -25,20 +26,26 @@ namespace MarketAnalytics.Pages.PortfolioPages
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> symbolList { get; set; }
+        public List<SelectListItem> menuList { get; set; }
 
         public PortfolioTxnIndex(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
             symbolList = new List<SelectListItem>();
+            menuList = new List<SelectListItem>();
         }
 
         public string DateSort { get; set; }
         public string ExchangeSort { get; set; }
         public string SymbolSort { get; set; }
         public string CompNameSort { get; set; }
+        [BindProperty]
         public string CurrentFilter { get; set; }
+        [BindProperty]
         public string CurrentSort { get; set; }
+        [BindProperty]
+        public int? CurrentPageIndex { get; set; }
 
         public bool RefreshAllStocks { get; set; } = false;
         public PaginatedList<PORTFOLIOTXN> portfolioTxn { get; set; } = default!;
@@ -61,6 +68,33 @@ namespace MarketAnalytics.Pages.PortfolioPages
             if ((_context.PORTFOLIOTXN != null) && (masterid != null))
             {
                 MasterId = (int)masterid;
+
+                menuList.Clear();
+                SelectListItem menuItem = new SelectListItem("-- Select Action --", "-1");
+                menuList.Add(menuItem);
+
+                menuItem = new SelectListItem("Edit Transaction", "0");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Delete Transaction", "1");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Details", "2");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Update (Quote, Strategies, High/Low)", "3");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("History Table", "4");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Chart-History", "5");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Chart-SMA/RSI/STOCH", "6");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("SMA V40 Strategy", "7");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("V20 Strategy", "8");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Bullish Engulfing Strategy", "9");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Bearish Engulfing STrategy", "10");
+                menuList.Add(menuItem);
 
                 var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioMasterName = masterRec.PORTFOLIO_NAME;
@@ -185,6 +219,43 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 var pageSize = Configuration.GetValue("PageSize", 10);
                 portfolioTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
+        }
+
+        public IActionResult OnPostTransactionAction(string menuitemsel, int?masterid, int? txnid, int? stockid, int? pageIndex, string sortOrder, string currentFilter)
+        {
+            if ((menuitemsel.Equals("-1") == false) && (txnid != null) && (masterid != null) && (stockid != null))
+            {
+                //PORTFOLIOTXN currentTxn = _context.PORTFOLIOTXN.FirstOrDefault(t => t.PORTFOLIOTXN_ID== txnid);
+                switch (menuitemsel)
+                {
+                    case "0"://case of edit txn
+                        return RedirectToPage("./portfolioTxnEdit", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
+                    case "1"://case of delete txn
+                        return RedirectToPage("./portfolioTxnDelete", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
+                    case "2"://case of txn details
+                        return RedirectToPage("./portfolioTxnDetails", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
+                    case "3"://case of update get quote, buy sell, high low
+                        return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "true", refreshAll = "false", lifetimeHighLow = "false" });
+                    case "4"://case of show history table
+                        return RedirectToPage("/History/Index", new { id = stockid});
+                    case "5"://case of show history chart
+                        return RedirectToPage("/StandardIndicators/chartHistory", new { stockid = stockid, onlyhistory = 0, history = true });
+                    case "6"://case of show smarsistoch chart
+                        return RedirectToPage("/StandardIndicators/chartSMARSISTOCH", new { id = stockid});
+                    case "7": //case of strategy SMA
+                        return RedirectToPage("/BuySell/smav40", new { symbolToUpdate = stockid});
+                    case "8": //case of strategy V20
+                        return RedirectToPage("/BuySell/v20BuySell", new { symbolToUpdate = stockid });
+                    case "9": //case of strategy Bullinsh engulfing
+                        return RedirectToPage("/BuySell/BullishEngulfing", new { symbolToUpdate = stockid});
+                    case "10": //case of strategy Bearish Engulfing
+                        return RedirectToPage("/BuySell/BearishEngulfing", new { symbolToUpdate = stockid });
+
+                    default:
+                        return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
+                }
+            }
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = "true", refreshAll = "false", lifetimeHighLow = "false" });
         }
         public void SelectedRow()
         {
