@@ -48,18 +48,21 @@ namespace MarketAnalytics.Pages.Master
         [BindProperty]
         public int? CurrentGroup { get; set; }
         [BindProperty]
+        public int CurrentSel { get; set; }
+        [BindProperty]
         public int? CurrentPageIndex { get; set; }
         [BindProperty]
         public string CurrentGroupSelection { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id,
-                    bool? refreshAll, bool? history, bool? getQuote, bool? lifetimeHighLow, int? groupsel, bool? updateStrategy)
+                    bool? refreshAll, bool? history, bool? getQuote, bool? lifetimeHighLow, int? groupsel, bool? updateStrategy,
+                    string filterCategory)
         {
             if (_context.StockMaster != null)
             {
                 groupList.Clear();
-                SelectListItem selectAll = new SelectListItem("-- Show All --", "-1", true);
+                SelectListItem selectAll = new SelectListItem("-- Show All --", "-95", true);
                 groupList.Insert(0, selectAll);
 
                 selectAll = new SelectListItem("-- Show: V40, V40N, V200 --", "-99");
@@ -133,8 +136,18 @@ namespace MarketAnalytics.Pages.Master
                 IQueryable<StockMaster> stockmasterIQ = null;
                 
                 CurrentGroup = groupsel;
-
-                if((CurrentGroup != null) && (CurrentGroup == -99))
+                if( (string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
+                {
+                    updateStrategy = true;
+                }
+                if(CurrentGroup != null)
+                {
+                    if ((updateStrategy != null) && (updateStrategy == true))
+                    {
+                        DbInitializer.UpdateQuoteStrategy(_context, (int)CurrentGroup);
+                    }
+                }
+                if ((CurrentGroup != null) && (CurrentGroup == -99))
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true)));
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
@@ -166,55 +179,15 @@ namespace MarketAnalytics.Pages.Master
                     {
                         if (getQuote == true)
                         {
-                            //DateTime quoteDate;
-                            //double open, high, low, close, volume, change, changepercent, prevclose;
-                            DateTime[] quoteDate = null;
-                            double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-
-                            DbInitializer.GetQuote(selectedRecord.Symbol + "." + selectedRecord.Exchange, out quoteDate, out open,
-                                out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
-                            if (quoteDate != null)
-                            {
-                                selectedRecord.QuoteDateTime = quoteDate[0];
-                                selectedRecord.Open = open[0];
-                                selectedRecord.High = high[0];
-                                selectedRecord.Low = low[0];
-                                selectedRecord.Close = close[0];
-                                selectedRecord.Volume = volume[0];
-                                selectedRecord.ChangePercent = changepercent[0];
-                                selectedRecord.Change = change[0];
-                                selectedRecord.PrevClose = prevclose[0];
-                                _context.StockMaster.Update(selectedRecord);
-                                _context.SaveChanges();
-                            }
-
-                            //List<BULLISH_ENGULFING_STRATEGY> listEngulfing = DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord,
-                            //    DateTime.Today.AddDays(-180), 30);
+                            DbInitializer.UpdateStockQuote(_context, selectedRecord);
                         }
                         if((updateStrategy != null) && (updateStrategy == true))
                         {
-                            string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
-                            if (string.IsNullOrEmpty(lastPriceDate) == false)
-                            {
-                                DbInitializer.InitializeHistory(_context, selectedRecord, lastPriceDate);
-                            }
-
-                            DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, selectedRecord, DateTime.Today.AddDays(-365));
-
-                            DbInitializer.getRSIDataTableFromDaily(_context, selectedRecord, DateTime.Today.AddDays(-365), period: "14");
-                            DbInitializer.getStochasticDataTableFromDaily(_context, selectedRecord, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20");
-
-                            DbInitializer.V20CandlesticPatternFinder(_context, selectedRecord);
-
-                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, 20, 50, 200);
-
-                            DbInitializer.GetBullishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-180), 10);
-                            DbInitializer.GetBearishEngulfingBuySellList(_context, selectedRecord, DateTime.Today.AddDays(-180), 10);
-                            DbInitializer.GetLifetimeHighLow(_context, selectedRecord);
+                            DbInitializer.UpdateQuoteStrategy(_context, (int)id);
                         }
                     }
                 }
+                
 
                 CurrentFilter = searchString;
 
@@ -287,7 +260,7 @@ namespace MarketAnalytics.Pages.Master
                         return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote=true, updateStrategy = false });
                     case "3": //case of update high low & strategy
                               //DbInitializer.GetLifetimeHighLow(_context, stockMaster);
-                        return RedirectToPage("./Index", new { id = id, groupsel=groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = true, updateStrategy = true });
+                        return RedirectToPage("./Index", new { id = id, groupsel=groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = false, updateStrategy = true });
 
                     case "4": //case of history
                         return RedirectToPage("/History/Index", new { id = id });

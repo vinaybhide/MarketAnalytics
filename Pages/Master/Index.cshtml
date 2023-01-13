@@ -14,25 +14,29 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
+            <th style="border:solid thin">
+                <form asp-page="./Index" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <select id="groupid" name="groupsel" asp-items="Model.groupList" style="font-size:small"
+                                    onchange="groupselchange()">
+                            </select>
+                            <input type="submit" name="filterCategory" value="Show Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <input type="submit" name="filterCategory" value="Show & Update Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                            @*<a asp-page="./Index" asp-route-groupsel="@Model.CurrentSel" asp-route-updateStrategy="true" class="btn btn-sm btn-primary" style="font-size:small">Run Strategy model</a>*@
+                        </p>
+                    </div>
+                </form>
+            </th>
+
+            <th style="border:solid thin;">
                 <form asp-page="./Index" method="get">
                     <div class="form-actions no-color">
                         <p>
                             <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
-                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary" style="font-size:small" />
-                        </p>
-                    </div>
-                </form>
-            </th>
-            <th>
-                <form asp-page="./Index" method="get">
-                    <div class="form-actions no-color">
-                        <p>
-                            <select name="groupsel" asp-items="Model.groupList" style="font-size:small">
-                            </select>
-
-                            <input type="submit" value="Show Selected Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <input type="submit" value="Search" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <a asp-page="./Index" class="btn btn-sm btn-primary" style="font-size:small">Back to full List</a>
                         </p>
                     </div>
                 </form>
@@ -41,17 +45,17 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Update Master</a>
+                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Update Master List</a>
                     </p>
                 </div>
             </th>
-            <th>
+            @*<th>
                 <div class="form-actions no-color">
                     <p>
                         <a asp-page="./Index" style="font-size:small">Back to full List</a>
                     </p>
                 </div>
-            </th>
+            </th>*@
         </tr>
     </thead>
 </table>
@@ -293,6 +297,16 @@
                 //$('#TheForm').submit();
             })
         })
-
+        //function groupselchange()
+        //{
+        //    var grouplist = document.getElementById("groupid");
+        //    var value = grouplist.value;
+        //    alert('value='+ value);
+        //    var text = grouplist.options[grouplist.selectedIndex].text;
+        //    alert('text='+text);
+        //    document.getElementById("CurrentSel").value = value;
+        //    alert(document.getElementById("CurrentSel").value);
+        //    //return value;
+        //}
     </script>
 }
