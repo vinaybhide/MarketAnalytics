@@ -99,17 +99,14 @@
             </a>
             </th>*@
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)*@
-                QTY
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)
             </th>
             @*<th></th>*@
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)*@
-                Cost/Share
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)*@
-                Cost
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].CMP)
@@ -118,28 +115,37 @@
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_PCT)*@
-                %Gain
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_PCT)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_AMT)*@
-                Gain
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_AMT)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)*@
-                Lifetime High
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].BUY_VS_52HI)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)*@
-                Lifetime Low
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].DAYS_SINCE)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LESSTHAN_67PC_ON)*@
-                67% Less On
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)
             </th>
             <th>
-                @*@Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_LEFETIME_HIGH)*@
-                Diff from Lifetime High
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LESSTHAN_67PCT_ON)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_LIFETIME_HIGH)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.YEAR_HI)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.YEAR_LO)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_YEAR_HI)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
@@ -195,7 +201,7 @@
 
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.PURCHASE_DATE)
+                        @Html.DisplayFor(modelItem => item.TXN_DATE)
                     </td>
                     @*<td>
             @Html.DisplayFor(modelItem => item.stockMaster.Exchange)
@@ -317,6 +323,12 @@
                         @Html.DisplayFor(modelItem => item.GAIN_AMT)
                     </td>
                     <td>
+                        @Html.DisplayFor(modelItem => item.BUY_VS_52HI)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DAYS_SINCE)
+                    </td>
+                    <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_HIGH)
                     </td>
                     <td>
@@ -330,6 +342,15 @@
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_LIFETIME_HIGH)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.YEAR_HI)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.YEAR_LO)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_YEAR_HI)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.stockMaster.V40)

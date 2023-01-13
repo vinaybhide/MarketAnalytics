@@ -40,7 +40,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
             portfolioTxn = selectedrecord;
-            txnDate = selectedrecord.PURCHASE_DATE;
+            txnDate = selectedrecord.TXN_DATE;
             pageIndex = (int)pageIndex;
             parentSortOrder = sortOrder;
             parentFilter = currentFilter;

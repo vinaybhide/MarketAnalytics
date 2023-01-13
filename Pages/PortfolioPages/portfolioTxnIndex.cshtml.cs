@@ -148,17 +148,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         searchString = selectedRecord.stockMaster.Symbol;
                     }
                 }
-                //else if (string.IsNullOrEmpty(searchString))
-                //{
-                //    foreach (var item in distinctIQ)
-                //    {
-                //        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null, item, getQuote, updateBuySell, lifetimeHighLow);
 
-                //        //await GetQuoteAndUpdate(item.StockMasterID, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
-                //        //await GetQuoteAndUpdate(item.StockMasterID, masterid, true, true, true, true);
-                //    }
-                //    txnIQ = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterid);
-                //}
+                if ((refreshAll != null) && (refreshAll == true))
+                {
+                    foreach (var item in distinctIQ)
+                    {
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item);
+                    }
+                }
 
                 //portfolioTotalCost = _context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == MasterId)
                 //                                            .Sum(a => a.TOTAL_COST);
@@ -192,7 +189,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 switch (sortOrder)
                 {
                     case "date_desc":
-                        txnIQ = txnIQ.OrderByDescending(s => s.PURCHASE_DATE);
+                        txnIQ = txnIQ.OrderByDescending(s => s.TXN_DATE);
                         break;
                     case "Symbol":
                         txnIQ = txnIQ.OrderBy(s => s.stockMaster.Symbol);
@@ -213,7 +210,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         txnIQ = txnIQ.OrderByDescending(s => s.stockMaster.CompName);
                         break;
                     default:
-                        txnIQ = txnIQ.OrderBy(s => s.PURCHASE_DATE);
+                        txnIQ = txnIQ.OrderBy(s => s.TXN_DATE);
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
