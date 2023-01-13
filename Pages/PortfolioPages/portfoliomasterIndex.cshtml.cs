@@ -126,7 +126,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 //    masterid == null)
                 if ((firsttimemaster == null) || (firsttimemaster == true))
                 {
-                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null, true, true, true);
+                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null);
                 }
                 foreach (var item in portfolioMaster)
                 {

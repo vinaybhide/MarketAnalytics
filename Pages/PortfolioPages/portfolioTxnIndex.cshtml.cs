@@ -143,7 +143,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     var selectedRecord = txnIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
                     if (selectedRecord != null)
                     {
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord, true, updateBuySell, lifetimeHighLow);
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord);
                         //await GetQuoteAndUpdate(stockid, masterid, refreshAll, getQuote, updateBuySell, lifetimeHighLow);
                         searchString = selectedRecord.stockMaster.Symbol;
                     }
