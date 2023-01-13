@@ -146,11 +146,14 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     }
                     //if ((CurrentID != null) && (string.IsNullOrEmpty(FromDate) == false))
                     //{
-                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, FromDate, small_fast_Period: int.Parse(SMAFastPeriod),
-                                    mid_period: int.Parse(SMAMidPeriod), long_slow_Period: int.Parse(SMASlowPeriod), refreshHistory: false);
-                    DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, FromDate, period: RSIPeriod);
-                    DbInitializer.getStochasticDataTableFromDaily(_context, StockMasterRec, FromDate, fastkperiod: FastK, slowdperiod: SlowD);
+                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, 
+                                    //FromDate, 
+                                    small_fast_Period: int.Parse(SMAFastPeriod),
+                                    mid_period: int.Parse(SMAMidPeriod), long_slow_Period: int.Parse(SMASlowPeriod));
+                    DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, period: RSIPeriod);
+                    DbInitializer.getStochasticDataTableFromDaily(_context, StockMasterRec, fastkperiod: FastK, slowdperiod: SlowD);
                     listSMA = ChartData(CurrentID, FromDate);
+                    FromDate = listSMA.Min(a => a.PriceDate);
                     //}
                 }
             }
@@ -160,7 +163,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
             //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
             List<StockPriceHistory> chartDataList = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
-                        s.PriceDate.Date >= (fromDate.Date))).ToList();
+                        s.PriceDate.Date >= (fromDate.Date))).OrderBy(s => s.PriceDate).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();
             return chartDataList;
         }

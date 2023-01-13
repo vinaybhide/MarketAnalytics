@@ -112,8 +112,10 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     }
                     //if ((CurrentID != null) && (string.IsNullOrEmpty(fromDate) == false))
                     //{
-                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, FromDate, small_fast_Period: int.Parse(SMAFastPeriod),
-                                    mid_period: int.Parse(SMAMidPeriod), long_slow_Period: int.Parse(SMASlowPeriod), refreshHistory: false);
+                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, 
+                                    //FromDate, 
+                                    small_fast_Period: int.Parse(SMAFastPeriod),
+                                    mid_period: int.Parse(SMAMidPeriod), long_slow_Period: int.Parse(SMASlowPeriod));
                         listSMA = ChartData(CurrentID, FromDate);
                     //}
                 }

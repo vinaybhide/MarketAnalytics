@@ -369,24 +369,25 @@
             <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
                 <option value="">Select Symbol</option>
             </select>
+
             From date:
-            <input id="fromDt" type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+            <input id="fromDt" readonly="readonly" type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
             SMA Fast Period:
-            <input id="smaFastPeriod" type="text" size="2" name="inputFastPeriod" value="@Model.SMAFastPeriod" />
+            <input id="smaFastPeriod" readonly="readonly" type="text" size="2" name="inputFastPeriod" value="@Model.SMAFastPeriod" />
 
             SMA Mid Period:
-            <input id="smaMidPeriod" type="text" size="2" name="inputMidPeriod" value="@Model.SMAMidPeriod" />
+            <input id="smaMidPeriod" readonly="readonly" type="text" size="2" name="inputMidPeriod" value="@Model.SMAMidPeriod" />
 
             SMA Slow Period:
-            <input id="smaSlowPeriod" type="text" size="3" name="inputSlowPeriod" value="@Model.SMASlowPeriod" />
+            <input id="smaSlowPeriod" readonly="readonly" type="text" size="3" name="inputSlowPeriod" value="@Model.SMASlowPeriod" />
 
             RSI Period:
-            <input id="rsiPeriod" type="text" size="2" name="inputRsiPeriod" value="@Model.RSIPeriod" />
+            <input id="rsiPeriod" readonly="readonly" type="text" size="2" name="inputRsiPeriod" value="@Model.RSIPeriod" />
 
             Slow K:
-            <input id="fastK" type="text" size="2" name="inputFastK" value="@Model.FastK" />
+            <input id="fastK" readonly="readonly" type="text" size="2" name="inputFastK" value="@Model.FastK" />
             Slow D:
-            <input id="slowd" type="text" size="2" name="inputSlowD" value="@Model.SlowD" />
+            <input id="slowd" readonly="readonly" type="text" size="2" name="inputSlowD" value="@Model.SlowD" />
 
             <input type="submit" value="Get SMA" class="btn btn-primary" style="font-size:small" />
         </p>
