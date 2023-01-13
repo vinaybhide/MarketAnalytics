@@ -109,12 +109,6 @@ namespace MarketAnalytics.Pages.History
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     symbolList.FirstOrDefault(a => a.Value.Equals(CurrentID.ToString())).Selected = true;
-                    //}
-                    //else
-                    //{
-                    //    CurrentID = _context.StockPriceHistory.FirstOrDefault().StockMasterID;
-                    //    StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == CurrentID);
-                    //}
 
                     CompanyName = StockMasterRec.CompName;
 
@@ -122,28 +116,7 @@ namespace MarketAnalytics.Pages.History
                     if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
                     {
                         //we have found a matching record from StockMaster, from where we can get id, symbol, company
-                        //DbInitializer.InitializeHistory(_context, StockMasterRec, StockMasterRec.Symbol, StockMasterRec.CompName, StockMasterRec.Exchange);
-                        //RefreshAllStocks = false;
-
-                        string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, StockMasterRec);
-                        if (string.IsNullOrEmpty(lastPriceDate) == false)
-                        {
-                            DbInitializer.InitializeHistory(_context, StockMasterRec, lastPriceDate);
-                        }
-
-                        DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, StockMasterRec, DateTime.Today.AddDays(-365));
-
-                        DbInitializer.getRSIDataTableFromDaily(_context, StockMasterRec, DateTime.Today.AddDays(-365), period: "14");
-                        DbInitializer.getStochasticDataTableFromDaily(_context, StockMasterRec, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20" );
-
-                        DbInitializer.V20CandlesticPatternFinder(_context, StockMasterRec);
-
-                        DbInitializer.GetSMA_BUYSELL(_context, StockMasterRec, 20, 50, 200);
-
-                        DbInitializer.GetBullishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 10);
-                        DbInitializer.GetBearishEngulfingBuySellList(_context, StockMasterRec, DateTime.Today.AddDays(-180), 10);
-                        DbInitializer.GetLifetimeHighLow(_context, StockMasterRec);
-
+                        DbInitializer.UpdateQuoteStrategy(_context, (int)id);
                         RefreshAllStocks = false;
                     }
 
@@ -161,7 +134,8 @@ namespace MarketAnalytics.Pages.History
                 }
                 else if ((id != null) && (id < -1))
                 {
-                    RefreshHistoryForGroup((int)id);
+                    //RefreshHistoryForGroup((int)id);
+                    DbInitializer.UpdateQuoteStrategy(_context, (int)id);
                     if (id == -99)
                     {
                         stockpriceIQ = _context.StockPriceHistory.Where(s => ((s.StockMaster.V200 == true)
@@ -255,11 +229,11 @@ namespace MarketAnalytics.Pages.History
                     {
                         DbInitializer.InitializeHistory(_context, item, lastPriceDate);
                     }
-                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item, DateTime.Today.AddDays(-365));
+                    DbInitializer.GetSMA_EMA_MACD_BBANDS_Table(_context, item);
 
-                    DbInitializer.getRSIDataTableFromDaily(_context, item, DateTime.Today.AddDays(-365), period: "14");
+                    DbInitializer.getRSIDataTableFromDaily(_context, item, period: "14");
 
-                    DbInitializer.getStochasticDataTableFromDaily(_context, item, DateTime.Today.AddDays(-365), fastkperiod: "20", slowdperiod: "20");
+                    DbInitializer.getStochasticDataTableFromDaily(_context, item, fastkperiod: "20", slowdperiod: "20");
 
                     DbInitializer.V20CandlesticPatternFinder(_context, item);
 
