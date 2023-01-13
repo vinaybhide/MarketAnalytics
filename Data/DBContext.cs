@@ -20,7 +20,7 @@ namespace MarketAnalytics.Data
         public DbSet<MarketAnalytics.Models.UpdateTracker> UpdateTracker { get; set; } = default;
         public DbSet<MarketAnalytics.Models.StockPriceHistory> StockPriceHistory { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.Portfolio_Master> PORTFOLIO_MASTER { get; set; } = default!;
-        public DbSet<MarketAnalytics.Models.PORTFOLIO> PORTFOLIO { get; set; } = default!;
+        //public DbSet<MarketAnalytics.Models.PORTFOLIO> PORTFOLIO { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.PORTFOLIOTXN> PORTFOLIOTXN { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.V20_CANDLE_STRATEGY> V20_CANDLE_STRATEGY { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.BULLISH_ENGULFING_STRATEGY> BULLISH_ENGULFING_STRATEGY { get; set; } = default!;
@@ -50,7 +50,7 @@ namespace MarketAnalytics.Data
 
 
             //Autoinclude will automatically include the StockMaster object
-            modelBuilder.Entity<PORTFOLIO>().ToTable("PORTFOLIO").Navigation(e => e.StockMaster).AutoInclude();
+            //modelBuilder.Entity<PORTFOLIO>().ToTable("PORTFOLIO").Navigation(e => e.StockMaster).AutoInclude();
 
             modelBuilder.Entity<V20_CANDLE_STRATEGY>().ToTable("V20_CANDLE_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
 

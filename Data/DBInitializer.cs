@@ -538,6 +538,10 @@ namespace MarketAnalytics.Data
             double low = -1;
             double lt67pct = 0;
             double changefromhigh = 0;
+            double year_hi = -1;
+            double year_lo = -1;
+            double changefromyearhi = 0;
+
             try
             {
                 if (IsStockUpdatedToday(stockMaster, 1))
@@ -556,26 +560,35 @@ namespace MarketAnalytics.Data
                 //high = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
                 //    .Max(a => a.High);
                 high = historyIQ.Max(a => a.High);
+                year_hi = historyIQ.Where(a => a.PriceDate.Date.CompareTo(DateTime.Today.AddYears(-1).Date) >= 0).OrderBy(a => a.PriceDate).Max(a => a.High);
+                
                 var highestRec = historyIQ.Where(a => a.High == high).First();
 
                 low = historyIQ.Min(a => a.Low);
+                year_lo = historyIQ.Where(a => a.PriceDate.Date.CompareTo(DateTime.Today.AddYears(-1).Date) >= 0).OrderBy(a => a.PriceDate).Min(a => a.Low);
 
                 lt67pct = high * .67;
                 var ltrecord = historyIQ.Where(a => (a.PriceDate.Date > highestRec.PriceDate.Date) && (a.Close <= lt67pct)).FirstOrDefault();
 
                 var todayRec = historyIQ.LastOrDefault();
-                changefromhigh = (todayRec.Close - high) / high;
+
+                changefromhigh = (todayRec.Close - high) / todayRec.Close * 100;
+                changefromyearhi = (todayRec.Close - year_hi) / todayRec.Close * 100;
                 //stockMaster.LIFETIME_HIGH = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
                 //                                                        .Max(a => a.Close);
                 //stockMaster.LIFETIME_LOW = context.StockPriceHistory.Where(a => a.StockMasterID == stockMaster.StockMasterID)
                 //                                                        .Min(a => a.Close);
                 stockMaster.LIFETIME_HIGH = high;
                 stockMaster.LIFETIME_LOW = low;
+                stockMaster.YEAR_HI = year_hi;
+                stockMaster.YEAR_LO = year_lo;
                 if (ltrecord != null)
                 {
                     stockMaster.LESSTHAN_67PCT_ON = ltrecord.PriceDate;
                 }
                 stockMaster.DIFF_FROM_LIFETIME_HIGH = changefromhigh;
+                stockMaster.DIFF_FROM_YEAR_HI = changefromyearhi;
+
                 stockMaster.HI_LOW_67_50_LastUpDt = DateTime.Today.Date;
                 context.StockMaster.Update(stockMaster);
                 context.SaveChanges(true);
@@ -2303,10 +2316,15 @@ namespace MarketAnalytics.Data
             foreach (var item in distinctIQ)
             {
                 DbInitializer.UpdateStockQuote(context, item.stockMaster);
+                DbInitializer.UpdateStockModel(context, item.stockMaster);
+
                 item.CMP = item.stockMaster.Close;
                 item.VALUE = item.stockMaster.Close * item.QUANTITY;
                 item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
                 item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
+                item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_DATE).Days;
+                item.BUY_VS_52HI = (item.COST_PER_SHARE - item.stockMaster.YEAR_HI) / item.COST_PER_SHARE * 100;
+
                 context.PORTFOLIOTXN.Update(item);
                 //now find txn for same symbol in this portfolio
                 IQueryable<PORTFOLIOTXN> duplicateIQ = context.PORTFOLIOTXN.Where(a => (a.stockMaster.Symbol == item.stockMaster.Symbol)
@@ -2317,11 +2335,13 @@ namespace MarketAnalytics.Data
                     duplicateitem.VALUE = duplicateitem.QUANTITY * item.stockMaster.Close;
                     duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
                     duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
+                    duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_DATE).Days;
+                    duplicateitem.BUY_VS_52HI = (duplicateitem.COST_PER_SHARE - duplicateitem.stockMaster.YEAR_HI) / duplicateitem.COST_PER_SHARE * 100;
 
                     context.PORTFOLIOTXN.Update(duplicateitem);
                 }
                 context.SaveChanges(true);
-                DbInitializer.UpdateStockModel(context, item.stockMaster);
+                //DbInitializer.UpdateStockModel(context, item.stockMaster);
             }
         }
 
