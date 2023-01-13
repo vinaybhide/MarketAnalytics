@@ -6,12 +6,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Portfolio.cs" />
     <Compile Remove="Models\V20CandleStrategyModel.cs" />
     <Compile Remove="Pages\BuySell\v20candle.cs" />
+    <Compile Remove="Pages\PortfolioPages\Create.cshtml.cs" />
+    <Compile Remove="Pages\PortfolioPages\Delete.cshtml.cs" />
+    <Compile Remove="Pages\PortfolioPages\Details.cshtml.cs" />
+    <Compile Remove="Pages\PortfolioPages\Edit.cshtml.cs" />
+    <Compile Remove="Pages\PortfolioPages\Index.cshtml.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Pages\BuySell\v20candle.cshtml" />
+    <Content Remove="Pages\PortfolioPages\Create.cshtml" />
+    <Content Remove="Pages\PortfolioPages\Delete.cshtml" />
+    <Content Remove="Pages\PortfolioPages\Details.cshtml" />
+    <Content Remove="Pages\PortfolioPages\Edit.cshtml" />
+    <Content Remove="Pages\PortfolioPages\Index.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
