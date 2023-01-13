@@ -30,7 +30,7 @@ Stock Strategy implementation
   <h3>Technologies Used</h3>
   <ol>
   <li>ASP.Net Core 3.0 (Code first) with Razor</li>
-  <li>Entity framework (EF) 6.0</li>
+  <li>Entity framework core (EF core) 6.0</li>
   <li>Google charts</li>
   <li>Java script</li>
   <li>SQLite</li>
