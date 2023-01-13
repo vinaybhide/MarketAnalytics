@@ -1,0 +1,91 @@
+﻿@page
+@model MarketAnalytics.Pages.Master.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>StockMaster</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Exchange)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Exchange)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Symbol)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Symbol)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.CompName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.CompName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.QuoteDateTime)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.QuoteDateTime)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Open)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Open)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.High)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.High)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Low)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Low)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Close)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Close)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Volume)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Volume)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Change)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Change)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.ChangePercent)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.ChangePercent)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.PrevClose)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.PrevClose)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.StockMaster?.StockMasterID" asp-route-groupsel="@Model.CurrentGroup" asp-route-pageIndex="@Model.parentPageIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Edit</a> |
+    <a asp-page="./Index" asp-route-pageIndex="@Model.parentPageIndex" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">Back to List</a>
+</div>

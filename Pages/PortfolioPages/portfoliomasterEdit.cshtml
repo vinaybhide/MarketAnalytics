@@ -1,0 +1,40 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.PortfolioMasterEditModel
+
+@{
+    ViewData["Title"] = "PortfolioMasterEdit";
+}
+
+<h3>Edit - @Model.portfolioMaster.PORTFOLIO_NAME</h3>
+
+<hr />
+@if (Model.bNameUnique == false)
+{
+    <b>@Model.errorMessage.ToString()</b>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="portfolioMaster.PORTFOLIO_MASTER_ID" />
+            <input type="hidden" asp-for="@Model.FirstTimeMaster" />
+            <div class="form-group">
+                <label asp-for="portfolioMaster.PORTFOLIO_NAME" class="control-label"></label>
+                <input asp-for="portfolioMaster.PORTFOLIO_NAME" class="form-control" />
+                <span asp-validation-for="portfolioMaster.PORTFOLIO_NAME" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

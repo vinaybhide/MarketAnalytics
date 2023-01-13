@@ -1,0 +1,51 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.PortfolioTxnEditModel
+
+@{
+    ViewData["Title"] = "PortfolioTxnEdit";
+}
+
+<h3>Edit - @Model.portfolioTxn.stockMaster.CompName (@Model.portfolioTxn.stockMaster.Symbol)</h3>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="portfolioTxn.PORTFOLIOTXN_ID" />
+            <input type="hidden" asp-for="portfolioTxn.StockMasterID" />
+            <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
+            <input type="hidden" asp-for="@Model.pageIndex" />
+            <input type="hidden" asp-for="@Model.parentFilter" />
+            <input type="hidden" asp-for="@Model.parentSearchString" />
+            <input type="hidden" asp-for="@Model.parentSortOrder" />
+
+            <div class="form-group">
+                <label asp-for="portfolioTxn.TXN_DATE" class="control-label"></label>
+                <input type="date" asp-for="portfolioTxn.TXN_DATE" class="form-control" />
+                <span asp-validation-for="portfolioTxn.TXN_DATE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.QUANTITY" class="control-label"></label>
+                <input asp-for="portfolioTxn.QUANTITY" class="form-control" />
+                <span asp-validation-for="portfolioTxn.QUANTITY" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.COST_PER_SHARE" class="control-label"></label>
+                <input asp-for="portfolioTxn.COST_PER_SHARE" class="form-control" />
+                <span asp-validation-for="portfolioTxn.COST_PER_SHARE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.pageIndex">Back to full List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

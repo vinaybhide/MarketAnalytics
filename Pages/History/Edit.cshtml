@@ -1,0 +1,80 @@
+﻿@page
+@model MarketAnalytics.Pages.History.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>StockPriceHistory</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="StockPriceHistory.StockPriceHistoryID" />
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.PriceDate" class="control-label"></label>
+                <input asp-for="StockPriceHistory.PriceDate" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.PriceDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.Open" class="control-label"></label>
+                <input asp-for="StockPriceHistory.Open" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.Open" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.High" class="control-label"></label>
+                <input asp-for="StockPriceHistory.High" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.High" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.Low" class="control-label"></label>
+                <input asp-for="StockPriceHistory.Low" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.Low" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.Close" class="control-label"></label>
+                <input asp-for="StockPriceHistory.Close" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.Close" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.Volume" class="control-label"></label>
+                <input asp-for="StockPriceHistory.Volume" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.Volume" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.Change" class="control-label"></label>
+                <input asp-for="StockPriceHistory.Change" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.Change" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.ChangePercent" class="control-label"></label>
+                <input asp-for="StockPriceHistory.ChangePercent" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.ChangePercent" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.PrevClose" class="control-label"></label>
+                <input asp-for="StockPriceHistory.PrevClose" class="form-control" />
+                <span asp-validation-for="StockPriceHistory.PrevClose" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StockPriceHistory.StockMasterID" class="control-label"></label>
+                <select asp-for="StockPriceHistory.StockMasterID" class="form-control" asp-items="ViewBag.StockMasterID"></select>
+                <span asp-validation-for="StockPriceHistory.StockMasterID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,94 @@
+﻿@page
+@model MarketAnalytics.Pages.Master.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>StockMaster</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Exchange)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Exchange)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Symbol)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Symbol)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.CompName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.CompName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.QuoteDateTime)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.QuoteDateTime)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Open)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Open)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.High)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.High)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Low)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Low)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Close)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Close)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Volume)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Volume)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.Change)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.Change)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.ChangePercent)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.ChangePercent)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StockMaster.PrevClose)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockMaster.PrevClose)
+        </dd>
+    </dl>
+    
+    <form method="post">
+        <input type="hidden" asp-for="StockMaster.StockMasterID" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-page="./Index">Back to List</a>
+    </form>
+</div>

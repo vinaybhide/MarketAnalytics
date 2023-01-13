@@ -1,0 +1,172 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.PortfolioMasterIndex
+
+@{
+    ViewData["Title"] = "PortfolioMaster";
+}
+
+<h4>Portfolio Master</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./portfolioMasterCreate" asp-route-firsttimemaster="false" class="btn btn-sm btn-primary" style="font-size:small">New</a>
+                    </p>
+                </div>
+            </th>
+            <th>
+                <form asp-page="./portfoliomasterIndex" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input name="firsttimemaster=false" type="hidden" />
+                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                            <input type="submit" value="Search portfolio" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
+            </th>
+            <th>
+                <form asp-page="./portfoliomasterIndex" method="get">
+                    <div class="form-actions no-color">
+                        <p>
+                            <input name="firsttimemaster=false" type="hidden" />
+                            <select name="masterid" asp-items="Model.masterList" style="font-size:small">
+                                <option value="">Select Portfolio</option>
+                            </select>
+
+                            @*<a asp-page="./portfolioTxnIndex" asp-route-masterid=masterid class="btn btn-sm btn-primary" style="font-size:small">Txn Details</a>*@
+
+                            <input asp-page="./portfolioTxnIndex" type="submit" value="Get txns for selected symbol" class="btn btn-sm btn-primary" style="font-size:small" />
+                        </p>
+                    </div>
+                </form>
+            </th>
+            @*<th>
+            <div class="form-actions no-color">
+            <p>
+            <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="true" class="btn btn-sm btn-primary" style="font-size:small">Refresh Buy/Sell for All</a>
+            </p>
+            </div>
+            </th>*@
+            <th>
+                <div class="form-actions no-color">
+                    <p>
+                        <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false" style="font-size:small">Back to full List</a>
+                    </p>
+                </div>
+            </th>
+        </tr>
+    </thead>
+</table>
+<table class="table">
+    <thead>
+        <tr style="text-align:center; font-size:small;">
+            @*<th>
+            @Html.DisplayNameFor(model => model.portfolioMaster[0].PORTFOLIO_MASTER_ID)
+            </th>*@
+            <th>Action</th>
+            <th>
+                <a asp-page="./portfoliomasterIndex" asp-route-sortOrder="@Model.nameSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.portfolioMaster[0].PORTFOLIO_NAME)
+                </a>
+            </th>
+            <th>
+                Total Cost
+            </th>
+            <th>
+                Total Value
+            </th>
+            <th>
+                Total Gain P/L
+            </th>
+            <th>
+                Gain PCT
+            </th>
+            @*            <th></th>
+            *@
+        </tr>
+    </thead>
+    <tbody>
+        @*@foreach (var item in Model.portfolioMaster)*@
+        @if (Model.portfolioMaster != null)
+        {
+            @for (int i = 0; i < Model.portfolioMaster.Count; i++)
+            {
+                <tr style="text-align:center; font-size:small;">
+                    @*<td>
+            @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_MASTER_ID)
+            </td>*@
+                    <td>
+                        <form method="post" asp-page-handler="PortfolioAction" asp-route-firsttimemaster="false"
+                      asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.CurrentPageIndex"
+                      asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">
+                            <div class="form-actions no-color">
+
+                                <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" style="font-size:small">
+                                </select>
+                            </div>
+                        </form>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_NAME)
+                    </td>
+                    <td>
+                        @string.Format("{0:0.00}", @Model.portfolioCost.ElementAt(i))
+                    </td>
+                    <td>
+                        @string.Format("{0:0.00}", @Model.portfolioValue.ElementAt(i))
+                    </td>
+                    <td>
+                        @string.Format("{0:0.00}", @Model.portfolioGain.ElementAt(i))
+                    </td>
+                    <td>
+                        @string.Format("{0:0.00}%", @Model.portfolioGainPct.ElementAt(i))
+                    </td>
+                    @*<td>
+            <a asp-page="./portfoliomasterEdit" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a> |
+            <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Txn Details</a> |
+            <a asp-page="./portfoliomasterDelete" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a> |
+            </td>*@
+                    @*<td>
+            <ul class="list-unstyled" >
+            <li>
+            <a asp-page="./portfoliomasterEdit" asp-route-firsttimemaster="false" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.portfolioMaster.PageIndex">Edit</a>
+            </li>
+            <li>
+            <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Txn Details</a>
+            </li>
+            <li>
+            <a asp-page="./portfoliomasterDelete" asp-route-firsttimemaster="false" asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID">Delete</a>
+            </li>
+            </ul>
+            </td>*@
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+@{
+    var prevDisabled = (Model.portfolioMaster != null) && (!Model.portfolioMaster.HasPreviousPage) ? "disabled" : "";
+    var nextDisabled = (Model.portfolioMaster != null) && (!Model.portfolioMaster.HasNextPage) ? "disabled" : "";
+}
+@if (Model.portfolioMaster != null)
+{
+    <a asp-page="./portfoliomasterIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioMaster.PageIndex - 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+    <a asp-page="./portfoliomasterIndex" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioMaster.PageIndex + 1)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+}
+@section scripts{
+    <script>
+        $(function () {
+            $(".menuitemselect").change(function () {
+                $(this).closest("form").submit();
+                //$('#TheForm').submit();
+            })
+        })
+
+    </script>
+}
