@@ -49,15 +49,25 @@ namespace MarketAnalytics.Models
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)] 
         public double SMA_SLOW { get; set; } = default(double);
 
+        [DisplayName("52 Week Hi")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double YEAR_HI { get; set; } = default(double);
+        [DisplayName("52 Week Lo")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double YEAR_LO { get; set; } = default(double);
+        [DisplayName("Lifetime Hi")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double LIFETIME_HIGH { get; set; } = default(double);
-
+        [DisplayName("Lifetime Lo")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double LIFETIME_LOW { get; set; } = default(double);
-        
+        [DisplayName("LT 67% On")]
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
         public DateTime LESSTHAN_67PCT_ON { get; set; } = default(DateTime);
-
+        [DisplayName("%Change From Year Hi")]
+        [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
+        public double DIFF_FROM_YEAR_HI { get; set; } = default(double);
+        [DisplayName("%Change From Lifetime Hi")]
         [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
         public double DIFF_FROM_LIFETIME_HIGH { get; set; } = default(double);
         public DateTime HI_LOW_67_50_LastUpDt { get; set; } = default(DateTime);
