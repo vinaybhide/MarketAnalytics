@@ -91,6 +91,11 @@
                 </a>
             </th>
             <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.TypeSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].INVESTMENT_TYPE)
+                </a>
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].QuoteDateTime)
             </th>
             @*<th></th>*@
@@ -191,6 +196,9 @@
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.CompName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.INVESTMENT_TYPE)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.QuoteDateTime)

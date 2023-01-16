@@ -18,6 +18,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -270,7 +271,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 if (((refreshAll != null) && (refreshAll == true)) || ((getQuote != null) && (getQuote == true)))
                 {
-                    DbInitializer.GetQuote(selectedRecord.stockMaster.Symbol + "." + selectedRecord.stockMaster.Exchange, out quoteDate, out open,
+                    DbInitializer.GetQuote(selectedRecord.stockMaster.Symbol + (selectedRecord.stockMaster.Exchange.Length == 0 ? "" : ("." + selectedRecord.stockMaster.Exchange)), out quoteDate, out open,
                     out high, out low, out close,
                     out volume, out change, out changepercent, out prevclose);
                     if (quoteDate != null)

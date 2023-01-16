@@ -16,6 +16,10 @@ using MarketAnalytics.Pages.BuySell;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Drawing;
+using Microsoft.Data.Sqlite;
+using System.Net.Http;
+using System.Xml;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace MarketAnalytics.Data
 {
@@ -25,6 +29,7 @@ namespace MarketAnalytics.Data
         public static string urlGetHistoryQuote = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?period1={1}&period2={2}&interval={3}&filter=history&frequency={4}&includeAdjustedClose={5}";
 
         public static string urlGlobalQuote = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?range=1d&interval=1d&indicators=quote&timestamp=true";
+        public static string urlSearch = "https://finance.yahoo.com/lookup/{0}?s={1}";
 
         static readonly HttpClient client = new HttpClient();
 
@@ -61,6 +66,120 @@ namespace MarketAnalytics.Data
             return responseBody;
         }
 
+        public static bool SearchOnlineInsertInDB(DBContext context, string searchStr, string qualifier = "all")
+        {
+            bool breturn = false;
+            StockMaster stockMaster = null;
+            string responseStr = null, dataStr = null;
+            int startIndex = 0;
+            int endIndex = 0;
+            XmlDocument xmlResult = null;
+            string compname, exchange, symbol, type;//, lasttradeprice, category;
+            try
+            {
+                var httpClient = new HttpClient();
+
+                //https://finance.yahoo.com/lookup/all?s=larsen
+                //below we keep qualifier = all and s= user provided searchStr
+                string url = string.Format(urlSearch, qualifier, searchStr);
+
+
+                var httpResponse = httpClient.GetAsync(url).Result;
+                if (httpResponse.Content != null)
+                {
+                    var responseContent = httpResponse.Content.ReadAsStringAsync();
+                    
+                    responseStr = responseContent.Result;
+
+                    if (responseStr.Contains("<span>All (0)</span>") == false)
+                    {
+                        startIndex = responseStr.IndexOf("<tbody>");
+                        endIndex = responseStr.IndexOf("</tbody>") + 7;
+                        if (startIndex > 0 && endIndex > 0)
+                        {
+                            dataStr = responseStr.Substring(startIndex, endIndex - startIndex + 1);
+                            xmlResult = new XmlDocument();
+                            xmlResult.LoadXml(dataStr);
+                            for (int i = 0; i < xmlResult["tbody"].ChildNodes.Count; i++)
+                            {
+                                //get the data that we are interested in
+                                //compname = xmlResult["tbody"].ChildNodes[i].ChildNodes[0].ChildNodes[0].Attributes["title"].Value; //= "LARSEN AND TOUBRO"
+                                symbol = xmlResult["tbody"].ChildNodes[i].ChildNodes[0].ChildNodes[0].Attributes["data-symbol"].Value.ToUpper();
+                                if (symbol.Contains("."))
+                                {
+                                    symbol = xmlResult["tbody"].ChildNodes[i].ChildNodes[0].ChildNodes[0].Attributes["data-symbol"].Value.ToUpper().Split(".")[0]; // = "LTI.NS"
+                                    exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[0].ChildNodes[0].Attributes["data-symbol"].Value.ToUpper().Split(".")[1]; // = "LTI.NS"
+                                }
+                                else
+                                {
+                                    exchange = string.Empty;
+                                }
+                                compname = xmlResult["tbody"].ChildNodes[i].ChildNodes[1].ChildNodes[0].Value.ToUpper(); //= "LARSEN AND TOUBRO"
+                                //lasttradeprice = xmlResult["tbody"].ChildNodes[i].ChildNodes[2].ChildNodes[0].Value; // = "6034.15"
+                                //category = xmlResult["tbody"].ChildNodes[i].ChildNodes[3].ChildNodes[0].Value; // = "Technology"
+                                type = xmlResult["tbody"].ChildNodes[i].ChildNodes[4].ChildNodes[0].Value; // = "Stocks"
+                                                                                                           //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
+                                DateTime[] quoteDate = null;
+                                double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+                                GetQuote(symbol + (exchange.Length == 0 ? "" :("." + exchange)), out quoteDate, out open, out high, out low, out close,
+                                            out volume, out change, out changepercent, out prevclose);
+                                if (quoteDate != null)
+                                { //find if stock exist in StockMaster, if not add it to context
+                                    stockMaster = context.StockMaster.Where(s => s.Symbol.ToUpper().Equals(symbol.ToUpper())
+                                                        //&& s.CompName.ToUpper().Contains(compname.ToUpper())
+                                                        && s.Exchange.ToUpper().Equals(exchange.ToUpper())
+                                                        ).FirstOrDefault();
+                                    if (stockMaster == null)
+                                    {
+                                        //this stock does not exist in the DB
+                                        stockMaster = new StockMaster();
+                                        stockMaster.Symbol = symbol;
+                                        stockMaster.CompName = compname;
+                                        stockMaster.Exchange = exchange;
+                                        stockMaster.INVESTMENT_TYPE = type;
+
+                                        stockMaster.QuoteDateTime = quoteDate[0];
+                                        stockMaster.Open = open[0];
+                                        stockMaster.High = high[0];
+                                        stockMaster.Low = low[0];
+                                        stockMaster.Close = close[0];
+                                        stockMaster.Volume = volume[0];
+                                        stockMaster.ChangePercent = changepercent[0];
+                                        stockMaster.Change = change[0];
+                                        stockMaster.PrevClose = prevclose[0];
+                                        context.StockMaster.Add(stockMaster);
+                                    }
+                                    else
+                                    {
+                                        //stockMaster = (StockMaster)(currentMaster.First());
+                                        stockMaster.QuoteDateTime = quoteDate[0];
+                                        stockMaster.Open = open[0];
+                                        stockMaster.High = high[0];
+                                        stockMaster.Low = low[0];
+                                        stockMaster.Close = close[0];
+                                        stockMaster.Volume = volume[0];
+                                        stockMaster.ChangePercent = changepercent[0];
+                                        stockMaster.Change = change[0];
+                                        stockMaster.PrevClose = prevclose[0];
+                                        context.StockMaster.Update(stockMaster);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (stockMaster != null)
+                {
+                    breturn = true;
+                    context.SaveChanges(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                breturn = false;
+            }
+            return breturn;
+        }
         public static Stream GenerateStreamFromString(string s)
         {
             var stream = new MemoryStream();
@@ -70,6 +189,7 @@ namespace MarketAnalytics.Data
             stream.Position = 0;
             return stream;
         }
+
         /// <summary>
         /// Fetched data from NSE is checked with existing stock master records. If the stock does not exists in StockMaster
         /// then Inserts the new stock
@@ -116,6 +236,7 @@ namespace MarketAnalytics.Data
                     fields = record.ToString().Split(',');
                     //if (IsMasterUpdated(context, fields[0], fields[1], "NS") == false)
                     {
+                        //this is ONLY for NSE hence hardcoding exchange as NS
                         GetQuote(fields[0] + ".NS", out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
                         if (quoteDate != null)
@@ -198,12 +319,12 @@ namespace MarketAnalytics.Data
                 //sourceURL = urlNSEStockMaster;
                 if (string.IsNullOrEmpty(fromDate))
                 {
-                    GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange, DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                    GetHistoryQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
                 }
                 else
                 {
-                    GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange, Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                    GetHistoryQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
                 }
                 //read first line which is list of fields
@@ -477,7 +598,7 @@ namespace MarketAnalytics.Data
                 DateTime[] quoteDate = null;
                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-                DbInitializer.GetQuote(stockMaster.Symbol + "." + stockMaster.Exchange, out quoteDate, out open,
+                DbInitializer.GetQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
                     out high, out low, out close,
                     out volume, out change, out changepercent, out prevclose);
                 if (quoteDate != null)
@@ -561,7 +682,7 @@ namespace MarketAnalytics.Data
                 //    .Max(a => a.High);
                 high = historyIQ.Max(a => a.High);
                 year_hi = historyIQ.Where(a => a.PriceDate.Date.CompareTo(DateTime.Today.AddYears(-1).Date) >= 0).OrderBy(a => a.PriceDate).Max(a => a.High);
-                
+
                 var highestRec = historyIQ.Where(a => a.High == high).First();
 
                 low = historyIQ.Min(a => a.Low);
@@ -713,7 +834,7 @@ namespace MarketAnalytics.Data
                         sumOfGain = double.Parse(trackerData[4]);
                         sumOfLoss = double.Parse(trackerData[5]);
                         avgGain = double.Parse(trackerData[6]);
-                        avgLoss = double.Parse(trackerData[7]); 
+                        avgLoss = double.Parse(trackerData[7]);
                         change = rs = rsi = 0.00;
                     }
                 }
@@ -802,7 +923,7 @@ namespace MarketAnalytics.Data
                         {
                             //tracker.TYPE = "SMA";
                             tracker.REF_DATE = currentHist.PriceDate;
-                            tracker.DATA = rownum + "," + iPeriod + "," + gain + "," + loss + "," + sumOfGain + "," + sumOfLoss+ "," + avgGain + "," + avgLoss;
+                            tracker.DATA = rownum + "," + iPeriod + "," + gain + "," + loss + "," + sumOfGain + "," + sumOfLoss + "," + avgGain + "," + avgLoss;
                             context.UpdateTracker.Update(tracker);
                         }
                         context.SaveChanges(true);
@@ -864,7 +985,7 @@ namespace MarketAnalytics.Data
                 iFastKPeriod = System.Convert.ToInt32(fastkperiod);
                 iSlowDPeriod = System.Convert.ToInt32(slowdperiod);
                 startFastK = 0; startSlowD = 0;
-                saveFastk = 0; saveSlowD= 0;
+                saveFastk = 0; saveSlowD = 0;
 
                 IOrderedQueryable<StockPriceHistory> stochIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(s => s.PriceDate);
                 //&& s.PriceDate.Date >= (fromDate.Date));
@@ -1111,7 +1232,7 @@ namespace MarketAnalytics.Data
                     GetLastRunData(tempIQ, tracker.REF_DATE, mid_period, indexMid, out valuesMid);
                     indexMid++;
 
-                    valuesLong= null;
+                    valuesLong = null;
                     GetLastRunData(tempIQ, tracker.REF_DATE, long_slow_Period, indexLong, out valuesLong);
                     indexLong++;
                     //valuesSmall[indexSmall] = double.Parse(trackerData[7]);

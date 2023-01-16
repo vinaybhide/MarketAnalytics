@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Models;
 using MarketAnalytics.Data;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -64,8 +65,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
             portfolioTxn.stockMaster = (StockMaster)_context.StockMaster.Find(portfolioTxn.StockMasterID);
-
-            DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + ".NS", out quoteDate, out open, out high, out low, out close,
+            DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
                         out volume, out change, out changepercent, out prevclose);
             if (quoteDate != null)
             {

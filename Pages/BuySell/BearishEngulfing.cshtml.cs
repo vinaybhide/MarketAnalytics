@@ -5,6 +5,7 @@ using MarketAnalytics.Models;
 using System.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MarketAnalytics.Pages.BuySell
 {
@@ -121,9 +122,8 @@ public int SMAValue { get; set; }
                             //double open, high, low, close, volume, change, changepercent, prevclose;
                             DateTime[] quoteDate = null;
                             double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-
-                            DbInitializer.GetQuote(selectedRecord.Symbol + "." + selectedRecord.Exchange, out quoteDate, out open,
-                                out high, out low, out close,
+                            DbInitializer.GetQuote(selectedRecord.Symbol + (selectedRecord.Exchange.Length == 0 ? "" : ("." + selectedRecord.Exchange)), out quoteDate, out open,
+                            out high, out low, out close,
                                 out volume, out change, out changepercent, out prevclose);
                             if (quoteDate != null)
                             {

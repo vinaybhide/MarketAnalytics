@@ -36,6 +36,7 @@ namespace MarketAnalytics.Pages.Master
         public string ExchangeSort { get; set; }
         public string SymbolSort { get; set; }
         public string CompNameSort { get; set; }
+        public string TypeSort { get; set; }
         public string V40Sort { get; set; }
         public string V40NSort { get; set; }
         public string V200Sort { get; set; }
@@ -111,6 +112,8 @@ namespace MarketAnalytics.Pages.Master
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
                 ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
                 CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
+                TypeSort = sortOrder == "TypeSort" ? "typesort_desc" : "TypeSort";
+
                 V40Sort = sortOrder == "V40" ? "v40_desc" : "V40";
                 V40NSort = sortOrder == "V40N" ? "v40n_desc" : "V40N";
                 V200Sort = sortOrder == "V200" ? "v200_desc" : "V200";
@@ -118,6 +121,7 @@ namespace MarketAnalytics.Pages.Master
                 if (searchString != null)
                 {
                     pageIndex = 1;
+                    DbInitializer.SearchOnlineInsertInDB(_context, searchString);
                 }
                 else
                 {
@@ -134,13 +138,13 @@ namespace MarketAnalytics.Pages.Master
                 }
 
                 IQueryable<StockMaster> stockmasterIQ = null;
-                
+
                 CurrentGroup = groupsel;
-                if( (string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
+                if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
                 {
                     updateStrategy = true;
                 }
-                if(CurrentGroup != null)
+                if (CurrentGroup != null)
                 {
                     if ((updateStrategy != null) && (updateStrategy == true))
                     {
@@ -154,7 +158,7 @@ namespace MarketAnalytics.Pages.Master
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == -98))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true) );
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == -97))
@@ -181,13 +185,13 @@ namespace MarketAnalytics.Pages.Master
                         {
                             DbInitializer.UpdateStockQuote(_context, selectedRecord);
                         }
-                        if((updateStrategy != null) && (updateStrategy == true))
+                        if ((updateStrategy != null) && (updateStrategy == true))
                         {
                             DbInitializer.UpdateQuoteStrategy(_context, (int)id);
                         }
                     }
                 }
-                
+
 
                 CurrentFilter = searchString;
 
@@ -196,6 +200,12 @@ namespace MarketAnalytics.Pages.Master
                 {
                     stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.CompName.ToUpper().Contains(searchString.ToUpper()));
+                    if (stockmasterIQ.Count() <= 0)
+                    {
+                        CurrentGroup = groupsel = -95;
+                        groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                        stockmasterIQ = from s in _context.StockMaster select s;
+                    }
                 }
                 switch (sortOrder)
                 {
@@ -213,6 +223,12 @@ namespace MarketAnalytics.Pages.Master
                         break;
                     case "compname_desc":
                         stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.CompName);
+                        break;
+                    case "TypeSort":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.INVESTMENT_TYPE);
+                        break;
+                    case "typesort_desc":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.INVESTMENT_TYPE);
                         break;
                     case "V40":
                         stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40);
@@ -252,15 +268,15 @@ namespace MarketAnalytics.Pages.Master
                 switch (menuitemsel)
                 {
                     case "0"://case of edit category
-                        return RedirectToPage("./Edit", new { id = id, groupsel= groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
+                        return RedirectToPage("./Edit", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
                     case "1"://case of show details
                         return RedirectToPage("./Details", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
                     case "2"://case of Get Quote
                              //DbInitializer.UpdateStockQuote(_context, stockMaster);
-                        return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote=true, updateStrategy = false });
+                        return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = true, updateStrategy = false });
                     case "3": //case of update high low & strategy
                               //DbInitializer.GetLifetimeHighLow(_context, stockMaster);
-                        return RedirectToPage("./Index", new { id = id, groupsel=groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = false, updateStrategy = true });
+                        return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getQuote = false, updateStrategy = true });
 
                     case "4": //case of history
                         return RedirectToPage("/History/Index", new { id = id });

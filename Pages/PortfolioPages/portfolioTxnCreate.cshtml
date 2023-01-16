@@ -5,25 +5,35 @@
     ViewData["Title"] = "PortfolioTxnCreate";
 }
 
-<h3>Portfolio - @Model.portfolioMasterName</h3>
+<h3>Portfolio - @Model.portfolioName</h3>
 
 <hr />
 <div class="row">
     <div class="col-md-4">
+        <form method="post" asp-page-handler="SelectdType" asp-route-typesel="@Model.TypeSelected" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.parentpageIndex" asp-route-portfolioName="@Model.portfolioName">
+            <div class="form-actions no-color">
+                <select class="typeselect" name="typesel" asp-items="Model.typeList" style="font-size:small">
+                    <option value="">Select Investment Type</option>
+                </select>
+            </div>
+        </form>
+
         <form asp-page="./portfolioTxnCreate" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" type="hidden" class="form-control" />
             <input asp-for="@Model.parentpageIndex" type="hidden" class="form-control" />
+            <input asp-for="@Model.TypeSelected" type="hidden" class="form-control" />
 
             @*<div class="form-group">
-                <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
-                <select asp-for="portfolio.StockMaster.Exchange" asp-items="Model.exchangeList">
-                    <option value="">Select Exchange</option>
-                </select>   
-                <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
-                <input asp-for="portfolio.StockMaster.Exchange" class="form-control" />
-                <span asp-validation-for="portfolio.StockMaster.Exchange" class="text-danger"></span>
+            <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
+            <select asp-for="portfolio.StockMaster.Exchange" asp-items="Model.exchangeList">
+            <option value="">Select Exchange</option>
+            </select>
+            <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
+            <input asp-for="portfolio.StockMaster.Exchange" class="form-control" />
+            <span asp-validation-for="portfolio.StockMaster.Exchange" class="text-danger"></span>
             </div>*@
+
             <div class="form-group">
                 <label asp-for="portfolioTxn.stockMaster.Symbol" class="control-label"></label>
                 <select asp-for="portfolioTxn.StockMasterID" asp-items="Model.symbolList">
@@ -35,9 +45,9 @@
                 <span asp-validation-for="portfolio.StockMaster.Symbol" class="text-danger"></span>*@
             </div>
             @*<div class="form-group">
-                <label asp-for="portfolio.StockMaster.CompName" class="control-label"></label>
-                <input asp-for="portfolio.StockMaster.CompName" class="form-control" />
-                <span asp-validation-for="portfolio.StockMaster.CompName" class="text-danger"></span>
+            <label asp-for="portfolio.StockMaster.CompName" class="control-label"></label>
+            <input asp-for="portfolio.StockMaster.CompName" class="form-control" />
+            <span asp-validation-for="portfolio.StockMaster.CompName" class="text-danger"></span>
             </div>*@
             <div class="form-group">
                 <label asp-for="portfolioTxn.TXN_DATE" class="control-label"></label>
@@ -55,19 +65,19 @@
                 <span asp-validation-for="portfolioTxn.COST_PER_SHARE" class="text-danger"></span>
             </div>
             @*<div class="form-group">
-                <label asp-for="portfolio.TOTAL_COST" class="control-label"></label>
-                <input asp-for="portfolio.TOTAL_COST" class="form-control" />
-                <span asp-validation-for="portfolio.TOTAL_COST" class="text-danger"></span>
+            <label asp-for="portfolio.TOTAL_COST" class="control-label"></label>
+            <input asp-for="portfolio.TOTAL_COST" class="form-control" />
+            <span asp-validation-for="portfolio.TOTAL_COST" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="portfolio.CMP" class="control-label"></label>
-                <input asp-for="portfolio.CMP" class="form-control" />
-                <span asp-validation-for="portfolio.CMP" class="text-danger"></span>
+            <label asp-for="portfolio.CMP" class="control-label"></label>
+            <input asp-for="portfolio.CMP" class="form-control" />
+            <span asp-validation-for="portfolio.CMP" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="portfolio.VALUE" class="control-label"></label>
-                <input asp-for="portfolio.VALUE" class="form-control" />
-                <span asp-validation-for="portfolio.VALUE" class="text-danger"></span>
+            <label asp-for="portfolio.VALUE" class="control-label"></label>
+            <input asp-for="portfolio.VALUE" class="form-control" />
+            <span asp-validation-for="portfolio.VALUE" class="text-danger"></span>
             </div>*@
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -84,4 +94,12 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    }
+    <script>
+        $(function () {
+            $(".typeselect").change(function () {
+                $(this).closest("form").submit();
+                //$('#TheForm').submit();
+            })
+        })
+    </script>
+}

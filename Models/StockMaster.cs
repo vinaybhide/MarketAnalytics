@@ -19,6 +19,9 @@ namespace MarketAnalytics.Models
         [DisplayName("Company")]
         public string CompName { get; set; } = String.Empty;
 
+        [DisplayName("Type")]
+        public string INVESTMENT_TYPE { get; set; } = String.Empty;
+
         [DisplayName("Date")]
         public DateTime? QuoteDateTime { get; set; } = default(DateTime);
         public double Open { get; set; } = default(double);
