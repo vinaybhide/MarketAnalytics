@@ -6,15 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Models;
 using System.Reflection.Metadata;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace MarketAnalytics.Data
 {
-    public class DBContext : DbContext
+    public class DBContext : IdentityDbContext<IdentityUser, IdentityRole, string> //DbContext
     {
         public DBContext (DbContextOptions<DBContext> options)
             : base(options)
         {
         }
+        public DbSet<MarketAnalytics.Models.UserMaster> UserMasters { get; set; } = default!;
 
         public DbSet<MarketAnalytics.Models.StockMaster> StockMaster { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.UpdateTracker> UpdateTracker { get; set; } = default;
@@ -27,6 +30,9 @@ namespace MarketAnalytics.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserMaster>().ToTable("USER_MASTER");
             modelBuilder.Entity<UpdateTracker>().ToTable(nameof(UpdateTracker));
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster");
             //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory");
