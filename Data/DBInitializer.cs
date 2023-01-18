@@ -2443,8 +2443,8 @@ namespace MarketAnalytics.Data
                 item.VALUE = item.stockMaster.Close * item.QUANTITY;
                 item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
                 item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
-                item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_DATE).Days;
-                item.BUY_VS_52HI = (item.COST_PER_SHARE - item.stockMaster.YEAR_HI) / item.COST_PER_SHARE * 100;
+                item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_BUY_DATE).Days;
+                item.BUY_VS_52HI = (item.COST_PER_UNIT - item.stockMaster.YEAR_HI) / item.COST_PER_UNIT * 100;
 
                 context.PORTFOLIOTXN.Update(item);
                 //now find txn for same symbol in this portfolio
@@ -2456,8 +2456,8 @@ namespace MarketAnalytics.Data
                     duplicateitem.VALUE = duplicateitem.QUANTITY * item.stockMaster.Close;
                     duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
                     duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
-                    duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_DATE).Days;
-                    duplicateitem.BUY_VS_52HI = (duplicateitem.COST_PER_SHARE - duplicateitem.stockMaster.YEAR_HI) / duplicateitem.COST_PER_SHARE * 100;
+                    duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_BUY_DATE).Days;
+                    duplicateitem.BUY_VS_52HI = (duplicateitem.COST_PER_UNIT - duplicateitem.stockMaster.YEAR_HI) / duplicateitem.COST_PER_UNIT * 100;
 
                     context.PORTFOLIOTXN.Update(duplicateitem);
                 }

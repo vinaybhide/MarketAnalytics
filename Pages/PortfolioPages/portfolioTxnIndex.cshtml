@@ -13,7 +13,7 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="portfolioTxnCreate" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.portfolioTxn.PageIndex" class="btn btn-sm btn-primary" style="font-size:small">New Txn</a>
+                        <a asp-page="portfolioTxnCreate" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.portfolioOpenTxn.PageIndex" class="btn btn-sm btn-primary" style="font-size:small">New Txn</a>
                     </p>
                 </div>
             </th>
@@ -75,12 +75,13 @@
             *@
 <table class="table">
     <thead>
+        <tr>Open Positions</tr>
         <tr style="text-align:center; font-size:small;">
             <th>Action</th>
             <th>
                 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.DateSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @*@Html.DisplayNameFor(model => model.portfolioTxn[0].PURCHASE_DATE)*@
-                    TXN Date
+                    Buy Date
                 </a>
             </th>
             @*<th>
@@ -90,7 +91,7 @@
             </th>*@
             <th>
                 <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.Symbol)
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.Symbol)
                 </a>
             </th>
             @*<th>
@@ -99,86 +100,86 @@
             </a>
             </th>*@
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].QUANTITY)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].QUANTITY)
             </th>
             @*<th></th>*@
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].COST_PER_SHARE)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].COST_PER_UNIT)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].TOTAL_COST)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].TOTAL_COST)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].CMP)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].CMP)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].VALUE)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].VALUE)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_PCT)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_PCT)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].GAIN_AMT)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_AMT)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].BUY_VS_52HI)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].BUY_VS_52HI)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].DAYS_SINCE)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].DAYS_SINCE)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_HIGH)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_HIGH)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LIFETIME_LOW)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_LOW)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.LESSTHAN_67PCT_ON)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LESSTHAN_67PCT_ON)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_LIFETIME_HIGH)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_LIFETIME_HIGH)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.YEAR_HI)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.YEAR_HI)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.YEAR_LO)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.YEAR_LO)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.DIFF_FROM_YEAR_HI)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_YEAR_HI)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V40N)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40N)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.V200)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V200)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_FAST)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_FAST)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_MID)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_MID)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_SLOW)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SLOW)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_BUY_SIGNAL)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_BUY_SIGNAL)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.portfolioTxn[0].stockMaster.SMA_SELL_SIGNAL)
+                @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SELL_SIGNAL)
             </th>
 
             @*<th></th>*@
         </tr>
     </thead>
     <tbody>
-        @if ((Model.portfolioTxn != null) && (Model.portfolioTxn.Count > 0))
+        @if ((Model.portfolioOpenTxn != null) && (Model.portfolioOpenTxn.Count > 0))
         {
-            @foreach (var item in Model.portfolioTxn)
+            @foreach (var item in Model.portfolioOpenTxn)
             {
                 //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
 
@@ -186,12 +187,13 @@
                 <tr style="text-align:center; font-size:small;">
                     <td>
                         <form method="post" asp-page-handler="TransactionAction"
-                              asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
-                              asp-route-txnid="@item.PORTFOLIOTXN_ID"
-                              asp-route-stockid="@item.StockMasterID"
-                              asp-route-sortOrder="@Model.CurrentSort"
-                              asp-route-pageIndex="@Model.CurrentPageIndex"
-                              asp-route-currentFilter="@Model.CurrentFilter">
+                      asp-route-masterid="@item.PORTFOLIO_MASTER_ID"
+                      asp-route-txnid="@item.PORTFOLIOTXN_ID"
+                      asp-route-stockid="@item.StockMasterID"
+                      asp-route-sortOrder="@Model.CurrentSort"
+                      asp-route-pageIndex="@Model.CurrentPageIndex"
+                      asp-route-pageClosedIndex="@Model.CurrentClosedPageIndex"
+                      asp-route-currentFilter="@Model.CurrentFilter">
                             <div class="form-actions no-color">
 
                                 <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" style="font-size:small">
@@ -201,7 +203,7 @@
 
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.TXN_DATE)
+                        @Html.DisplayFor(modelItem => item.TXN_BUY_DATE)
                     </td>
                     @*<td>
             @Html.DisplayFor(modelItem => item.stockMaster.Exchange)
@@ -305,7 +307,7 @@
             </td>*@
 
                     <td>
-                        @Html.DisplayFor(modelItem => item.COST_PER_SHARE)
+                        @Html.DisplayFor(modelItem => item.COST_PER_UNIT)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.TOTAL_COST)
@@ -381,16 +383,109 @@
         }
     </tbody>
 </table>
-@{
-    var prevDisabled = ((Model.portfolioTxn != null) && (!Model.portfolioTxn.HasPreviousPage)) ? "disabled" : "";
-    var nextDisabled = ((Model.portfolioTxn != null) && (!Model.portfolioTxn.HasNextPage)) ? "disabled" : "";
-}
-@if ((Model.portfolioTxn != null) && (Model.portfolioTxn.Count > 0))
+
+@if ((Model.portfolioClosedTxn != null) && (Model.portfolioClosedTxn.Count() > 0))
 {
-    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex - 1)"
+    <table class="table">
+        <thead>
+            <tr>Closed Positions</tr>
+            <tr style="text-align:center; font-size:small;">
+                <th>Action</th>
+                <th>@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].TXN_BUY_DATE)</th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.Symbol)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].QUANTITY)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].COST_PER_UNIT)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].TOTAL_COST)
+                </th>
+                <th>@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].TXN_SELL_DATE)</th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].SELL_AMT_PER_UNIT)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].TOTAL_SELL_AMT)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_PCT)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_AMT)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.portfolioOpenTxn[0].DAYS_SINCE)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.portfolioClosedTxn)
+            {
+                <tr style="text-align:center; font-size:small;">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TXN_BUY_DATE)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.stockMaster.Symbol)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.QUANTITY)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.COST_PER_UNIT)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TOTAL_COST)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TXN_SELL_DATE)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SELL_AMT_PER_UNIT)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TOTAL_SELL_AMT)
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.GAIN_PCT)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.GAIN_AMT)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DAYS_SINCE)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@{
+    var prevDisabled = ((Model.portfolioOpenTxn != null) && (!Model.portfolioOpenTxn.HasPreviousPage)) ? "disabled" : "";
+    var nextDisabled = ((Model.portfolioOpenTxn != null) && (!Model.portfolioOpenTxn.HasNextPage)) ? "disabled" : "";
+}
+@if ((Model.portfolioOpenTxn != null) && (Model.portfolioOpenTxn.Count > 0))
+{
+    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioOpenTxn.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
-    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioTxn.PageIndex + 1)"
+    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.portfolioOpenTxn.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+}
+@if ((Model.portfolioClosedTxn != null) && (Model.portfolioClosedTxn.Count > 0))
+{
+    var prevClosedDisabled = ((Model.portfolioClosedTxn != null) && (!Model.portfolioClosedTxn.HasPreviousPage)) ? "disabled" : "";
+    var nextClosedDisabled = ((Model.portfolioClosedTxn != null) && (!Model.portfolioClosedTxn.HasNextPage)) ? "disabled" : "";
+
+    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndexClosed="@(Model.portfolioClosedTxn.PageIndex - 1)" asp-route-pageIndex="@((Model.portfolioOpenTxn != null) ? Model.portfolioOpenTxn.PageIndex : null)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndexClosed="@(Model.portfolioClosedTxn.PageIndex + 1)" asp-route-pageIndex="@((Model.portfolioOpenTxn != null) ? Model.portfolioOpenTxn.PageIndex : null)"
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+
 }
 <div>
     <a asp-page="./portfoliomasterIndex" asp-route-firsttimemaster="false">Back to portfolio list</a>

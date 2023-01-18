@@ -68,7 +68,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 {
                     portfolioName = masterRec.PORTFOLIO_NAME.ToString();
                     portfolioTxn.portfolioMaster = masterRec;
-                    portfolioTxn.TXN_DATE= DateTime.Now;
+                    portfolioTxn.TXN_BUY_DATE= DateTime.Now;
                 }
             }
             parentpageIndex = (int)pageIndex;
@@ -114,7 +114,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 {
                     portfolioName = masterRec.PORTFOLIO_NAME.ToString();
                     portfolioTxn.portfolioMaster = masterRec;
-                    portfolioTxn.TXN_DATE = DateTime.Now;
+                    portfolioTxn.TXN_BUY_DATE = DateTime.Now;
                 }
             }
             parentpageIndex = (int)pageIndex;
@@ -141,7 +141,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.VALUE = portfolioTxn.QUANTITY * close[0];
             }
 
-            portfolioTxn.TOTAL_COST = portfolioTxn.QUANTITY * portfolioTxn.COST_PER_SHARE;
+            portfolioTxn.TOTAL_COST = portfolioTxn.QUANTITY * portfolioTxn.COST_PER_UNIT;
             portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
             portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
 

@@ -10,26 +10,45 @@ namespace MarketAnalytics.Models
         public int PORTFOLIOTXN_ID { get; set; }
 
         [DisplayFormat(DataFormatString ="{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
-        [DisplayName("TXN Date")]
-        public DateTime TXN_DATE { get; set; } = default(DateTime);
+        [DisplayName("Buy Date")]
+        public DateTime TXN_BUY_DATE { get; set; } = default(DateTime);
         [DisplayName("TXN Type")]
         public string TXN_TYPE { get; set; }
         [DisplayName("QTY")]
         public int QUANTITY { get; set; } = default(int);
-        [DisplayName("Cost/Share")]
+        
+        [DisplayName("Cost/Unit")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
-        public double COST_PER_SHARE { get; set; } = default(double);
+        public double COST_PER_UNIT { get; set; } = default(double);
 
         [DisplayName("Investment")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double TOTAL_COST { get; set; } = default(double);
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
+        
+        [DisplayName("Sell Date")]
+        public DateTime TXN_SELL_DATE { get; set; } = default(DateTime);
+
+        [DisplayName("Sell Value/Unit")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double SELL_AMT_PER_UNIT { get; set; } = default(double);
+
+        [DisplayName("Total Sell Amt")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double TOTAL_SELL_AMT { get; set; } = default(double);
+
         [DisplayName("Days")]
         public int DAYS_SINCE { get; set; } = default(int);
         [DisplayName("CMP")]
         public double? CMP { get; set; } = default(double);
+
         [DisplayName("Value")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double? VALUE { get; set; } = default(double);
+
+        [DisplayName("CAGR")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double CAGR { get; set; } = default(double);
 
         [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
         [DisplayName("Gain%")]
