@@ -61,9 +61,9 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapControllerRoute(
-            name: "PortfolioPages",
-            pattern: "{controller=portfoliopages}/{action=portfoliomasterindex}/{masterid?}")
-    .RequireAuthorization();
+//app.MapControllerRoute(
+//            name: "PortfolioPages",
+//            pattern: "{controller=portfoliopages}/{action=portfoliomasterindex}/{masterid?}")
+//    .RequireAuthorization();
 
 app.Run();

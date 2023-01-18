@@ -5,9 +5,11 @@ using System.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MarketAnalytics.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
+    [Authorize]
     public class PortfolioMasterIndex : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;

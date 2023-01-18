@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -99,12 +104,12 @@
                 padding-top: 60px;
             }
 
-/*        .selected {
-            background-color: darkslategrey;
-            font-weight: bold;
-            color: #fff
-        }
-*/    </style>
+        /*        .selected {
+                    background-color: darkslategrey;
+                    font-weight: bold;
+                    color: #fff
+                }
+        */</style>
 </head>
 <body>
     <header>
@@ -141,32 +146,32 @@
             </ul>
             </div>*@
             <div id="myfixarea" class="my_navbar bg-white">
-                <a class="navbar-brand text-dark" asp-area="" asp-page="/Index">Market Analytics</a>
-                <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                <a class="navbar-brand text-dark" asp-area="" asp-page="/Index" style="font-size:small">Market Analytics</a>
+                <a class="nav-link text-dark btn-sm" asp-area="" asp-page="/Index" style="font-size:small">Home</a>
                 @*<a class="nav-link text-dark" asp-area="" asp-page="/Master/Index">Stock Master</a>*@
                 <div class="my_dropdown text-dark">
-                    <button class="my_dropbtn text-dark">
+                    <button class="my_dropbtn text-dark btn-sm" style="font-size:small">
                         Stock Master
                         <i class="fa fa-caret-down text-dark"></i>
                     </button>
                     <div class="my_dropdown-content">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/Master/Index">Browse all symbols</a>
-                        <a class="nav-link text-dark" asp-area="" asp-page="/History/Index">Historical data</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/Master/Index">Browse all symbols</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/History/Index">Historical data</a>
                         @*<a href="#">Link 2</a>
                         <a href="#">Link 3</a>*@
                     </div>
                 </div>
 
-                <a class="nav-link text-dark" asp-area="" asp-page="/Forecast/Index">Forecast</a>
+                <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/Forecast/Index">Forecast</a>
                 @*<a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/Index">Portfolio</a>*@
                 <div class="my_dropdown text-dark">
-                    <button class="my_dropbtn text-dark">
+                    <button class="my_dropbtn text-dark btn-sm" style="font-size:small">
                         Portfolio
                         <i class="fa fa-caret-down text-dark"></i>
                     </button>
                     <div class="my_dropdown-content">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/portfoliomasterIndex">Browse</a>
-                        <a class="nav-link text-dark" asp-area="" asp-page="/PortfolioPages/portfolioMasterCreate">New</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/PortfolioPages/portfoliomasterIndex">Browse</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/PortfolioPages/portfolioMasterCreate">New</a>
                         @*<a href="#">Link 2</a>
                         <a href="#">Link 3</a>*@
                     </div>
@@ -174,21 +179,34 @@
 
                 @*<a href="#news">News</a>*@
                 <div class="my_dropdown text-dark">
-                    <button class="my_dropbtn text-dark">
+                    <button style="font-size:small" class="my_dropbtn text-dark btn-sm">
                         Buy Sell Strategies
                         <i class="fa fa-caret-down text-dark"></i>
                     </button>
                     <div class="my_dropdown-content">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/BuySell/smav40">SMA V40</a>
-                        <a class="nav-link text-dark" asp-area="" asp-page="/BuySell/v20BuySell">V20 Candles</a>
-                        <a class="nav-link text-dark" asp-area="" asp-page="/BuySell/BullishEngulfing">Bullish Engulfing</a>
-                        <a class="nav-link text-dark" asp-area="" asp-page="/BuySell/BearishEngulfing">Bearish Engulfing</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/BuySell/smav40">SMA V40</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/BuySell/v20BuySell">V20 Candles</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/BuySell/BullishEngulfing">Bullish Engulfing</a>
+                        <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/BuySell/BearishEngulfing">Bearish Engulfing</a>
                         @*<a href="#">Link 2</a>
                         <a href="#">Link 3</a>*@
                     </div>
                 </div>
-                <a class="nav-link text-dark" asp-area="" asp-page="/About">About</a>
-                <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/About">About</a>
+                <a style="font-size:small" class="nav-link text-dark btn-sm" asp-area="" asp-page="/Privacy">Privacy</a>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a id="manage" style="font-size:small" class="nav-link text-dark btn-sm" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+                    <a id="logout" style="font-size:small" class="nav-link text-dark btn-sm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">Logout</a>
+                    @*<form id="logoutForm" style="font-size:small" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+                        <button id="logout" style="font-size:small" type="submit" class="nav-link btn btn-link text-dark border-0 btn-sm">Logout</button>
+                    </form>*@
+                }
+                else
+                {
+                    <a class="nav-link text-dark btn-sm" id="register" style="font-size:small" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                    <a class="nav-link text-dark btn-sm" id="login" style="font-size:small" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                }
             </div>
             @*</div>*@
         </nav>
@@ -222,21 +240,21 @@
                 navbar.classList.remove("my_sticky");
             }
         }
-        
-        //function selectedRow(x) {
-        //    var table = document.getElementById("test");
-        //    for (var i = 0; i < table.rows.length; i++){
-        //        if (table.rows[i].classList.contains("selected")){
-        //            table.rows[i].classList.remove("selected");
-        //        }
-        //    }
-        //    var index = x.rowIndex - 1;
-        //    table.rows[index].classList.add("selected");
-        //    console.log('index =' + index);
-        //    //for (var i = 0; i < table.rows[index].classList.length; i++) {
-        //    //    console.log(table.rows[index].classList.item(i));
-        //    //}
-        //}
+
+                //function selectedRow(x) {
+                //    var table = document.getElementById("test");
+                //    for (var i = 0; i < table.rows.length; i++){
+                //        if (table.rows[i].classList.contains("selected")){
+                //            table.rows[i].classList.remove("selected");
+                //        }
+                //    }
+                //    var index = x.rowIndex - 1;
+                //    table.rows[index].classList.add("selected");
+                //    console.log('index =' + index);
+                //    //for (var i = 0; i < table.rows[index].classList.length; i++) {
+                //    //    console.log(table.rows[index].classList.item(i));
+                //    //}
+                //}
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

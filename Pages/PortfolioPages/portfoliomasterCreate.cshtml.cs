@@ -27,7 +27,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public IActionResult OnGet(bool? firsttimemaster)
         {
             portfolioMaster = new Portfolio_Master();
-            FirstTimeMaster = (bool)firsttimemaster;
+            FirstTimeMaster = (firsttimemaster == null)? false: (bool)firsttimemaster;
+
             return Page();
         }
 
