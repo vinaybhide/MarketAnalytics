@@ -14,8 +14,9 @@ namespace MarketAnalytics.Models
         public DateTime TXN_BUY_DATE { get; set; } = default(DateTime);
         [DisplayName("TXN Type")]
         public string TXN_TYPE { get; set; }
-        [DisplayName("QTY")]
-        public int QUANTITY { get; set; } = default(int);
+        
+        [DisplayName("BUY QTY")]
+        public int PURCHASE_QUANTITY { get; set; } = default(int);
         
         [DisplayName("Cost/Unit")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
@@ -24,10 +25,14 @@ namespace MarketAnalytics.Models
         [DisplayName("Investment")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double TOTAL_COST { get; set; } = default(double);
+
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = false)]
         
         [DisplayName("Sell Date")]
         public DateTime TXN_SELL_DATE { get; set; } = default(DateTime);
+
+        [DisplayName("SELL QTY")]
+        public int SELL_QUANTITY { get; set; } = default(int);
 
         [DisplayName("Sell Value/Unit")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
@@ -37,8 +42,11 @@ namespace MarketAnalytics.Models
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double TOTAL_SELL_AMT { get; set; } = default(double);
 
-        [DisplayName("Days")]
+        [DisplayName("Holding Days")]
         public int DAYS_SINCE { get; set; } = default(int);
+        [DisplayName("Sold After")]
+        public int SOLD_AFTER { get; set; } = default(int);
+
         [DisplayName("CMP")]
         public double? CMP { get; set; } = default(double);
 
@@ -53,11 +61,19 @@ namespace MarketAnalytics.Models
         [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
         [DisplayName("Gain%")]
         public double? GAIN_PCT { get; set; } = default(double);
-        
+
+        [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
+        [DisplayName("%Sell Gain")]
+        public double? SELL_GAIN_PCT { get; set; } = default(double);
+
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         [DisplayName("Gain")]
         public double? GAIN_AMT { get; set; } = default(double);
-        
+
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        [DisplayName("Sell Gain")]
+        public double? SELL_GAIN_AMT { get; set; } = default(double);
+
         [DisplayName("Cost Vs 52Hi")]
         [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
         public double BUY_VS_52HI { get; set; } = default(double);

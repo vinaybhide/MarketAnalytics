@@ -17,10 +17,16 @@
             @Html.DisplayFor(model => model.portfolioTxn.TXN_BUY_DATE)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.portfolioTxn.QUANTITY)
+            @Html.DisplayNameFor(model => model.portfolioTxn.TXN_TYPE)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.portfolioTxn.QUANTITY)
+            @Html.DisplayFor(model => model.portfolioTxn.TXN_TYPE)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.PURCHASE_QUANTITY)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.PURCHASE_QUANTITY)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.portfolioTxn.COST_PER_UNIT)
@@ -50,6 +56,11 @@
 </div>
 <div>
     @*<input type="hidden" asp-for="@Model.pageIndex" />*@
-    <a asp-page="./portfolioTxnEdit" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-stockid="@Model.portfolioTxn.StockMasterID" asp-route-txnid="@Model.portfolioTxn.PORTFOLIOTXN_ID" asp-route-pageIndex="@Model.parentpageIndex">Edit</a> |
-    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-stockid="@Model.portfolioTxn.StockMasterID" asp-route-txnid="@Model.portfolioTxn.PORTFOLIOTXN_ID" asp-route-pageIndex="@Model.parentpageIndex">Back to List</a>
+    <a asp-page="./portfolioTxnEdit" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-stockid="@Model.portfolioTxn.StockMasterID" 
+            asp-route-txnid="@Model.portfolioTxn.PORTFOLIOTXN_ID" asp-route-pageIndex="@Model.parentPageIndex"
+            asp-route-pageClosedIndex="@Model.parentClosedPageIndex" asp-route-currentFilter=@Model.parentFilter 
+            asp-route-searchString="@Model.parentSearchString">Edit</a> |
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentPageIndex" 
+            asp-route-pageClosedIndex="@Model.parentClosedPageIndex">Back to full List</a>
+
 </div>

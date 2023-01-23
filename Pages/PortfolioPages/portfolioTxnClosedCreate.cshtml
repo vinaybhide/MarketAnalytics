@@ -1,0 +1,115 @@
+﻿@page
+@model MarketAnalytics.Pages.PortfolioPages.portfolioTxnClosedCreateModel
+@{
+    ViewData["Title"] = "PortfolioTxnClosedCreate";
+}
+<h3>Close Transaction - @Model.portfolioTxn.stockMaster.CompName (@Model.portfolioTxn.stockMaster.Symbol)</h3>
+<hr />
+
+<div>
+    <h4>Current Open Position</h4>
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.TXN_BUY_DATE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.TXN_BUY_DATE)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.TXN_TYPE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.TXN_TYPE)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.PURCHASE_QUANTITY)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.PURCHASE_QUANTITY)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.COST_PER_UNIT)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.COST_PER_UNIT)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.TOTAL_COST)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.TOTAL_COST)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.CMP)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.CMP)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.portfolioTxn.VALUE)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.portfolioTxn.VALUE)
+        </dd>
+    </dl>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="portfolioTxn.PORTFOLIOTXN_ID" />
+            <input type="hidden" asp-for="portfolioTxn.StockMasterID" />
+            <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
+
+            <input type="hidden" asp-for="portfolioTxn.TXN_BUY_DATE" />
+            <input type="hidden" asp-for="portfolioTxn.PURCHASE_QUANTITY" />
+            <input type="hidden" asp-for="portfolioTxn.COST_PER_UNIT" />
+            <input type="hidden" asp-for="portfolioTxn.TOTAL_COST" />
+            <input type="hidden" asp-for="portfolioTxn.DAYS_SINCE" />
+            <input type="hidden" asp-for="portfolioTxn.CAGR" />
+
+            <input type="hidden" asp-for="portfolioTxn.BUY_VS_52HI" />
+
+            <input type="hidden" asp-for="@Model.parentPageIndex" />
+            <input type="hidden" asp-for="@Model.parentClosedPageIndex" />
+            <input type="hidden" asp-for="@Model.parentFilter" />
+            <input type="hidden" asp-for="@Model.parentSearchString" />
+            <input type="hidden" asp-for="@Model.parentSortOrder" />
+
+            <div class="form-group">
+                <label asp-for="portfolioTxn.TXN_SELL_DATE" class="control-label"></label>
+                <input type="date" asp-for="portfolioTxn.TXN_SELL_DATE" class="form-control" />
+                <span asp-validation-for="portfolioTxn.TXN_SELL_DATE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.TXN_TYPE" class="control-label"></label>
+                <input type="text" size="1" readonly="readonly" asp-for="portfolioTxn.TXN_TYPE" value="S" class="form-control" />
+                <span asp-validation-for="portfolioTxn.TXN_TYPE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.SELL_QUANTITY" class="control-label"></label>
+                <input type="number" size="2" asp-for="portfolioTxn.SELL_QUANTITY" value="@Model.portfolioTxn.PURCHASE_QUANTITY" class="form-control" />
+                <span asp-validation-for="portfolioTxn.SELL_QUANTITY" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="portfolioTxn.SELL_AMT_PER_UNIT" class="control-label"></label>
+                <input asp-for="portfolioTxn.SELL_AMT_PER_UNIT" class="form-control" />
+                <span asp-validation-for="portfolioTxn.SELL_AMT_PER_UNIT" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentPageIndex" asp-route-pageClosedIndex="@Model.parentClosedPageIndex">Back to full List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

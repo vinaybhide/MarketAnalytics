@@ -1,20 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MarketAnalytics.Data;
+using MarketAnalytics.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MarketAnalytics.Models;
-using MarketAnalytics.Data;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
-    public class PortfolioTxnEditModel : PageModel
+    public class portfolioTxnClosedCreateModel : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
 
-        public PortfolioTxnEditModel(MarketAnalytics.Data.DBContext context)
-        {
-            _context = context;
-        }
         [BindProperty]
         public PORTFOLIOTXN portfolioTxn { get; set; }
         [BindProperty]
@@ -30,20 +25,27 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public string parentSearchString { get; set; }
 
         public DateTime txnDate { get; set; }
+
+        public portfolioTxnClosedCreateModel(MarketAnalytics.Data.DBContext context)
+        {
+            _context = context;
+        }
+
         public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int? stockid, int pageIndex, int pageClosedIndex,
-            string sortOrder, string currentFilter, string searchString)
+                    string sortOrder, string currentFilter, string searchString)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
             {
                 return NotFound();
             }
 
-            var selectedrecord =  await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => m.PORTFOLIOTXN_ID == txnid);
+            var selectedrecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => m.PORTFOLIOTXN_ID == txnid);
             if (selectedrecord == null)
             {
                 return NotFound();
             }
             portfolioTxn = selectedrecord;
+            portfolioTxn.TXN_SELL_DATE = DateTime.Today.Date;
             txnDate = selectedrecord.TXN_BUY_DATE;
             parentPageIndex = pageIndex;
             parentClosedPageIndex = pageClosedIndex;
@@ -54,8 +56,6 @@ namespace MarketAnalytics.Pages.PortfolioPages
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -63,20 +63,31 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return Page();
             }
 
-            portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
+            portfolioTxn.TOTAL_SELL_AMT = portfolioTxn.SELL_QUANTITY * portfolioTxn.SELL_AMT_PER_UNIT;
+            portfolioTxn.SELL_GAIN_AMT = portfolioTxn.TOTAL_COST - portfolioTxn.TOTAL_SELL_AMT;
+            portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * portfolioTxn.COST_PER_UNIT)) * 100;
+            portfolioTxn.SOLD_AFTER = (int)((portfolioTxn.TXN_BUY_DATE - portfolioTxn.TXN_SELL_DATE).TotalDays);
 
-            DateTime[] quoteDate = null;
-            double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+            //now update the original quantity and related parameters
+            portfolioTxn.PURCHASE_QUANTITY = portfolioTxn.PURCHASE_QUANTITY - portfolioTxn.SELL_QUANTITY;
 
-            portfolioTxn.stockMaster = (StockMaster)_context.StockMaster.Find(portfolioTxn.StockMasterID);
-            DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
-                        out volume, out change, out changepercent, out prevclose);
-            if (quoteDate != null)
+            if (portfolioTxn.PURCHASE_QUANTITY > 0)
             {
-                portfolioTxn.CMP = close[0];
-                portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
-                portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                DateTime[] quoteDate = null;
+                double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+
+                portfolioTxn.stockMaster = (StockMaster)_context.StockMaster.Find(portfolioTxn.StockMasterID);
+                DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
+                            out volume, out change, out changepercent, out prevclose);
+                if (quoteDate != null)
+                {
+                    portfolioTxn.CMP = close[0];
+                    portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+
+                    portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
+                    portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+                    portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                }
             }
 
             _context.Attach(portfolioTxn).State = EntityState.Modified;
@@ -101,10 +112,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
             return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentPageIndex, pageClosedIndex = parentClosedPageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString });
 
         }
-
         private bool PORTFOLIOTxnExists(int txnid)
         {
-          return _context.PORTFOLIOTXN.Any(e => e.PORTFOLIOTXN_ID == txnid);
+            return _context.PORTFOLIOTXN.Any(e => e.PORTFOLIOTXN_ID == txnid);
         }
+
     }
 }

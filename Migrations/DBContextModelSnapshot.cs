@@ -82,47 +82,71 @@ namespace MarketAnalytics.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("BUY_VS_52HI")
-                        .HasColumnType("REAL");
-
-                    b.Property<double?>("CMP")
-                        .HasColumnType("REAL");
-
-                    b.Property<double>("COST_PER_SHARE")
-                        .HasColumnType("REAL");
-
-                    b.Property<int>("DAYS_SINCE")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double?>("GAIN_AMT")
-                        .HasColumnType("REAL");
-
-                    b.Property<double?>("GAIN_PCT")
-                        .HasColumnType("REAL");
-
-                    b.Property<DateTime>("LastUpDt")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("PORTFOLIO_MASTER_ID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("QUANTITY")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("StockMasterID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("TOTAL_COST")
-                        .HasColumnType("REAL");
-
-                    b.Property<DateTime>("TXN_DATE")
+                    b.Property<DateTime>("TXN_BUY_DATE")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TXN_TYPE")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("PURCHASE_QUANTITY")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("COST_PER_UNIT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("TOTAL_COST")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime>("TXN_SELL_DATE")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SELL_QUANTITY")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("SELL_AMT_PER_UNIT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("TOTAL_SELL_AMT")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("DAYS_SINCE")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SOLD_AFTER")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("CMP")
+                        .HasColumnType("REAL");
+
                     b.Property<double?>("VALUE")
                         .HasColumnType("REAL");
+
+                    b.Property<double?>("CAGR")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("GAIN_PCT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("SELL_GAIN_PCT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("GAIN_AMT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("SELL_GAIN_AMT")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("BUY_VS_52HI")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime>("LastUpDt")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("PORTFOLIOTXN_ID");
 
@@ -143,15 +167,7 @@ namespace MarketAnalytics.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("USER_MASTER_ID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("userMasterUSER_MASTER_ID")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("PORTFOLIO_MASTER_ID");
-
-                    b.HasIndex("userMasterUSER_MASTER_ID");
 
                     b.ToTable("PORTFOLIO_MASTER", (string)null);
                 });

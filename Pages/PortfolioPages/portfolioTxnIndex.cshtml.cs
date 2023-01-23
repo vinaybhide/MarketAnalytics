@@ -79,7 +79,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 menuList.Add(menuItem);
 
                 listCntr++;
-                menuItem = new SelectListItem("Sell Transaction", listCntr.ToString());
+                menuItem = new SelectListItem("Close Position", listCntr.ToString());
                 menuList.Add(menuItem);
 
                 listCntr++;
@@ -262,7 +262,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 switch (menuitemsel)
                 {
                     case "0"://case of sell txn
-                        return RedirectToPage("./portfolioTxnSell", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
+                        return RedirectToPage("./portfolioTxnCreate", new { txntype="S", masterid = masterid, txnid = txnid, stockid = stockid, 
+                            sortOrder = sortOrder, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter});
 
                     case "1"://case of edit txn
                         return RedirectToPage("./portfolioTxnEdit", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = "false", refreshAll = "false", lifetimeHighLow = "false" });
@@ -325,7 +326,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         _context.StockMaster.Update(selectedRecord.stockMaster);
 
                         selectedRecord.CMP = close[0];
-                        selectedRecord.VALUE = close[0] * selectedRecord.QUANTITY;
+                        selectedRecord.VALUE = close[0] * selectedRecord.PURCHASE_QUANTITY;
                         selectedRecord.GAIN_AMT = selectedRecord.VALUE - selectedRecord.TOTAL_COST;
                         selectedRecord.GAIN_PCT = (selectedRecord.GAIN_AMT / selectedRecord.VALUE) * 100;
                         _context.PORTFOLIOTXN.Update(selectedRecord);
@@ -337,7 +338,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         foreach (var duplicateitem in duplicateIQ)
                         {
                             duplicateitem.CMP = close[0];
-                            duplicateitem.VALUE = duplicateitem.QUANTITY * close[0];
+                            duplicateitem.VALUE = duplicateitem.PURCHASE_QUANTITY * close[0];
                             duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
                             duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
 

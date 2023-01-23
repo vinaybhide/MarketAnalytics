@@ -10,84 +10,127 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form method="post" asp-page-handler="SelectdType" asp-route-typesel="@Model.TypeSelected" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.parentpageIndex" asp-route-portfolioName="@Model.portfolioName">
-            <div class="form-actions no-color">
-                <select class="typeselect" name="typesel" asp-items="Model.typeList" style="font-size:small">
-                    <option value="">Select Investment Type</option>
-                </select>
-            </div>
-        </form>
+        @if (Model.TxnType.Equals("B"))
+        {
+            <form method="post" asp-page-handler="FilterSelected" asp-route-txntype="@Model.TxnType" asp-route-typesel="@Model.TypeSelected" asp-route-exchangesel="@Model.ExchangeSelected" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.parentPageIndex" asp-route-pageClosedIndex="@Model.parentClosedPageIndex" asp-route-portfolioName="@Model.portfolioName">
+                <div class="form-actions no-color">
+                    <select class="typeselect" name="typesel" asp-items="Model.typeList" style="font-size:small">
+                        <option value="">Select Investment Type</option>
+                    </select>
+                </div>
+            </form>
 
-        <form asp-page="./portfolioTxnCreate" method="post">
+            <form method="post" asp-page-handler="FilterSelected" asp-route-txntype="@Model.TxnType"  asp-route-typesel="@Model.TypeSelected" asp-route-exchangesel="@Model.ExchangeSelected" asp-route-masterid="@Model.MasterId" asp-route-pageIndex="@Model.parentPageIndex" asp-route-pageClosedIndex="@Model.parentClosedPageIndex" asp-route-portfolioName="@Model.portfolioName">
+                <div class="form-actions no-color">
+                    <select class="exchangeselect" name="exchangesel" asp-items="Model.exchangeList" style="font-size:small">
+                        <option value="">Select Exchange</option>
+                    </select>
+                </div>
+            </form>
+        }
+        <form asp-page="./portfolioTxnCreate" method="post" style="font-size:small">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" type="hidden" class="form-control" />
-            <input asp-for="@Model.parentpageIndex" type="hidden" class="form-control" />
-            <input asp-for="@Model.TypeSelected" type="hidden" class="form-control" />
+            @if (Model.TxnType.Equals("B"))
+            {
+                <input asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" type="hidden"/>
+                <input asp-for="@Model.parentPageIndex" type="hidden"/>
+                <input asp-for="@Model.parentClosedPageIndex" type="hidden"/>
+                <input asp-for="@Model.TypeSelected" type="hidden"/>
+                <input asp-for="@Model.ExchangeSelected" type="hidden"/>
+                <input type="hidden" asp-for="@Model.TxnType" />
 
-            @*<div class="form-group">
-            <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
-            <select asp-for="portfolio.StockMaster.Exchange" asp-items="Model.exchangeList">
-            <option value="">Select Exchange</option>
-            </select>
-            <label asp-for="portfolio.StockMaster.Exchange" class="control-label"></label>
-            <input asp-for="portfolio.StockMaster.Exchange" class="form-control" />
-            <span asp-validation-for="portfolio.StockMaster.Exchange" class="text-danger"></span>
-            </div>*@
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.stockMaster.Symbol" class="control-label" style="font-size:small"></label>
+                    <select asp-for="portfolioTxn.StockMasterID" asp-items="Model.symbolList" style="font-size:small">
+                        <option value="">Select Symbol</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.TXN_BUY_DATE" class="control-label" style="font-size:small"></label>
+                    <input type="date" asp-for="portfolioTxn.TXN_BUY_DATE" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.TXN_BUY_DATE" class="text-danger"></span>
+                </div> 
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.TXN_TYPE" class="control-label"></label>
+                    <input type="text" readonly size="1" asp-for="portfolioTxn.TXN_TYPE" value="B" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.TXN_TYPE" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.PURCHASE_QUANTITY" class="control-label" style="font-size:small"></label>
+                    <input asp-for="portfolioTxn.PURCHASE_QUANTITY" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.PURCHASE_QUANTITY" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.COST_PER_UNIT" class="control-label" style="font-size:small"></label>
+                    <input asp-for="portfolioTxn.COST_PER_UNIT" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.COST_PER_UNIT" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="@Model.TxnId" />
+                <input type="hidden" asp-for="portfolioTxn.StockMasterID" />
+                <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
 
-            <div class="form-group">
-                <label asp-for="portfolioTxn.stockMaster.Symbol" class="control-label"></label>
-                <select asp-for="portfolioTxn.StockMasterID" asp-items="Model.symbolList">
-                    <option value="">Select Symbol</option>
-                </select>
+                <input type="hidden" asp-for="@Model.TxnType" />
+                
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.stockMaster.Symbol" class="control-label" style="font-size:small"></label>
+                    <select asp-for="portfolioTxn.StockMasterID" asp-items="Model.symbolList" style="font-size:small">
+                    </select>
+                </div>
 
-                @*<label asp-for="portfolio.StockMaster.Symbol" class="control-label"></label>
-                <input asp-for="portfolio.StockMaster.Symbol" class="form-control" />
-                <span asp-validation-for="portfolio.StockMaster.Symbol" class="text-danger"></span>*@
-            </div>
-            @*<div class="form-group">
-            <label asp-for="portfolio.StockMaster.CompName" class="control-label"></label>
-            <input asp-for="portfolio.StockMaster.CompName" class="form-control" />
-            <span asp-validation-for="portfolio.StockMaster.CompName" class="text-danger"></span>
-            </div>*@
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.TXN_BUY_DATE" class="control-label" style="font-size:small"></label>
+                    <input type="date" readonly asp-for="portfolioTxn.TXN_BUY_DATE.Date" class="form-control" style="font-size:small" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.PURCHASE_QUANTITY" class="control-label" style="font-size:small"></label>
+                    <input readonly asp-for="portfolioTxn.PURCHASE_QUANTITY" class="form-control" style="font-size:small" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label" style="font-size:small">Buy Rate</label>
+                    <input readonly asp-for="portfolioTxn.COST_PER_UNIT" class="form-control" style="font-size:small" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label" style="font-size:small">Buy Value</label>
+                    <input readonly asp-for="portfolioTxn.TOTAL_COST" class="form-control" style="font-size:small" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.TXN_SELL_DATE" class="control-label" style="font-size:small"></label>
+                    <input type="date" asp-for="portfolioTxn.TXN_SELL_DATE" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.TXN_SELL_DATE" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.SELL_QUANTITY" class="control-label" style="font-size:small"></label>
+                    <input type="number" size="2" min="1" max="@Model.portfolioTxn.PURCHASE_QUANTITY" asp-for="portfolioTxn.SELL_QUANTITY" value="@Model.portfolioTxn.PURCHASE_QUANTITY" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.SELL_QUANTITY" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="portfolioTxn.SELL_AMT_PER_UNIT" class="control-label" style="font-size:small"></label>
+                    <input asp-for="portfolioTxn.SELL_AMT_PER_UNIT" class="form-control" style="font-size:small" />
+                    <span asp-validation-for="portfolioTxn.SELL_AMT_PER_UNIT" class="text-danger"></span>
+                </div>
+
+            }
             <div class="form-group">
-                <label asp-for="portfolioTxn.TXN_BUY_DATE" class="control-label"></label>
-                <input type="date" asp-for="portfolioTxn.TXN_BUY_DATE" class="form-control" />
-                <span asp-validation-for="portfolioTxn.TXN_BUY_DATE" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="portfolioTxn.QUANTITY" class="control-label"></label>
-                <input asp-for="portfolioTxn.QUANTITY" class="form-control" />
-                <span asp-validation-for="portfolioTxn.QUANTITY" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="portfolioTxn.COST_PER_UNIT" class="control-label"></label>
-                <input asp-for="portfolioTxn.COST_PER_UNIT" class="form-control" />
-                <span asp-validation-for="portfolioTxn.COST_PER_UNIT" class="text-danger"></span>
-            </div>
-            @*<div class="form-group">
-            <label asp-for="portfolio.TOTAL_COST" class="control-label"></label>
-            <input asp-for="portfolio.TOTAL_COST" class="form-control" />
-            <span asp-validation-for="portfolio.TOTAL_COST" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-            <label asp-for="portfolio.CMP" class="control-label"></label>
-            <input asp-for="portfolio.CMP" class="form-control" />
-            <span asp-validation-for="portfolio.CMP" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-            <label asp-for="portfolio.VALUE" class="control-label"></label>
-            <input asp-for="portfolio.VALUE" class="form-control" />
-            <span asp-validation-for="portfolio.VALUE" class="text-danger"></span>
-            </div>*@
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                @if (Model.TxnType.Equals("B"))
+                {
+                    <input type="submit" value="Open position" class="btn btn-primary" />
+                }
+                else
+                {
+                    <input type="submit" value="Close position" class="btn btn-primary" />
+                }
             </div>
         </form>
     </div>
 </div>
-
 <div>
-    <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentpageIndex">Back to full List</a>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentPageIndex"
+       asp-route-pageClosedIndex="@Model.parentClosedPageIndex" asp-route-sortOrder="@Model.parentSortOrder" 
+       asp-route-currentFilter="@Model.parentFilter">Back to transaction list</a>
 </div>
 
 @section Scripts {
@@ -100,6 +143,14 @@
                 $(this).closest("form").submit();
                 //$('#TheForm').submit();
             })
-        })
+        });
+
+        $(function () {
+            $(".exchangeselect").change(function () {
+                $(this).closest("form").submit();
+                //$('#TheForm').submit();
+            })
+        });
+
     </script>
 }

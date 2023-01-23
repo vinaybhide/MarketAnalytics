@@ -128,11 +128,11 @@ namespace MarketAnalytics.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_USER_MASTER", x => x.USERMASTERID);
-                    table.ForeignKey(
-                        name: "FK_USER_MASTER_USER_MASTER_UserMasterUSER_MASTER_ID",
-                        column: x => x.UserMasterUSERMASTERID,
-                        principalTable: "USER_MASTER",
-                        principalColumn: "USER_MASTER_ID");
+                    //table.ForeignKey(
+                    //    name: "FK_USER_MASTER_USER_MASTER_UserMasterUSER_MASTER_ID",
+                    //    column: x => x.UserMasterUSERMASTERID,
+                    //    principalTable: "USER_MASTER",
+                    //    principalColumn: "USER_MASTER_ID");
                 });
 
             migrationBuilder.CreateTable(
@@ -364,17 +364,17 @@ namespace MarketAnalytics.Migrations
                     PORTFOLIOMASTERID = table.Column<int>(name: "PORTFOLIO_MASTER_ID", type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PORTFOLIONAME = table.Column<string>(name: "PORTFOLIO_NAME", type: "TEXT", nullable: false),
-                    USERMASTERID = table.Column<int>(name: "USER_MASTER_ID", type: "INTEGER", nullable: false),
-                    userMasterUSERMASTERID = table.Column<int>(name: "userMasterUSER_MASTER_ID", type: "INTEGER", nullable: true)
+                    //USERMASTERID = table.Column<int>(name: "USER_MASTER_ID", type: "INTEGER", nullable: false),
+                    //userMasterUSERMASTERID = table.Column<int>(name: "userMasterUSER_MASTER_ID", type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PORTFOLIO_MASTER", x => x.PORTFOLIOMASTERID);
-                    table.ForeignKey(
-                        name: "FK_PORTFOLIO_MASTER_USER_MASTER_userMasterUSER_MASTER_ID",
-                        column: x => x.userMasterUSERMASTERID,
-                        principalTable: "USER_MASTER",
-                        principalColumn: "USER_MASTER_ID");
+                    //table.ForeignKey(
+                    //    name: "FK_PORTFOLIO_MASTER_USER_MASTER_userMasterUSER_MASTER_ID",
+                    //    column: x => x.userMasterUSERMASTERID,
+                    //    principalTable: "USER_MASTER",
+                    //    principalColumn: "USER_MASTER_ID");
                 });
 
             migrationBuilder.CreateTable(
@@ -383,20 +383,28 @@ namespace MarketAnalytics.Migrations
                 {
                     PORTFOLIOTXNID = table.Column<int>(name: "PORTFOLIOTXN_ID", type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    TXNDATE = table.Column<DateTime>(name: "TXN_DATE", type: "TEXT", nullable: false),
-                    TXNTYPE = table.Column<string>(name: "TXN_TYPE", type: "TEXT", nullable: true),
-                    QUANTITY = table.Column<int>(type: "INTEGER", nullable: false),
-                    COSTPERSHARE = table.Column<double>(name: "COST_PER_SHARE", type: "REAL", nullable: false),
-                    TOTALCOST = table.Column<double>(name: "TOTAL_COST", type: "REAL", nullable: false),
-                    DAYSSINCE = table.Column<int>(name: "DAYS_SINCE", type: "INTEGER", nullable: false),
+                    PORTFOLIOMASTERID = table.Column<int>(name: "PORTFOLIO_MASTER_ID", type: "INTEGER", nullable: false),
+                    StockMasterID = table.Column<int>(type: "INTEGER", nullable: false),
+                    TXN_BUY_DATE = table.Column<DateTime>(name: "TXN_BUY_DATE", type: "TEXT", nullable: false),
+                    TXN_TYPE = table.Column<string>(name: "TXN_TYPE", type: "TEXT", nullable: true),
+                    PURCHASE_QUANTITY = table.Column<int>(type: "INTEGER", nullable: false),
+                    COST_PER_UNIT = table.Column<double>(name: "COST_PER_UNIT", type: "REAL", nullable: false),
+                    TOTAL_COST = table.Column<double>(name: "TOTAL_COST", type: "REAL", nullable: false),
+                    TXN_SELL_DATE = table.Column<DateTime>(name: "TXN_SELL_DATE", type: "TEXT", nullable: false),
+                    SELL_QUANTITY = table.Column<int>(type: "INTEGER", nullable: false),
+                    SELL_AMT_PER_UNIT = table.Column<double>(name: "SELL_AMT_PER_UNIT", type: "REAL", nullable: false),
+                    TOTAL_SELL_AMT = table.Column<double>(name: "TOTAL_SELL_AMT", type: "REAL", nullable: false),
+                    DAYS_SINCE = table.Column<int>(name: "DAYS_SINCE", type: "INTEGER", nullable: false),
+                    SOLD_AFTER = table.Column<int>(name: "SOLD_AFTER", type: "INTEGER", nullable: false),
                     CMP = table.Column<double>(type: "REAL", nullable: true),
                     VALUE = table.Column<double>(type: "REAL", nullable: true),
-                    GAINPCT = table.Column<double>(name: "GAIN_PCT", type: "REAL", nullable: true),
-                    GAINAMT = table.Column<double>(name: "GAIN_AMT", type: "REAL", nullable: true),
-                    BUYVS52HI = table.Column<double>(name: "BUY_VS_52HI", type: "REAL", nullable: false),
-                    LastUpDt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PORTFOLIOMASTERID = table.Column<int>(name: "PORTFOLIO_MASTER_ID", type: "INTEGER", nullable: false),
-                    StockMasterID = table.Column<int>(type: "INTEGER", nullable: false)
+                    CAGR = table.Column<double>(type: "REAL", nullable: true),
+                    GAIN_PCT = table.Column<double>(name: "GAIN_PCT", type: "REAL", nullable: true),
+                    SELL_GAIN_PCT = table.Column<double>(name: "SELL_GAIN_PCT", type: "REAL", nullable: true),
+                    GAIN_AMT = table.Column<double>(name: "GAIN_AMT", type: "REAL", nullable: true),
+                    SELL_GAIN_AMT = table.Column<double>(name: "SELL_GAIN_AMT", type: "REAL", nullable: true),
+                    BUY_VS_52HI = table.Column<double>(name: "BUY_VS_52HI", type: "REAL", nullable: false),
+                    LastUpDt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -462,10 +470,10 @@ namespace MarketAnalytics.Migrations
                 table: "BULLISH_ENGULFING_STRATEGY",
                 column: "StockMasterID");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_PORTFOLIO_MASTER_userMasterUSER_MASTER_ID",
-                table: "PORTFOLIO_MASTER",
-                column: "userMasterUSER_MASTER_ID");
+            //migrationBuilder.CreateIndex(
+            //    name: "IX_PORTFOLIO_MASTER_userMasterUSER_MASTER_ID",
+            //    table: "PORTFOLIO_MASTER",
+            //    column: "userMasterUSER_MASTER_ID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PORTFOLIOTXN_PORTFOLIO_MASTER_ID",

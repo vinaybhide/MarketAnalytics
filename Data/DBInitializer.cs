@@ -112,16 +112,16 @@ namespace MarketAnalytics.Data
                                 }
                                 else
                                 {
-                                    exchange = string.Empty;
+                                    exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value.ToUpper(); // = "NYQ = NYSE or NMS = NASDAQ"
                                 }
                                 compname = xmlResult["tbody"].ChildNodes[i].ChildNodes[1].ChildNodes[0].Value.ToUpper(); //= "LARSEN AND TOUBRO"
                                 //lasttradeprice = xmlResult["tbody"].ChildNodes[i].ChildNodes[2].ChildNodes[0].Value; // = "6034.15"
                                 //category = xmlResult["tbody"].ChildNodes[i].ChildNodes[3].ChildNodes[0].Value; // = "Technology"
                                 type = xmlResult["tbody"].ChildNodes[i].ChildNodes[4].ChildNodes[0].Value; // = "Stocks"
-                                                                                                           //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
+                                //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
                                 DateTime[] quoteDate = null;
                                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-                                GetQuote(symbol + (exchange.Length == 0 ? "" :("." + exchange)), out quoteDate, out open, out high, out low, out close,
+                                GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" :("." + exchange)), out quoteDate, out open, out high, out low, out close,
                                             out volume, out change, out changepercent, out prevclose);
                                 if (quoteDate != null)
                                 { //find if stock exist in StockMaster, if not add it to context
@@ -319,12 +319,12 @@ namespace MarketAnalytics.Data
                 //sourceURL = urlNSEStockMaster;
                 if (string.IsNullOrEmpty(fromDate))
                 {
-                    GetHistoryQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
                 }
                 else
                 {
-                    GetHistoryQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
                                     out volume, out change, out changepercent, out prevclose);
                 }
                 //read first line which is list of fields
@@ -598,7 +598,7 @@ namespace MarketAnalytics.Data
                 DateTime[] quoteDate = null;
                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-                DbInitializer.GetQuote(stockMaster.Symbol + (stockMaster.Exchange.Length == 0 ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
+                DbInitializer.GetQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
                     out high, out low, out close,
                     out volume, out change, out changepercent, out prevclose);
                 if (quoteDate != null)
@@ -2440,7 +2440,7 @@ namespace MarketAnalytics.Data
                 DbInitializer.UpdateStockModel(context, item.stockMaster);
 
                 item.CMP = item.stockMaster.Close;
-                item.VALUE = item.stockMaster.Close * item.QUANTITY;
+                item.VALUE = item.stockMaster.Close * item.PURCHASE_QUANTITY;
                 item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
                 item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
                 item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_BUY_DATE).Days;
@@ -2453,7 +2453,7 @@ namespace MarketAnalytics.Data
                 foreach (var duplicateitem in duplicateIQ)
                 {
                     duplicateitem.CMP = item.stockMaster.Close;
-                    duplicateitem.VALUE = duplicateitem.QUANTITY * item.stockMaster.Close;
+                    duplicateitem.VALUE = duplicateitem.PURCHASE_QUANTITY * item.stockMaster.Close;
                     duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
                     duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
                     duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_BUY_DATE).Days;
