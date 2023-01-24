@@ -173,7 +173,9 @@
                 <tr style="text-align:center; font-size:small;">
                     <td>
                         @*<form id="TheForm" method="post" asp-page-handler="StockAction" asp-route-id="@item.StockMasterID">*@
-                        <form method="post" asp-page-handler="StockAction" asp-route-groupsel="@Model.CurrentGroup" asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.CurrentPageIndex" asp-route-currentFilter="@Model.CurrentFilter">
+                        <form method="post" asp-page-handler="StockAction" asp-route-groupsel="@Model.CurrentGroup" 
+                            asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort" 
+                            asp-route-pageIndex="@Model.CurrentPageIndex" asp-route-currentFilter="@Model.CurrentFilter">
                             <div class="form-actions no-color">
                                 @*<input type="hidden" name="id" value="@item.StockMasterID" />
                         <input type="hidden" name="sortOrder" value="@Model.CurrentSort" />

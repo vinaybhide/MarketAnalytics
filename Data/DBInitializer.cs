@@ -88,7 +88,7 @@ namespace MarketAnalytics.Data
                 if (httpResponse.Content != null)
                 {
                     var responseContent = httpResponse.Content.ReadAsStringAsync();
-                    
+
                     responseStr = responseContent.Result;
 
                     if (responseStr.Contains("<span>All (0)</span>") == false)
@@ -121,7 +121,7 @@ namespace MarketAnalytics.Data
                                 //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
                                 DateTime[] quoteDate = null;
                                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-                                GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" :("." + exchange)), out quoteDate, out open, out high, out low, out close,
+                                GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" : ("." + exchange)), out quoteDate, out open, out high, out low, out close,
                                             out volume, out change, out changepercent, out prevclose);
                                 if (quoteDate != null)
                                 { //find if stock exist in StockMaster, if not add it to context
@@ -548,6 +548,14 @@ namespace MarketAnalytics.Data
                 {
                     breturn = false;
                 }
+                else if ((whatToCheck == 9) && (stockMaster.STOCH_BUYSELL_LastUpDt.Date.CompareTo(todayDate.Date) < 0))
+                {
+                    breturn = false;
+                }
+                else if ((whatToCheck == 10) && (stockMaster.RSI_TREND_LastUpDt.Date.CompareTo(todayDate.Date) < 0))
+                {
+                    breturn = false;
+                }
 
             }
             catch
@@ -639,6 +647,8 @@ namespace MarketAnalytics.Data
                 DbInitializer.V20CandlesticPatternFinder(context, item);
 
                 DbInitializer.GetSMA_BUYSELL(context, item, 20, 50, 200);
+                DbInitializer.GetRSI_Trend(context, item, "14");
+                DbInitializer.GetSTOCH_BUYSELL(context, item, "20", "20");
 
                 DbInitializer.GetBullishEngulfingBuySellList(context, item, DateTime.Today.AddDays(-180), 10);
                 DbInitializer.GetBearishEngulfingBuySellList(context, item, DateTime.Today.AddDays(-180), 10);
@@ -1444,6 +1454,178 @@ namespace MarketAnalytics.Data
             }
         }
 
+        /// <summary>
+        /// To find rsi oversold:
+        ///     comparerLow = 0 & comparerHigh = 30, checkRSI = true
+        ///     if the current history item's RSI_CLOSE is between 0-30 then trendfound = true else false
+        ///     All values must be in the range to identify as oversold trend
+        /// To find rsi overbought:
+        ///     comparerLow = 70 & comparerHigh = 100, checkRSI = true
+        ///     if the current history item's RSI_CLOSE is between 70-100 then trendfound = true else false
+        ///     All values must be in the range to identify as overbought trend
+        /// To find STOCH buy indicator meaning oversold:
+        ///     comparerLow = 0 & comparerHigh = 22, checkRSI = false
+        ///     if the current history item's SlowD is between 0-20 then trendfound = true else false
+        ///     All values must be in the range to identify as oversold trend
+        ///     The caller should check for last history records SlowD if it is above 20, if it is then this is buy signal
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="range"></param>
+        /// <param name="comparerLow"></param>
+        /// <param name="comparerHigh"></param>
+        /// <param name="checkRSI"></param>
+        /// <returns></returns>
+        public static bool FindOverBoughtSoldTrend(DBContext context, StockMaster stockMaster, int range, int comparerLow, int comparerHigh, bool checkRSI)
+        {
+            bool btrendfound = false;
+            try
+            {
+                IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(a => a.PriceDate);
+
+                IEnumerable<StockPriceHistory> lastRangeRec = symbolIQ.AsEnumerable().TakeLast(range);
+                double valueToCheck = 0;
+                foreach (var item in lastRangeRec)
+                {
+                    if (checkRSI)
+                    {
+                        valueToCheck = (double)item.RSI_CLOSE;
+                    }
+                    else
+                    {
+                        valueToCheck = (double)item.SlowD;
+                    }
+                    if (comparerLow <= valueToCheck && valueToCheck <= comparerHigh)
+                    {
+                        btrendfound = true;
+                    }
+                    else
+                    {
+                        btrendfound = false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                btrendfound = false;
+            }
+            return btrendfound;
+        }
+
+        /// <summary>
+        /// MEthod to check if current price is good for buy or sell based on Stochastic value
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="fastkperiod"></param>
+        /// <param name="slowdperiod"></param>
+        public static void GetSTOCH_BUYSELL(DBContext context, StockMaster stockMaster,
+            //DateTime fromDate,
+            //string seriestype = "CLOSE", string time_interval = "1d", 
+            string fastkperiod = "20", string slowdperiod = "20")
+        {
+            try
+            {
+                if (IsStockUpdatedToday(stockMaster, 9))
+                {
+                    return;
+                }
+
+                //first get the stochastic
+                DbInitializer.getStochasticDataTableFromDaily(context, stockMaster, fastkperiod, slowdperiod);
+
+                //stockMaster.SlowD = 0;
+                //stockMaster.FastK = 0;
+
+                //stockMaster.STOCH_BUY_SIGNAL = false;
+                //stockMaster.STOCH_SELL_SIGNAL = false;
+                if (stockMaster.STOCH_BUY_SIGNAL == true)
+                {
+                    double priceChange = ((stockMaster.Close - stockMaster.STOCH_BUY_PRICE) / stockMaster.STOCH_BUY_PRICE) * 100;
+                    //check if current close if >= stoch buy price
+                    if (priceChange >= 5)
+                    {
+                        stockMaster.STOCH_SELL_SIGNAL = true;
+                    }
+                    else
+                    {
+                        stockMaster.STOCH_SELL_SIGNAL = false;
+                    }
+                }
+                else
+                {
+                    //check if recent 5 prices are between 0 to 23
+                    bool bLowerThan20 = FindOverBoughtSoldTrend(context, stockMaster, 5, 0, 22, false);
+                    if (bLowerThan20)
+                    {
+                        IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(a => a.PriceDate);
+                        StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
+                        //this means recent 5 values are between 0 to 23
+                        if (currentHist != null)
+                        {
+                            if (currentHist.SlowD >= 21)
+                            {
+                                stockMaster.STOCH_BUY_PRICE = (double)currentHist.Close;
+                                stockMaster.STOCH_SELL_PRICE = 0;
+                                stockMaster.STOCH_BUY_SIGNAL = true;
+                                stockMaster.STOCH_SELL_SIGNAL = false;
+                            }
+                        }
+                    }
+                }
+                stockMaster.STOCH_BUYSELL_LastUpDt = DateTime.Today.Date;
+                context.StockMaster.Update(stockMaster);
+
+                context.SaveChanges(true);
+            }
+            catch (Exception ex)
+            {
+                //throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Method to find if the stock is overbought or oversold
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="period"></param>
+        public static void GetRSI_Trend(DBContext context, StockMaster stockMaster, string period = "14")
+        {
+            try
+            {
+                if (IsStockUpdatedToday(stockMaster, 10))
+                {
+                    return;
+                }
+
+                //first get the RSI for three periods
+                DbInitializer.getRSIDataTableFromDaily(context, stockMaster, period);
+
+                //find of stock is oversold
+                //first check if the recent history prices are within 0 to 30
+                stockMaster.RSI_OVERSOLD = false;
+                bool bLowerThan30 = FindOverBoughtSoldTrend(context, stockMaster, 5, 0, 30, true);
+                if (bLowerThan30)
+                {
+                    stockMaster.RSI_OVERSOLD = true;
+                }
+                stockMaster.RSI_OVERBOUGHT = false;
+                bool bHigherThan80 = FindOverBoughtSoldTrend(context, stockMaster, 5, 80, 100, true);
+                if (bHigherThan80)
+                {
+                    stockMaster.RSI_OVERBOUGHT = true;
+                }
+                stockMaster.RSI_TREND_LastUpDt = DateTime.Today.Date;
+                context.StockMaster.Update(stockMaster);
+
+                context.SaveChanges(true);
+            }
+            catch (Exception ex)
+            {
+                //throw ex;
+            }
+        }
         /// <summary>
         /// Currently not used
         /// </summary>

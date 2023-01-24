@@ -1,17 +1,14 @@
 ﻿@page
-@model MarketAnalytics.Pages.BuySell.SMAV40Finder
-
+@model MarketAnalytics.Pages.BuySell.rsiv40Model
 @{
-    ViewData["Title"] = "SMAV40BuySell";
+    ViewData["Title"] = "RSIV40Trend";
 }
-
-<h4>SMA V40 Strategy (Buy when SMA20 LT SMA50 LT SMA200 & Sell when SMA200 LT SMA50 LT SMA20</h4>
-
+<h4>RSI V40 Trend Identifier (Overbought If RSI is above 80 & Oversold if RSI is below 30)</h4>
 <table class="table">
     <thead>
         <tr>
             <th>
-                <form asp-page="./smav40" method="get">
+                <form asp-page="./rsiv40" method="get">
                     <div class="form-actions no-color">
                         <p>
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
@@ -22,7 +19,7 @@
                 </form>
             </th>
             <th>
-                <form asp-page="./smav40" method="get">
+                <form asp-page="./rsiv40" method="get">
                     <div class="form-actions no-color">
                         <p>
                             <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
@@ -38,7 +35,7 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./smav40" asp-route-refreshAll="true" class="btn btn-sm btn-primary"
+                        <a asp-page="./rsiv40" asp-route-refreshAll="true" class="btn btn-sm btn-primary"
                            style="font-size:small">Refresh strategy for All</a>
                     </p>
                 </div>
@@ -46,19 +43,18 @@
             <th>
                 <div class="form-actions no-color">
                     <p>
-                        <a asp-page="./smav40" style="font-size:small">Back to full List</a>
+                        <a asp-page="./rsiv40" style="font-size:small">Back to full List</a>
                     </p>
                 </div>
             </th>
         </tr>
     </thead>
 </table>
-
 <table class="table">
     <thead>
         <tr style="text-align:center; font-size:small;">
             <th>
-                <a asp-page="./smav40" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./rsiv40" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].Symbol)
                 </a>
             </th>
@@ -72,25 +68,15 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
             </th>
             <th>
-                <a asp-page="./smav40" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.StockMaster[0].SMA_BUY_SIGNAL)
+                <a asp-page="./rsiv40" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERSOLD)
                 </a>
             </th>
             <th>
-                <a asp-page="./smav40" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SELL_SIGNAL)
+                <a asp-page="./rsiv40" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERBOUGHT)
                 </a>
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_FAST)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_MID)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SLOW)
-            </th>
-            @*<th></th>*@
         </tr>
     </thead>
     <tbody>
@@ -103,8 +89,8 @@
                       asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
                       asp-route-currentFilter="@Model.CurrentFilter" asp-route-symbolToUpdate="@item.StockMasterID">
                         <div class="form-actions no-color">
-                            <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" 
-                                    style="font-size:small">
+                            <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList"
+                                style="font-size:small">
                                 <option selected value="-1">@Html.DisplayFor(modelItem => item.Symbol)</option>
                             </select>
                         </div>
@@ -120,32 +106,11 @@
                     @Html.DisplayFor(modelItem => item.PrevClose)
                 </td>
                 <td>
-                    @Html.CheckBoxFor(modelItem => item.SMA_BUY_SIGNAL,  new { @disabled = "disabled" })
+                    @Html.CheckBoxFor(modelItem => item.RSI_OVERSOLD,  new { @disabled = "disabled" })
                 </td>
                 <td>
-                    @Html.CheckBoxFor(modelItem => item.SMA_SELL_SIGNAL, new { @disabled = "disabled" })
+                    @Html.CheckBoxFor(modelItem => item.RSI_OVERBOUGHT, new { @disabled = "disabled" })
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SMA_FAST)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SMA_MID)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SMA_SLOW)
-                </td>
-
-                @*<td>
-            <a asp-page="./smav40" asp-route-id="@item.StockMasterID"
-            asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.StockMaster.PageIndex"
-            asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
-            <a asp-page="./smav40" asp-route-id="@item.StockMasterID" asp-route-getQuote="true"
-            asp-route-updateBuySell="false" asp-route-sortOrder="@Model.CurrentSort"
-            asp-route-pageIndex="@Model.StockMaster.PageIndex"
-            asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
-            <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false
-            asp-route-history=true>History</a>|
-            </td>*@
             </tr>
         }
     </tbody>
@@ -154,9 +119,9 @@
     var prevDisabled = !Model.StockMaster.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.StockMaster.HasNextPage ? "disabled" : "";
 }
-<a asp-page="./smav40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
+<a asp-page="./rsiv40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
-<a asp-page="./smav40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
+<a asp-page="./rsiv40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
 
 @section scripts{
@@ -167,16 +132,16 @@
                 //$('#TheForm').submit();
             })
         })
-                //function groupselchange()
-                //{
-                //    var grouplist = document.getElementById("groupid");
-                //    var value = grouplist.value;
-                //    alert('value='+ value);
-                //    var text = grouplist.options[grouplist.selectedIndex].text;
-                //    alert('text='+text);
-                //    document.getElementById("CurrentSel").value = value;
-                //    alert(document.getElementById("CurrentSel").value);
-                //    //return value;
-                //}
+                        //function groupselchange()
+                        //{
+                        //    var grouplist = document.getElementById("groupid");
+                        //    var value = grouplist.value;
+                        //    alert('value='+ value);
+                        //    var text = grouplist.options[grouplist.selectedIndex].text;
+                        //    alert('text='+text);
+                        //    document.getElementById("CurrentSel").value = value;
+                        //    alert(document.getElementById("CurrentSel").value);
+                        //    //return value;
+                        //}
     </script>
 }

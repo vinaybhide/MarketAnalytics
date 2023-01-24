@@ -74,9 +74,16 @@ namespace MarketAnalytics.Migrations
                     V200 = table.Column<bool>(type: "INTEGER", nullable: false),
                     SMABUYSIGNAL = table.Column<bool>(name: "SMA_BUY_SIGNAL", type: "INTEGER", nullable: false),
                     SMASELLSIGNAL = table.Column<bool>(name: "SMA_SELL_SIGNAL", type: "INTEGER", nullable: false),
+                    STOCHBUYSIGNAL = table.Column<bool>(name: "STOCH_BUY_SIGNAL", type: "INTEGER", nullable: false),
+                    STOCHSELLSIGNAL = table.Column<bool>(name: "STOCH_SELL_SIGNAL", type: "INTEGER", nullable: false),
+                    RSIOVERBOUGHT = table.Column<bool>(name: "RSI_OVERBOUGHT", type: "INTEGER", nullable: false),
+                    RSIOVERSOLD = table.Column<bool>(name: "RSI_OVERSOLD", type: "INTEGER", nullable: false),
                     SMAFAST = table.Column<double>(name: "SMA_FAST", type: "REAL", nullable: false),
                     SMAMID = table.Column<double>(name: "SMA_MID", type: "REAL", nullable: false),
                     SMASLOW = table.Column<double>(name: "SMA_SLOW", type: "REAL", nullable: false),
+                    RSICLOSE = table.Column<double>(name: "RSI_CLOSE", type: "REAL", nullable: false),
+                    STOCHBUYPRICE = table.Column<double>(name: "STOCH_BUY_PRICE", type: "REAL", nullable: false),
+                    STOCHSELLPRICE = table.Column<double>(name: "STOCH_SELL_PRICE", type: "REAL", nullable: false),
                     YEARHI = table.Column<double>(name: "YEAR_HI", type: "REAL", nullable: false),
                     YEARLO = table.Column<double>(name: "YEAR_LO", type: "REAL", nullable: false),
                     LIFETIMEHIGH = table.Column<double>(name: "LIFETIME_HIGH", type: "REAL", nullable: false),
@@ -91,7 +98,9 @@ namespace MarketAnalytics.Migrations
                     BULLENGULFLastUpDt = table.Column<DateTime>(name: "BULL_ENGULF_LastUpDt", type: "TEXT", nullable: false),
                     BEARENGULFLastUpDt = table.Column<DateTime>(name: "BEAR_ENGULF_LastUpDt", type: "TEXT", nullable: false),
                     V20LastUpDt = table.Column<DateTime>(name: "V20_LastUpDt", type: "TEXT", nullable: false),
-                    SMABUYSELLLastUpDt = table.Column<DateTime>(name: "SMA_BUYSELL_LastUpDt", type: "TEXT", nullable: false)
+                    SMABUYSELLLastUpDt = table.Column<DateTime>(name: "SMA_BUYSELL_LastUpDt", type: "TEXT", nullable: false),
+                    STOCHBUYSELLLastUpDt = table.Column<DateTime>(name: "STOCH_BUYSELL_LastUpDt", type: "TEXT", nullable: false),
+                    RSITRENDLastUpDt = table.Column<DateTime>(name: "RSI_TREND_LastUpDt", type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

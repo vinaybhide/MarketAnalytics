@@ -243,7 +243,25 @@ namespace MarketAnalytics.Migrations
                     b.Property<DateTime>("SMA_BUYSELL_LastUpDt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("STOCH_BUYSELL_LastUpDt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RSI_TREND_LastUpDt")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("SMA_BUY_SIGNAL")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("STOCH_BUY_SIGNAL")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("STOCH_SELL_SIGNAL")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("RSI_OVERBOUGHT")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("RSI_OVERSOLD")
                         .HasColumnType("INTEGER");
 
                     b.Property<double>("SMA_FAST")
@@ -259,6 +277,15 @@ namespace MarketAnalytics.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<double>("SMA_SLOW")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("RSI_CLOSE")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("STOCH_BUY_PRICE")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("STOCH_SELL_PRICE")
                         .HasColumnType("REAL");
 
                     b.Property<DateTime>("STOCH_LastUpDt")

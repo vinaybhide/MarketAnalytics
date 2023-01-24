@@ -1,21 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Data;
 using MarketAnalytics.Models;
-using System.Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketAnalytics.Pages.BuySell
 {
-    public class SMAV40Finder : PageModel
+    public class stochv40Model : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> symbolList { get; set; }
         public List<SelectListItem> menuList { get; set; }
 
-        public SMAV40Finder(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
+        public stochv40Model(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
@@ -57,13 +56,11 @@ namespace MarketAnalytics.Pages.BuySell
                 menuItem = new SelectListItem("Chart: SMA-RSI-Stoch", "4");
                 menuList.Add(menuItem);
 
-                //StockMaster = await _context.StockMaster.ToListAsync();
-                //Commented above line and Added following for sorting, searching, paging
                 CurrentSort = sortOrder;
                 SymbolSort = String.IsNullOrEmpty(sortOrder) ? "symbol_desc" : "";
-                BuySignalSort = sortOrder == "SMABUY" ? "smabuy_desc" : "SMABUY";
-                SellSignalSort = sortOrder == "SMASELL" ? "smasell_desc" : "SMASELL";
-                if(searchString != null)
+                BuySignalSort = sortOrder == "STOCHBUY" ? "stochbuy_desc" : "STOCHBUY";
+                SellSignalSort = sortOrder == "STOCHSELL" ? "stochsell_desc" : "STOCHSELL";
+                if (searchString != null)
                 {
                     pageIndex = 1;
                 }
@@ -72,12 +69,9 @@ namespace MarketAnalytics.Pages.BuySell
                     searchString = currentFilter;
                 }
 
-                if(refreshAll == true)
+                if (refreshAll == true)
                 {
-                    //string fetchedData = await DbInitializer.FetchMasterData();
-                    //DbInitializer.Initialize(_context, fetchedData);
-
-                    RefreshAllBuySellIndicators();
+                    RefreshSTOCHBuySellForAll();
                     RefreshAllStocks = false;
                     refreshAll = false;
                 }
@@ -97,8 +91,8 @@ namespace MarketAnalytics.Pages.BuySell
                             DbInitializer.UpdateStockQuote(_context, selectedRecord);
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
-                        { 
-                            DbInitializer.GetSMA_BUYSELL(_context, selectedRecord, 20, 50, 200);
+                        {
+                            DbInitializer.GetSTOCH_BUYSELL(_context, selectedRecord, "20", "20");
                             if (symbolToUpdate != null)
                             {
                                 searchString = selectedRecord.Symbol;
@@ -109,9 +103,6 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-                //stockmasterIQ = stockmasterIQ.Where(s => ((s.V40 == true) && (s.SMA_BUY_SIGNAL == true 
-                //                                            || s.SMA_SELL_SIGNAL == true)));
                 IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
                 if (!String.IsNullOrEmpty(searchString))
                 {
@@ -124,17 +115,17 @@ namespace MarketAnalytics.Pages.BuySell
                     case "symbol_desc":
                         stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.Symbol);
                         break;
-                    case "SMABUY":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.SMA_BUY_SIGNAL);
+                    case "STOCHBUY":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_BUY_SIGNAL);
                         break;
-                    case "smabuy_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.SMA_BUY_SIGNAL);
+                    case "stochbuy_desc":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_BUY_SIGNAL);
                         break;
-                    case "SMASELL":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.SMA_SELL_SIGNAL);
+                    case "STOCHSELL":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_SELL_SIGNAL);
                         break;
-                    case "smasell_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.SMA_SELL_SIGNAL);
+                    case "stochsell_desc":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_SELL_SIGNAL);
                         break;
                     default:
                         stockmasterIQ = stockmasterIQ.OrderBy(s => s.Symbol);
@@ -145,19 +136,19 @@ namespace MarketAnalytics.Pages.BuySell
             }
         }
 
-        public void RefreshAllBuySellIndicators()
+        public void RefreshSTOCHBuySellForAll()
         {
             //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
             IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
 
             foreach (var item in stockmasterIQ)
             {
-                DbInitializer.GetSMA_BUYSELL(_context, item, 20, 50, 200);
+                DbInitializer.GetSTOCH_BUYSELL(_context, item, "20", "20");
             }
         }
 
-        public IActionResult OnPostStockAction(int? id, string menuitemsel, string sortOrder, int pageIndex, 
-            string currentFilter, int? symbolToUpdate)
+        public IActionResult OnPostStockAction(int? id, string menuitemsel, string sortOrder, int pageIndex,
+                    string currentFilter, int? symbolToUpdate)
         {
             if ((id != null) && (menuitemsel.Equals("-1") == false))
             {
@@ -166,9 +157,9 @@ namespace MarketAnalytics.Pages.BuySell
                 switch (menuitemsel)
                 {
                     case "0"://update strategy
-                        return RedirectToPage("./smav40", new { id = id, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, symbolToUpdate = symbolToUpdate });
+                        return RedirectToPage("./stochv40", new { id = id, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, symbolToUpdate = symbolToUpdate });
                     case "1"://case get quote
-                        return RedirectToPage("./smav40", new { id = id, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getquote = true });
+                        return RedirectToPage("./stochv40", new { id = id, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, getquote = true });
                     case "2": //case of history
                         return RedirectToPage("/History/Index", new { id = id });
                     case "3": //case of history chart
