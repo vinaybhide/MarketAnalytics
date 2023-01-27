@@ -2624,7 +2624,7 @@ namespace MarketAnalytics.Data
                 item.CMP = item.stockMaster.Close;
                 item.VALUE = item.stockMaster.Close * item.PURCHASE_QUANTITY;
                 item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
-                item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
+                item.GAIN_PCT = (item.GAIN_AMT / item.TOTAL_COST) * 100;
                 item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_BUY_DATE).Days;
                 item.BUY_VS_52HI = (item.COST_PER_UNIT - item.stockMaster.YEAR_HI) / item.COST_PER_UNIT * 100;
 
@@ -2637,7 +2637,7 @@ namespace MarketAnalytics.Data
                     duplicateitem.CMP = item.stockMaster.Close;
                     duplicateitem.VALUE = duplicateitem.PURCHASE_QUANTITY * item.stockMaster.Close;
                     duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
-                    duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
+                    duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.TOTAL_COST) * 100;
                     duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_BUY_DATE).Days;
                     duplicateitem.BUY_VS_52HI = (duplicateitem.COST_PER_UNIT - duplicateitem.stockMaster.YEAR_HI) / duplicateitem.COST_PER_UNIT * 100;
 

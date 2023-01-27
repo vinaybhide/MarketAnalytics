@@ -10,7 +10,7 @@
 <h4>Are you sure you want to delete this?</h4>
 <div>
     <hr />
-    <dl class="row">
+    <dl class="row" style="font-size:small">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.portfolioTxn.TXN_BUY_DATE)
         </dt>
@@ -40,11 +40,15 @@
     <form method="post">
         <input type="hidden" asp-for="portfolioTxn.PORTFOLIOTXN_ID" />
         <input type="hidden" asp-for="portfolioTxn.PORTFOLIO_MASTER_ID" />
-        <input type="hidden" asp-for="@Model.parentpageIndex" />
+        <input type="hidden" asp-for="@Model.parentPageIndex" />
         <input type="hidden" asp-for="@Model.parentFilter" />
         <input type="hidden" asp-for="@Model.parentSearchString" />
         <input type="hidden" asp-for="@Model.parentSortOrder" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentpageIndex">Back to List</a>
+        <input type="submit" value="Delete" class="btn btn-danger" style="font-size:small" /> 
+        <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID"
+           asp-route-stockid="@Model.portfolioTxn.StockMasterID"
+           asp-route-pageSummaryIndex="@Model.parentPageSummaryIndex"
+           asp-route-pageIndex="@Model.parentPageIndex"
+           asp-route-pageClosedIndex="@Model.parentClosedPageIndex" class="btn btn-primary" style="font-size:small">Back to List</a>
     </form>
 </div>

@@ -4,6 +4,37 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MarketAnalytics.Models
 {
+    public class PORTFOLIOTXN_SUMMARY
+    {
+        public int StockMasterId { get; set; }
+        public int MasterId { get; set; }
+
+        [DisplayName("Symbol")]
+        public string Symbol { get; set; }
+        public string CompName { get; set; }
+        public string Exchange { get; set; }
+        [DisplayName("Total QTY")]
+        public int TotalQty { get; set; }
+        [DisplayName("Total Cost")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double TotalCost { get; set; }
+        
+        [DisplayName("Total Gain")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double? TotalGain { get; set; }
+        
+        [DisplayName("Total Gain%")]
+        public double? GAIN_PCT { get; set; } = default(double);
+
+        [DisplayFormat(DataFormatString = "{0:0.00}%", ApplyFormatInEditMode = true)]
+        public double? TotalGainPCT { get; set; }
+
+        [DisplayName("CMP")]
+        public double? CMP { get; set;}
+        
+        [DisplayName("Total Value")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)] public double? TotalValue { get; set; }
+    }
     public class PORTFOLIOTXN
     {
         [Key]

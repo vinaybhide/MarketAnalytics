@@ -14,6 +14,7 @@
     <Compile Remove="Pages\PortfolioPages\Details.cshtml.cs" />
     <Compile Remove="Pages\PortfolioPages\Edit.cshtml.cs" />
     <Compile Remove="Pages\PortfolioPages\Index.cshtml.cs" />
+    <Compile Remove="Pages\PortfolioPages\portfolioTxnSummaryIndex.cshtml.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
     <Content Remove="Pages\PortfolioPages\Details.cshtml" />
     <Content Remove="Pages\PortfolioPages\Edit.cshtml" />
     <Content Remove="Pages\PortfolioPages\Index.cshtml" />
+    <Content Remove="Pages\PortfolioPages\portfolioTxnSummaryIndex.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,15 +18,19 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public PORTFOLIOTXN portfolioTxn { get; set; }
 
         [BindProperty]
-        public int parentpageIndex { get; set; }
+        public int parentPageSummaryIndex { get; set; }
+        [BindProperty]
+        public int parentPageIndex { get; set; }
+        [BindProperty]
+        public int parentClosedPageIndex { get; set; }
         [BindProperty]
         public string parentSortOrder { get; set; }
         [BindProperty]
         public string parentFilter { get; set; }
         [BindProperty]
         public string parentSearchString { get; set; }
-        public async Task<IActionResult> OnGetAsync(int? txnid, int? pageIndex, 
-            string sortOrder, string currentFilter, string searchString)
+        public async Task<IActionResult> OnGetAsync(int? txnid, int pageSummaryIndex, int pageIndex,
+            int pageClosedIndex, string sortOrder, string currentFilter, string searchString)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
             {
@@ -40,7 +44,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
             portfolioTxn = selectedrecord;
-            parentpageIndex = (int)pageIndex;
+            parentPageSummaryIndex = pageSummaryIndex;
+            parentPageIndex = pageIndex;
+            parentClosedPageIndex = pageClosedIndex;
             parentSortOrder = sortOrder;
             parentFilter = currentFilter;
             parentSearchString= searchString;
@@ -62,7 +68,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToPage("./portfolioTxnIndex", new {masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString});
+            return RedirectToPage("./portfolioTxnIndex", new {masterid = portfolioTxn.PORTFOLIO_MASTER_ID, 
+                stockid = portfolioTxn.StockMasterID, pageSummaryIndex = parentPageSummaryIndex, pageIndex = parentPageIndex, 
+                pageClosedIndex = parentClosedPageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, 
+                searchString = parentSearchString});
         }
     }
 }

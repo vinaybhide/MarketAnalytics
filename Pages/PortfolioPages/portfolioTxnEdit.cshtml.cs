@@ -18,6 +18,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         [BindProperty]
         public PORTFOLIOTXN portfolioTxn { get; set; }
         [BindProperty]
+        public int parentPageSummaryIndex { get; set; }
+        [BindProperty]
         public int parentPageIndex { get; set; }
         [BindProperty]
         public int parentClosedPageIndex { get; set; }
@@ -30,8 +32,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public string parentSearchString { get; set; }
 
         public DateTime txnDate { get; set; }
-        public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int? stockid, int pageIndex, int pageClosedIndex,
-            string sortOrder, string currentFilter, string searchString)
+        public async Task<IActionResult> OnGetAsync(int? masterid, int? txnid, int pageSummaryIndex, int pageIndex, 
+            int pageClosedIndex, string sortOrder, string currentFilter, string searchString)
         {
             if (txnid == null || _context.PORTFOLIOTXN == null)
             {
@@ -45,6 +47,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
             portfolioTxn = selectedrecord;
             txnDate = selectedrecord.TXN_BUY_DATE;
+            parentPageSummaryIndex = pageSummaryIndex;
             parentPageIndex = pageIndex;
             parentClosedPageIndex = pageClosedIndex;
             parentSortOrder = sortOrder;
@@ -76,7 +79,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.CMP = close[0];
                 portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                 portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
             }
 
             _context.Attach(portfolioTxn).State = EntityState.Modified;
@@ -98,7 +101,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
 
             //return RedirectToPage("./portfolioTxnIndex");
-            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentPageIndex, pageClosedIndex = parentClosedPageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString });
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, stockid = portfolioTxn.StockMasterID, pageSummaryIndex = parentPageSummaryIndex, pageIndex = parentPageIndex, pageClosedIndex = parentClosedPageIndex, sortOrder = parentSortOrder, currentFilter = parentFilter, searchString = parentSearchString });
 
         }
 

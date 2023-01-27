@@ -7,7 +7,7 @@
 
 <h3>Details - @Model.portfolioTxn.stockMaster.CompName (@Model.portfolioTxn.stockMaster.Symbol)</h3>
 
-<div>
+<div style="font-size:small">
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -56,11 +56,18 @@
 </div>
 <div>
     @*<input type="hidden" asp-for="@Model.pageIndex" />*@
-    <a asp-page="./portfolioTxnEdit" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-stockid="@Model.portfolioTxn.StockMasterID" 
-            asp-route-txnid="@Model.portfolioTxn.PORTFOLIOTXN_ID" asp-route-pageIndex="@Model.parentPageIndex"
-            asp-route-pageClosedIndex="@Model.parentClosedPageIndex" asp-route-currentFilter=@Model.parentFilter 
-            asp-route-searchString="@Model.parentSearchString">Edit</a> |
-    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentPageIndex" 
-            asp-route-pageClosedIndex="@Model.parentClosedPageIndex">Back to full List</a>
+    <a asp-page="./portfolioTxnEdit" asp-route-masterid="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" 
+        asp-route-stockid="@Model.portfolioTxn.StockMasterID" 
+        asp-route-txnid="@Model.portfolioTxn.PORTFOLIOTXN_ID"
+        asp-route-pageSummaryIndex="@Model.parentPageSummaryIndex"
+        asp-route-pageIndex="@Model.parentPageIndex"
+        asp-route-pageClosedIndex="@Model.parentClosedPageIndex" 
+        asp-route-currentFilter=@Model.parentFilter 
+        asp-route-searchString="@Model.parentSearchString" style="font-size:small">Edit</a>
+    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" 
+        asp-route-stockid="@Model.portfolioTxn.StockMasterID"
+        asp-route-pageSummaryIndex="@Model.parentPageSummaryIndex"
+        asp-route-pageIndex="@Model.parentPageIndex"
+        asp-route-pageClosedIndex="@Model.parentClosedPageIndex" style="font-size:small">Back to full List</a>
 
 </div>

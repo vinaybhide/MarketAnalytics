@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form method="post">
+        <form method="post" style="font-size:small">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="portfolioTxn.PORTFOLIOTXN_ID" />
             <input type="hidden" asp-for="portfolioTxn.StockMasterID" />
@@ -36,34 +36,40 @@
 
             <div class="form-group">
                 <label asp-for="portfolioTxn.TXN_BUY_DATE" class="control-label"></label>
-                <input type="date" asp-for="portfolioTxn.TXN_BUY_DATE" class="form-control" />
+                <input type="date" asp-for="portfolioTxn.TXN_BUY_DATE" class="form-control" style="font-size:small" />
                 <span asp-validation-for="portfolioTxn.TXN_BUY_DATE" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="portfolioTxn.TXN_TYPE" class="control-label"></label>
-                <input type="text" size="1" readonly="readonly" asp-for="portfolioTxn.TXN_TYPE" class="form-control" />
+                <input type="text" size="1" readonly="readonly" asp-for="portfolioTxn.TXN_TYPE" class="form-control" style="font-size:small" />
                 <span asp-validation-for="portfolioTxn.TXN_TYPE" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="portfolioTxn.PURCHASE_QUANTITY" class="control-label"></label>
-                <input asp-for="portfolioTxn.PURCHASE_QUANTITY" class="form-control" />
+                <input asp-for="portfolioTxn.PURCHASE_QUANTITY" class="form-control" style="font-size:small" />
                 <span asp-validation-for="portfolioTxn.PURCHASE_QUANTITY" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="portfolioTxn.COST_PER_UNIT" class="control-label"></label>
-                <input asp-for="portfolioTxn.COST_PER_UNIT" class="form-control" />
+                <input asp-for="portfolioTxn.COST_PER_UNIT" class="form-control" style="font-size:small" />
                 <span asp-validation-for="portfolioTxn.COST_PER_UNIT" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" style="font-size:small" />
+@*            </div>
+            <div>
+*@                <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID"
+                   asp-route-stockid="@Model.portfolioTxn.StockMasterID"
+                   asp-route-pageSummaryIndex="@Model.parentPageSummaryIndex"
+                   asp-route-pageIndex="@Model.parentPageIndex"
+                   asp-route-pageClosedIndex="@Model.parentClosedPageIndex"
+                   class="btn btn-primary" style="font-size:small">Back to full List</a>
             </div>
+
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-page="./portfolioTxnIndex" asp-route-masterId="@Model.portfolioTxn.PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.parentPageIndex" asp-route-pageClosedIndex="@Model.parentClosedPageIndex">Back to full List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -237,7 +237,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
                 portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                 portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
             }
             else if (TxnType.Equals("S"))
             {
@@ -262,14 +262,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 
                 portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                 portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
 
                 if (existingTxn.PURCHASE_QUANTITY > 0)
                 {
                     existingTxn.TOTAL_COST = existingTxn.PURCHASE_QUANTITY * existingTxn.COST_PER_UNIT;
                     existingTxn.VALUE = existingTxn.PURCHASE_QUANTITY * close[0];
                     existingTxn.GAIN_AMT = existingTxn.VALUE - existingTxn.TOTAL_COST;
-                    existingTxn.GAIN_PCT = (existingTxn.GAIN_AMT / existingTxn.VALUE) * 100;
+                    existingTxn.GAIN_PCT = (existingTxn.GAIN_AMT / existingTxn.TOTAL_COST) * 100;
                     _context.PORTFOLIOTXN.Update(existingTxn);
                 }
                 else
