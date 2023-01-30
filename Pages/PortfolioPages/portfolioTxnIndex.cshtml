@@ -171,23 +171,26 @@
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].VALUE)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_PCT)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].GAIN_AMT)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].BUY_VS_52HI)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].DAYS_SINCE)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_HIGH)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_LOW)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LESSTHAN_67PCT_ON)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_LIFETIME_HIGH)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.YEAR_HI)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.YEAR_LO)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].BUY_VS_52HI)</th>
+
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_HIGH)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LIFETIME_LOW)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_LIFETIME_HIGH)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_YEAR_HI)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LESSTHAN_67PCT_ON)</th>
+                @*<th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40N)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V200)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_FAST)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_MID)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SLOW)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SLOW)</th>*@
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_BUY_SIGNAL)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SELL_SIGNAL)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.STOCH_BUY_SIGNAL)</th>
+                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.STOCH_SELL_SIGNAL)</th>
             </tr>
         </thead>
         <tbody>
@@ -314,28 +317,31 @@
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.VALUE)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.GAIN_PCT)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.GAIN_AMT)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.BUY_VS_52HI)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.DAYS_SINCE)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.YEAR_HI)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.YEAR_LO)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.BUY_VS_52HI)</td>
+
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_HIGH)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.LIFETIME_LOW)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_LIFETIME_HIGH)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_YEAR_HI)</td>
                     <td style="font-size:small">
                         @if (item.stockMaster.LESSTHAN_67PCT_ON.Date.CompareTo(new DateTime(0001, 01, 01).Date) != 0)
                         {
                             @Html.DisplayFor(modelItem => item.stockMaster.LESSTHAN_67PCT_ON)
                         }
                     </td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_LIFETIME_HIGH)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.YEAR_HI)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.YEAR_LO)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.DIFF_FROM_YEAR_HI)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40)</td>
+                    @*<td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40N)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V200)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_FAST)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_MID)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SLOW)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SLOW)</td>*@
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_BUY_SIGNAL)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SELL_SIGNAL)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.STOCH_BUY_SIGNAL)</td>
+                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.STOCH_SELL_SIGNAL)</td>
                 </tr>
             }
         </tbody>

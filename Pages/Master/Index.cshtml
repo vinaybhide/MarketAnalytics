@@ -50,11 +50,11 @@
                 </div>
             </th>
             @*<th>
-                <div class="form-actions no-color">
-                    <p>
-                        <a asp-page="./Index" style="font-size:small">Back to full List</a>
-                    </p>
-                </div>
+            <div class="form-actions no-color">
+            <p>
+            <a asp-page="./Index" style="font-size:small">Back to full List</a>
+            </p>
+            </div>
             </th>*@
         </tr>
     </thead>
@@ -74,15 +74,15 @@
 <table class="table">
     <thead>
         <tr style="text-align:center; font-size:small;">
-            <th>Action</th>
-            <th>
-                <a asp-page="./Index" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
-                </a>
-            </th>
+            @*            <th>Action</th>*@
             <th>
                 <a asp-page="./Index" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].Symbol)
+                </a>
+            </th>
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.ExchangeSort" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].Exchange)
                 </a>
             </th>
             <th>
@@ -157,6 +157,45 @@
                     @Html.DisplayNameFor(model => model.StockMaster[0].V200)
                 </a>
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_FAST)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_MID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SLOW)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_BUY_SIGNAL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SELL_SIGNAL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_CLOSE)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERBOUGHT)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERSOLD)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].LESSTHAN_67PCT_ON)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_SIGNAL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_PRICE)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_SIGNAL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_PRICE)
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -164,18 +203,19 @@
         {
             @foreach (var item in Model.StockMaster)
             {
-            //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
+                    //@*<tr style="text-align:center; font-size:small;" onclick="@(Model.TransId = item.PORTFOLIOTXN_ID);alert('clicked -' + @Model.TransId);">*@
 
                 //<tr style="text-align:center; font-size:small;" onclick="location.href = '@(Url.Action("./portfolioTxnIndex/SelectedRow"))'">
 
                 //<tr style="text-align:center; font-size:small;" onclick="onselectedrow(this); location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})' ">
                 @*<tr style="text-align:center; font-size:small;" onclick="location.href ='@Url.Action("SelectedRow", "Master", new{id=item.StockMasterID})';selectedRow(this); ">*@
                 <tr style="text-align:center; font-size:small;">
+
                     <td>
                         @*<form id="TheForm" method="post" asp-page-handler="StockAction" asp-route-id="@item.StockMasterID">*@
-                        <form method="post" asp-page-handler="StockAction" asp-route-groupsel="@Model.CurrentGroup" 
-                            asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort" 
-                            asp-route-pageIndex="@Model.CurrentPageIndex" asp-route-currentFilter="@Model.CurrentFilter">
+                        <form method="post" asp-page-handler="StockAction" asp-route-groupsel="@Model.CurrentGroup"
+                      asp-route-id="@item.StockMasterID" asp-route-sortOrder="@Model.CurrentSort"
+                      asp-route-pageIndex="@Model.CurrentPageIndex" asp-route-currentFilter="@Model.CurrentFilter">
                             <div class="form-actions no-color">
                                 @*<input type="hidden" name="id" value="@item.StockMasterID" />
                         <input type="hidden" name="sortOrder" value="@Model.CurrentSort" />
@@ -184,17 +224,13 @@
 
                                 @*<select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" onchange="document.getElementById('TheForm').submit();" style="font-size:small">*@
                                 <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" style="font-size:small">
-                                    @*<option selected  value="-1">Choose...</option>*@
+                                    <option selected value="-1">@item.Symbol</option>
                                 </select>
                             </div>
                         </form>
-
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Exchange)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Symbol)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.CompName)
@@ -256,58 +292,94 @@
             </ul>
             </td>*@
                     <td>
-                        @Html.DisplayFor(modelItem => item.Open)
+                        <span title="Open" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.Open)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.High)
+                        <span title="High" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.High)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Low)
+                        <span title="Low" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.Low)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Close)
+                        <span title="Close" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.Close)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Volume)
+                        <span title="Volume" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.Volume)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Change)
+                        <span title="Change" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.Change)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.ChangePercent)
+                        <span title="% Change" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.ChangePercent)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.PrevClose)
+                        <span title="Prev Close" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.PrevClose)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.LIFETIME_HIGH)
+                        <span title="Lifetime Hi" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.LIFETIME_HIGH)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.LIFETIME_LOW)
+                        <span title="Lifetime Low" data-toggle="tooltip" data-container="body" data-placement="right">  @Html.DisplayFor(modelItem => item.LIFETIME_LOW)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.DIFF_FROM_LIFETIME_HIGH)
+                        <span title="Diff from lifetime hi" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.DIFF_FROM_LIFETIME_HIGH)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.YEAR_HI)
+                        <span title="52 Hi" data-toggle="tooltip" data-container="body" data-placement="right">  @Html.DisplayFor(modelItem => item.YEAR_HI)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.YEAR_LO)
+                        <span title="52 Low" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.YEAR_LO)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.DIFF_FROM_YEAR_HI)
+                        <span title="Diff from 52 Hi" data-toggle="tooltip" data-container="body" data-placement="right">  @Html.DisplayFor(modelItem => item.DIFF_FROM_YEAR_HI)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.V40)
+                        <span title="V40" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.V40)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.V40N)
+                        <span title="V40N" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.V40N)</span>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.V200)
+                        <span title="V200" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.V200)</span>
                     </td>
-
-
+                    <td>
+                        <span title="SMA Fast" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.SMA_FAST)</span>
+                    </td>
+                    <td>
+                        <span title="SMA Mid" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.SMA_MID)</span>
+                    </td>
+                    <td>
+                        <span title="SMA Slow" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.SMA_SLOW)</span>
+                    </td>
+                    <td>
+                        <span title="SMA Buy" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.SMA_BUY_SIGNAL)</span>
+                    </td>
+                    <td>
+                        <span title="SMA Sell" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.SMA_SELL_SIGNAL)</span>
+                    </td>
+                    <td>
+                        <span title="RSI Close" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.RSI_CLOSE)</span>
+                    </td>
+                    <td>
+                        <span title="RSI Overbought" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.RSI_OVERBOUGHT)</span>
+                    </td>
+                    <td>
+                        <span title="RSI Oversold" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.RSI_OVERSOLD)</span>
+                    </td>
+                    <td>
+                        <span title="Closed < 67%" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.LESSTHAN_67PCT_ON)</span>
+                    </td>
+                    <td>
+                        <span title="Stoch Buy" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.STOCH_BUY_SIGNAL)</span>
+                    </td>
+                    <td>
+                        <span title="Stoch Buy Price" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.STOCH_BUY_PRICE)</span>
+                    </td>
+                    <td id="cost">
+                        <span title="Stoch Sell" data-toggle="tooltip" data-container="body" data-placement="right"> @Html.DisplayFor(modelItem => item.STOCH_SELL_SIGNAL)</span>
+                    </td>
+                    <td title="Stoch sell price" data-toggle="tooltip" data-placement="left"> @Html.DisplayFor(modelItem => item.STOCH_SELL_PRICE)
+                    </td>
                 </tr>
             }
         }
@@ -332,16 +404,26 @@
                 //$('#TheForm').submit();
             })
         })
-        //function groupselchange()
-        //{
-        //    var grouplist = document.getElementById("groupid");
-        //    var value = grouplist.value;
-        //    alert('value='+ value);
-        //    var text = grouplist.options[grouplist.selectedIndex].text;
-        //    alert('text='+text);
-        //    document.getElementById("CurrentSel").value = value;
-        //    alert(document.getElementById("CurrentSel").value);
-        //    //return value;
-        //}
+                                                //function groupselchange()
+                                                //{
+                                                //    var grouplist = document.getElementById("groupid");
+                                                //    var value = grouplist.value;
+                                                //    alert('value='+ value);
+                                                //    var text = grouplist.options[grouplist.selectedIndex].text;
+                                                //    alert('text='+text);
+                                                //    document.getElementById("CurrentSel").value = value;
+                                                //    alert(document.getElementById("CurrentSel").value);
+                                                //    //return value;
+                                                //}
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $(function () {
+            if ($('#cost').text() != '') {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        });
     </script>
 }

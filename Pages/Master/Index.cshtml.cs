@@ -79,30 +79,33 @@ namespace MarketAnalytics.Pages.Master
                 groupList.Add(selectAll);
 
                 menuList.Clear();
-                SelectListItem menuItem = new SelectListItem("-- Select Action --", "-1");
-                menuList.Add(menuItem);
 
-                menuItem = new SelectListItem("Edit Category", "0");
+                //SelectListItem menuItem = new SelectListItem("-- Select Action --", "-1");
+                //menuList.Add(menuItem);
+
+                SelectListItem menuItem = new SelectListItem("Edit Category", "0");
                 menuList.Add(menuItem);
                 menuItem = new SelectListItem("Show Details", "1");
                 menuList.Add(menuItem);
                 menuItem = new SelectListItem("Get Quote", "2");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Update (HighLow/Strategy)", "3");
+                menuItem = new SelectListItem("Update All", "3");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Show History", "4");
+                menuItem = new SelectListItem("History", "4");
                 menuList.Add(menuItem);
                 menuItem = new SelectListItem("Chart: History", "5");
                 menuList.Add(menuItem);
                 menuItem = new SelectListItem("Chart: SMA-RSI-STOCH", "6");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("SMA V40 Strategy", "7");
+                menuItem = new SelectListItem("SMA V40", "7");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("V20 Strategy", "8");
+                menuItem = new SelectListItem("V20", "8");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Bullish Engulfing Strategy", "9");
+                menuItem = new SelectListItem("Bullish Engulfing", "9");
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Bearish Engulfing STrategy", "10");
+                menuItem = new SelectListItem("Bearish Engulfing", "10");
+                menuList.Add(menuItem);
+                menuItem = new SelectListItem("Stochastics V40", "11");
                 menuList.Add(menuItem);
 
 
@@ -144,7 +147,7 @@ namespace MarketAnalytics.Pages.Master
                 {
                     updateStrategy = true;
                 }
-                if (CurrentGroup != null)
+                if (((id == null) || (id <= 0)) && (CurrentGroup != null))
                 {
                     if ((updateStrategy != null) && (updateStrategy == true))
                     {
@@ -153,27 +156,27 @@ namespace MarketAnalytics.Pages.Master
                 }
                 if ((CurrentGroup != null) && (CurrentGroup == -99))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true)));
+                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == -98))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == -97))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true));
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == -96))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true));
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else
                 {
-                    stockmasterIQ = from s in _context.StockMaster select s;
+                    stockmasterIQ = _context.StockMaster.AsNoTracking();//from s in _context.StockMaster select s;
                 }
 
                 if ((id != null) && (id > 0))
@@ -199,58 +202,58 @@ namespace MarketAnalytics.Pages.Master
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
-                                                            || s.CompName.ToUpper().Contains(searchString.ToUpper()));
+                                                            || s.CompName.ToUpper().Contains(searchString.ToUpper())).AsNoTracking();
                     if (stockmasterIQ.Count() <= 0)
                     {
                         CurrentGroup = groupsel = -95;
                         groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
-                        stockmasterIQ = from s in _context.StockMaster select s;
+                        stockmasterIQ = _context.StockMaster.AsNoTracking();//from s in _context.StockMaster select s;
                     }
                 }
                 switch (sortOrder)
                 {
                     case "symbol_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.Symbol);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.Symbol).AsNoTracking();
                         break;
                     case "Exchange":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.Exchange);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.Exchange).AsNoTracking();
                         break;
                     case "exchange_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.Exchange);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.Exchange).AsNoTracking();
                         break;
                     case "CompName":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.CompName);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.CompName).AsNoTracking();
                         break;
                     case "compname_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.CompName);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.CompName).AsNoTracking();
                         break;
                     case "TypeSort":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.INVESTMENT_TYPE);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.INVESTMENT_TYPE).AsNoTracking();
                         break;
                     case "typesort_desc":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.INVESTMENT_TYPE);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.INVESTMENT_TYPE).AsNoTracking();
                         break;
                     case "V40":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40).AsNoTracking();
                         break;
                     case "v40_desc":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40).AsNoTracking();
                         break;
                     case "V40N":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40N);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V40N).AsNoTracking();
                         break;
                     case "v40n_desc":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40N);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V40N).AsNoTracking();
                         break;
                     case "V200":
-                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V200);
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.V200).AsNoTracking();
                         break;
                     case "v200_desc":
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V200);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.V200).AsNoTracking();
                         break;
 
                     default:
-                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.Symbol);
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.Symbol).AsNoTracking();
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
@@ -293,6 +296,8 @@ namespace MarketAnalytics.Pages.Master
                         return RedirectToPage("/BuySell/BullishEngulfing", new { symbolToUpdate = id });
                     case "10": //case of strategy Bearish Engulfing
                         return RedirectToPage("/BuySell/BearishEngulfing", new { symbolToUpdate = id });
+                    case "11": //case of strategy Bearish Engulfing
+                        return RedirectToPage("/BuySell/stochv40", new { symbolToUpdate = id });
                     default:
                         return RedirectToPage("./Index", new { id = id, groupsel = groupsel, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter });
                 }
