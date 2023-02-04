@@ -79,7 +79,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.CMP = close[0];
                 portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                 portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
+                if (portfolioTxn.TOTAL_COST > 0)
+                {
+                    portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                }
+                else
+                {
+                    portfolioTxn.GAIN_PCT = 100;
+                }
             }
 
             _context.Attach(portfolioTxn).State = EntityState.Modified;

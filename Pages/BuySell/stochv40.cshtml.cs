@@ -9,8 +9,15 @@ namespace MarketAnalytics.Pages.BuySell
 {
     public class stochv40Model : PageModel
     {
+        private const string constV40V40NV200 = "-99";
+        private const string constV40 = "-98";
+        private const string constV40N = "-97";
+        private const string constV200 = "-96";
+        private const string constAll = "-95";
+
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public List<SelectListItem> groupList { get; set; }
         public List<SelectListItem> symbolList { get; set; }
         public List<SelectListItem> menuList { get; set; }
 
@@ -20,27 +27,43 @@ namespace MarketAnalytics.Pages.BuySell
             Configuration = configuration;
             symbolList = new List<SelectListItem>();
             menuList = new List<SelectListItem>();
+            groupList = new List<SelectListItem>();
         }
 
         public string BuySignalSort { get; set; }
         public string SymbolSort { get; set; }
         public string SellSignalSort { get; set; }
         public string CurrentFilter { get; set; }
+        [BindProperty]
         public string CurrentSort { get; set; }
+        [BindProperty]
+        public int? CurrentGroup { get; set; }
+        [BindProperty]
+        public int? CurrentPageIndex { get; set; }
 
-        public bool RefreshAllStocks { get; set; } = false;
-        public int CurrentID { get; set; }
+        //public bool RefreshAllStocks { get; set; } = false;
+        //public int CurrentID { get; set; }
         public PaginatedList<StockMaster> StockMaster { get; set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
+        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll,
+            bool? getQuote, bool? updateBuySell, int? symbolToUpdate, int? groupsel, bool? updateStrategy, string filterCategory)
         {
-            symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => x.V40 == true).OrderBy(a => a.Symbol).Select(a =>
-                                                          new SelectListItem
-                                                          {
-                                                              Value = a.StockMasterID.ToString(),
-                                                              Text = a.Symbol + "." + a.Exchange
-                                                          }).ToList();
+            groupList.Clear();
+
+            SelectListItem selectAll = new SelectListItem("V40+V40N+V200", constV40V40NV200);
+            groupList.Add(selectAll);
+
+            selectAll = new SelectListItem("V40", constV40, true);
+            groupList.Add(selectAll);
+
+            selectAll = new SelectListItem("V40N", constV40N);
+            groupList.Add(selectAll);
+
+            selectAll = new SelectListItem("V200", constV200);
+            groupList.Add(selectAll);
+
+            selectAll = new SelectListItem("All", constAll);
+            groupList.Add(selectAll);
 
             if (_context.StockMaster != null)
             {
@@ -69,14 +92,71 @@ namespace MarketAnalytics.Pages.BuySell
                     searchString = currentFilter;
                 }
 
-                if (refreshAll == true)
+                IQueryable<StockMaster> stockmasterIQ = null;
+                if(groupsel != null)
                 {
-                    RefreshSTOCHBuySellForAll();
-                    RefreshAllStocks = false;
-                    refreshAll = false;
+                    CurrentGroup = groupsel;
+                }
+                else
+                {
+                    CurrentGroup = Int32.Parse(constV40);
                 }
 
-                if ((id != null) || (symbolToUpdate != null))
+                if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
+                {
+                    updateStrategy = true;
+                }
+                if (((id == null) || (id <= 0)) && (CurrentGroup != null))
+                {
+                    if ((updateStrategy != null) && (updateStrategy == true))
+                    {
+                        RefreshSTOCHBuySellForAll(CurrentGroup);
+                    }
+                }
+
+                //if (refreshAll == true)
+                //{
+                //    RefreshSTOCHBuySellForAll(groupsel);
+                //    RefreshAllStocks = false;
+                //    refreshAll = false;
+                //}
+
+
+                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else
+                {
+                    stockmasterIQ = _context.StockMaster.AsNoTracking();//from s in _context.StockMaster select s;
+                }
+                groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+
+                symbolList.Clear();
+                symbolList = stockmasterIQ.OrderBy(a => a.Symbol).Select(a =>
+                                                              new SelectListItem
+                                                              {
+                                                                  Value = a.StockMasterID.ToString(),
+                                                                  Text = a.Symbol + "." + a.Exchange
+                                                              }).ToList();
+
+                if (((id != null) && (id > 0)) || (symbolToUpdate != null))
                 {
                     if ((id == null) && (symbolToUpdate != null))
                     {
@@ -103,11 +183,16 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
+                //stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
                 if (!String.IsNullOrEmpty(searchString))
                 {
                     stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.CompName.ToUpper().Contains(searchString.ToUpper()));
+
+                    if(stockmasterIQ.Any())
+                    {
+                        symbolList.FirstOrDefault(a => a.Value.Equals(stockmasterIQ.First().StockMasterID.ToString())).Selected = true;
+                    }
                 }
 
                 switch (sortOrder)
@@ -132,14 +217,35 @@ namespace MarketAnalytics.Pages.BuySell
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
+                CurrentPageIndex = pageIndex;
                 StockMaster = await PaginatedList<StockMaster>.CreateAsync(stockmasterIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
             }
         }
 
-        public void RefreshSTOCHBuySellForAll()
+        public void RefreshSTOCHBuySellForAll(int? currentSelectedGroup)
         {
             //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
+            IQueryable<StockMaster> stockmasterIQ = null;
+            if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40V40NV200)))
+            {
+                stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+            }
+            else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40)))
+            {
+                stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+            }
+            else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40N)))
+            {
+                stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+            }
+            else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV200)))
+            {
+                stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+            }
+            else 
+            {
+                stockmasterIQ = _context.StockMaster.AsNoTracking();
+            }
 
             foreach (var item in stockmasterIQ)
             {

@@ -34,30 +34,63 @@ namespace MarketAnalytics.Data
 
             modelBuilder.Entity<UserMaster>().ToTable("USER_MASTER");
             modelBuilder.Entity<UpdateTracker>().ToTable(nameof(UpdateTracker));
-            modelBuilder.Entity<StockMaster>().ToTable("StockMaster");
-            //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory");
-            modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory").Navigation(e => e.StockMaster).AutoInclude();
+
+            modelBuilder.Entity<StockPriceHistory>()
+                .HasOne<StockMaster>(s => s.StockMaster)
+                .WithMany(g => g.collectionStockPriceHistory)
+                .HasForeignKey(s => s.StockMasterID);
+
+            modelBuilder.Entity<BULLISH_ENGULFING_STRATEGY>()
+                .HasOne<StockMaster>(s => s.StockMaster)
+                .WithMany(g => g.collectionBullishEngulfing)
+                .HasForeignKey(s => s.StockMasterID);
+
+            modelBuilder.Entity<BEARISH_ENGULFING>()
+                .HasOne<StockMaster>(s => s.StockMaster)
+                .WithMany(g => g.collectionBearishEngulfing)
+                .HasForeignKey(s => s.StockMasterID);
+
+            modelBuilder.Entity<V20_CANDLE_STRATEGY>()
+                .HasOne<StockMaster>(s => s.StockMaster)
+                .WithMany(g => g.collection_V20_buysell)
+                .HasForeignKey(s => s.StockMasterID);
+
+
+            modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionStockPriceHistory).AutoInclude();
+            modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionBullishEngulfing).AutoInclude();
+            modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionBearishEngulfing).AutoInclude();
+            modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collection_V20_buysell).AutoInclude();
+            
+            //modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionTxn).AutoInclude();
+
+            //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory").Navigation(e => e.StockMaster).AutoInclude();
 
             modelBuilder.Entity<Portfolio_Master>().ToTable("PORTFOLIO_MASTER");
 
+            ////for many to many relationship you can use following code or the below commented single statement
             modelBuilder.Entity<PORTFOLIOTXN>()
                  .HasOne(d => d.portfolioMaster)
                  .WithMany(dm => dm.collectionTxn)
                  .HasForeignKey(dkey => dkey.PORTFOLIO_MASTER_ID);
 
+            ////for many to many relationship you can use following or the below single commented code 
             modelBuilder.Entity<PORTFOLIOTXN>()
                  .HasOne(d => d.stockMaster)
                  .WithMany(dm => dm.collectionTxn)
                  .HasForeignKey(dkey => dkey.StockMasterID);
 
-            modelBuilder.Entity<PORTFOLIOTXN>().ToTable("PORTFOLIOTXN").Navigation(e => e.stockMaster).AutoInclude();
-            modelBuilder.Entity<PORTFOLIOTXN>().ToTable("PORTFOLIOTXN").Navigation(e => e.portfolioMaster).AutoInclude();
+            //for many to many relationship you can use commented following code or above code for portfolio_master
+            //& StockMaster table
+            //modelBuilder.Entity<PORTFOLIOTXN>().HasKey(p => new { p.StockMasterID, p.PORTFOLIO_MASTER_ID });
 
-            modelBuilder.Entity<V20_CANDLE_STRATEGY>().ToTable("V20_CANDLE_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
+            //modelBuilder.Entity<PORTFOLIOTXN>().ToTable("PORTFOLIOTXN").Navigation(e => e.stockMaster).AutoInclude();
+            //modelBuilder.Entity<PORTFOLIOTXN>().ToTable("PORTFOLIOTXN").Navigation(e => e.portfolioMaster).AutoInclude();
 
-            modelBuilder.Entity<BULLISH_ENGULFING_STRATEGY>().ToTable("BULLISH_ENGULFING_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
+            //modelBuilder.Entity<V20_CANDLE_STRATEGY>().ToTable("V20_CANDLE_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
 
-            modelBuilder.Entity<BEARISH_ENGULFING>().ToTable("BEARISH_ENGULFING").Navigation(e => e.StockMaster).AutoInclude();
+            //modelBuilder.Entity<BULLISH_ENGULFING_STRATEGY>().ToTable("BULLISH_ENGULFING_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
+
+            //modelBuilder.Entity<BEARISH_ENGULFING>().ToTable("BEARISH_ENGULFING").Navigation(e => e.StockMaster).AutoInclude();
         }
     }
 }

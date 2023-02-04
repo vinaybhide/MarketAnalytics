@@ -17,6 +17,12 @@ namespace MarketAnalytics.Pages.History
 {
     public class IndexModel : PageModel
     {
+        private const string constV40V40NV200 = "-99";
+        private const string constV40 = "-98";
+        private const string constV40N = "-97";
+        private const string constV200 = "-96";
+        private const string constAll = "-95";
+
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
 
@@ -25,15 +31,17 @@ namespace MarketAnalytics.Pages.History
 
         public string PriceDateSort { get; set; }
         public string SymbolSort { get; set; }
+        [BindProperty]
         public int? CurrentID { get; set; }
         public string CurrentSort { get; set; }
         public string CurrentFilter { get; set; }
         public bool RefreshAllStocks { get; set; } = false;
+        [BindProperty]
+        public int? CurrentGroup { get; set; }
 
         public string CompanyName { get; set; }
         //public IList<StockPriceHistory> StockPriceHistory { get;set; } = default!;
         public PaginatedList<StockPriceHistory> StockPriceHistory { get; set; } = default!;
-        public StockMaster StockMasterRec { get; set; }
 
         public IndexModel(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
         {
@@ -44,39 +52,25 @@ namespace MarketAnalytics.Pages.History
         }
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex,
-                                    int? id, bool? refreshAll)
+                                    int? id, bool? refreshAll, string filterCategory, int? groupsel)
         {
             if (_context.StockPriceHistory != null)
             {
-                symbolList.Clear();
-                symbolList = _context.StockMaster
-                                        .OrderBy(a => a.Symbol)
-                                            .Select(a =>
-                                                new SelectListItem
-                                                {
-                                                    Value = a.StockMasterID.ToString(),
-                                                    Text = a.Symbol
-                                                }
-                                            ).ToList();
-
-                SelectListItem selectAll = new SelectListItem("-- Show All --", "-1");
-                symbolList.Insert(0, selectAll);
-
                 groupList.Clear();
 
-                selectAll = new SelectListItem("-- Refresh-V40, V40N, V200 --", "-99");
+                SelectListItem selectAll = new SelectListItem("V40+V40N+V200", constV40V40NV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Refresh V40", "-98");
+                selectAll = new SelectListItem("V40", constV40);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Refresh V40N", "-97");
+                selectAll = new SelectListItem("V40N", constV40N);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Refresh V200", "-96");
+                selectAll = new SelectListItem("V200", constV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Refresh All stocks", "-95");
+                selectAll = new SelectListItem("All Stocks", constAll);
                 groupList.Add(selectAll);
 
                 IQueryable<StockPriceHistory> stockpriceIQ = null;
@@ -87,6 +81,12 @@ namespace MarketAnalytics.Pages.History
                 PriceDateSort = sortOrder == "PriceDate" ? "pricedate_desc" : "PriceDate";
 
                 PriceDateSort = String.IsNullOrEmpty(sortOrder) ? "pricedate_desc" : "";
+                if(groupsel == null)
+                {
+                    groupsel = Int32.Parse(constAll);
+                }
+
+                CurrentGroup = groupsel;
 
                 if (searchString != null)
                 {
@@ -97,14 +97,58 @@ namespace MarketAnalytics.Pages.History
                     searchString = currentFilter;
                 }
 
-                StockMasterRec = null;
-                if (id == null)
+                IQueryable<StockMaster> stockmasterIQ = null;
+                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
                 {
-                    id = -1;
+                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+                    CompanyName = "History for V40+V40N+V200";
+
                 }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+                    CompanyName = "History for V40";
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+                    CompanyName = "History for V40N";
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
+                {
+                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+                    CompanyName = "History for V200";
+                }
+                else //if (id == Int32.Parse(constAll))
+                {
+                    stockmasterIQ = _context.StockMaster.AsNoTracking();
+                    CompanyName = "History for all stocks";
+                }
+                
+                groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+
+                symbolList.Clear();
+                symbolList = stockmasterIQ.OrderBy(a => a.Symbol)
+                                            .Select(a =>
+                                                new SelectListItem
+                                                {
+                                                    Value = a.StockMasterID.ToString(),
+                                                    Text = a.Symbol + "." + a.Exchange
+                                                }
+                                            ).ToList();
+
+                //SelectListItem selectAll = new SelectListItem("-Select Symbol-", "-1");
+                //symbolList.Insert(0, selectAll);
+                if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
+                {
+                    DbInitializer.UpdateQuoteStrategy(_context, (int)id);
+                }
+
                 CurrentID = id;
+
                 if ((id != null) && (id > 0))
                 {
+                    StockMaster StockMasterRec = null;
                     //CurrentID = id;
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
                     StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
@@ -112,7 +156,6 @@ namespace MarketAnalytics.Pages.History
 
                     CompanyName = StockMasterRec.CompName;
 
-                    //if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
                     if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
                     {
                         //we have found a matching record from StockMaster, from where we can get id, symbol, company
@@ -120,78 +163,34 @@ namespace MarketAnalytics.Pages.History
                         RefreshAllStocks = false;
                     }
 
-
                     CurrentFilter = searchString;
 
-                    stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID));
+                    stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID)).AsNoTracking();
                     if (!String.IsNullOrEmpty(searchString))
                     {
-                        //stockpriceIQ = stockpriceIQ.Where(s => s.PriceDate.Date.Equals(Convert.ToDateTime(searchString).Date)
-                        //                                        && (s.StockMasterID == CurrentID));
                         stockpriceIQ = stockpriceIQ.Where(s => (s.PriceDate.Date >= (Convert.ToDateTime(searchString).Date))
-                                                                && (s.StockMasterID == CurrentID));
+                                                                && (s.StockMasterID == CurrentID)).AsNoTracking();
                     }
-                }
-                else if ((id != null) && (id < -1))
-                {
-                    //RefreshHistoryForGroup((int)id);
-                    DbInitializer.UpdateQuoteStrategy(_context, (int)id);
-                    if (id == -99)
+                    if (stockpriceIQ != null)
                     {
-                        stockpriceIQ = _context.StockPriceHistory.Where(s => ((s.StockMaster.V200 == true)
-                                                                  || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true)));
-                        CompanyName = "V40+V40N+V200";
-
+                        switch (sortOrder)
+                        {
+                            case "symbol_desc":
+                                stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.StockMaster.Symbol);
+                                break;
+                            case "PriceDate":
+                                stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
+                                break;
+                            case "pricedate_desc":
+                                stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.PriceDate);
+                                break;
+                            default:
+                                stockpriceIQ = stockpriceIQ.OrderBy(s => s.StockMaster.Symbol);
+                                break;
+                        }
+                        var pageSize = Configuration.GetValue("PageSize", 10);
+                        StockPriceHistory = await PaginatedList<StockPriceHistory>.CreateAsync(stockpriceIQ.AsNoTracking(), pageIndex ?? 1, pageSize, CurrentID);
                     }
-                    else if (id == -98)
-                    {
-                        stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMaster.V40 == true));
-                        CompanyName = "V40";
-                    }
-                    else if (id == -97)
-                    {
-                        stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMaster.V40N == true));
-                        CompanyName = "V40N";
-                    }
-                    else if (id == -96)
-                    {
-                        stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMaster.V200 == true));
-                        CompanyName = "V200";
-                    }
-                    else if (id == -95)
-                    {
-                        stockpriceIQ = _context.StockPriceHistory;
-                        CompanyName = "History for all stocks";
-                    }
-                }
-                else
-                {
-                    //show all
-                    CompanyName = "All";
-                    stockpriceIQ = _context.StockPriceHistory;
-                }
-                //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
-
-
-                if (id != null)
-                {
-                    switch (sortOrder)
-                    {
-                        case "symbol_desc":
-                            stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.StockMaster.Symbol);
-                            break;
-                        case "PriceDate":
-                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.PriceDate);
-                            break;
-                        case "pricedate_desc":
-                            stockpriceIQ = stockpriceIQ.OrderByDescending(s => s.PriceDate);
-                            break;
-                        default:
-                            stockpriceIQ = stockpriceIQ.OrderBy(s => s.StockMaster.Symbol);
-                            break;
-                    }
-                    var pageSize = Configuration.GetValue("PageSize", 10);
-                    StockPriceHistory = await PaginatedList<StockPriceHistory>.CreateAsync(stockpriceIQ.AsNoTracking(), pageIndex ?? 1, pageSize, CurrentID);
                 }
             }
         }

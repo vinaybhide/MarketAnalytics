@@ -19,6 +19,25 @@ namespace MarketAnalytics.Pages.Master
 {
     public class IndexModel : PageModel
     {
+        private const string constV40V40NV200 = "-99";
+        private const string constV40 = "-98";
+        private const string constV40N = "-97";
+        private const string constV200 = "-96";
+        private const string constAll = "-95";
+
+        private const string constEditCategory = "0";
+        private const string constShowDetails = "1";
+        private const string constGetQuote = "2";
+        private const string constUpdateAll = "3";
+        private const string constHistory = "4";
+        private const string constChartHistory = "5";
+        private const string constChartSMARSISTOCH = "6";
+        private const string constSMAV40 = "7";
+        private const string constV20 = "8";
+        private const string constBullishEngulf = "9";
+        private const string constBearishEngul = "10";
+        private const string constSTOCHV40 = "11";
+
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> menuList { get; set; }
@@ -45,7 +64,7 @@ namespace MarketAnalytics.Pages.Master
         [BindProperty]
         public string CurrentSort { get; set; }
 
-        public bool RefreshAllStocks { get; set; } = false;
+        //public bool RefreshAllStocks { get; set; } = false;
         [BindProperty]
         public int? CurrentGroup { get; set; }
         [BindProperty]
@@ -63,19 +82,19 @@ namespace MarketAnalytics.Pages.Master
             if (_context.StockMaster != null)
             {
                 groupList.Clear();
-                SelectListItem selectAll = new SelectListItem("-- Show All --", "-95", true);
+                SelectListItem selectAll = new SelectListItem("-- Show All --", constAll, true);
                 groupList.Insert(0, selectAll);
 
-                selectAll = new SelectListItem("-- Show: V40, V40N, V200 --", "-99");
+                selectAll = new SelectListItem("-- Show: V40, V40N, V200 --", constV40V40NV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Show V40", "-98");
+                selectAll = new SelectListItem("Show V40", constV40);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Show V40N", "-97");
+                selectAll = new SelectListItem("Show V40N", constV40N);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Show V200", "-96");
+                selectAll = new SelectListItem("Show V200", constV200);
                 groupList.Add(selectAll);
 
                 menuList.Clear();
@@ -83,29 +102,29 @@ namespace MarketAnalytics.Pages.Master
                 //SelectListItem menuItem = new SelectListItem("-- Select Action --", "-1");
                 //menuList.Add(menuItem);
 
-                SelectListItem menuItem = new SelectListItem("Edit Category", "0");
+                SelectListItem menuItem = new SelectListItem("Edit Category", constEditCategory);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Show Details", "1");
+                menuItem = new SelectListItem("Show Details", constShowDetails);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Get Quote", "2");
+                menuItem = new SelectListItem("Get Quote", constGetQuote);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Update All", "3");
+                menuItem = new SelectListItem("Update All", constUpdateAll);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("History", "4");
+                menuItem = new SelectListItem("History", constHistory);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Chart: History", "5");
+                menuItem = new SelectListItem("Chart: History", constChartHistory);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Chart: SMA-RSI-STOCH", "6");
+                menuItem = new SelectListItem("Chart: SMA-RSI-STOCH", constChartSMARSISTOCH);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("SMA V40", "7");
+                menuItem = new SelectListItem("SMA V40", constSMAV40);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("V20", "8");
+                menuItem = new SelectListItem("V20", constV20);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Bullish Engulfing", "9");
+                menuItem = new SelectListItem("Bullish Engulfing", constBullishEngulf);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Bearish Engulfing", "10");
+                menuItem = new SelectListItem("Bearish Engulfing", constBearishEngul);
                 menuList.Add(menuItem);
-                menuItem = new SelectListItem("Stochastics V40", "11");
+                menuItem = new SelectListItem("Stochastics V40", constSTOCHV40);
                 menuList.Add(menuItem);
 
 
@@ -137,7 +156,7 @@ namespace MarketAnalytics.Pages.Master
                     DbInitializer.Initialize(_context, fetchedData);
 
                     //RefreshAllStockMaster();
-                    RefreshAllStocks = false;
+                    //RefreshAllStocks = false;
                 }
 
                 IQueryable<StockMaster> stockmasterIQ = null;
@@ -154,22 +173,22 @@ namespace MarketAnalytics.Pages.Master
                         DbInitializer.UpdateQuoteStrategy(_context, (int)CurrentGroup);
                     }
                 }
-                if ((CurrentGroup != null) && (CurrentGroup == -99))
+                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
-                else if ((CurrentGroup != null) && (CurrentGroup == -98))
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
-                else if ((CurrentGroup != null) && (CurrentGroup == -97))
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
-                else if ((CurrentGroup != null) && (CurrentGroup == -96))
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
                 {
                     stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;

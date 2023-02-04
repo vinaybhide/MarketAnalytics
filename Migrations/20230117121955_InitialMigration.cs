@@ -82,6 +82,8 @@ namespace MarketAnalytics.Migrations
                     SMAMID = table.Column<double>(name: "SMA_MID", type: "REAL", nullable: false),
                     SMASLOW = table.Column<double>(name: "SMA_SLOW", type: "REAL", nullable: false),
                     RSICLOSE = table.Column<double>(name: "RSI_CLOSE", type: "REAL", nullable: false),
+                    SLOWD = table.Column<double>(name: "SlowD", type: "REAL", nullable: false),
+                    FASTK = table.Column<double>(name: "FastK", type: "REAL", nullable: false),
                     STOCHBUYPRICE = table.Column<double>(name: "STOCH_BUY_PRICE", type: "REAL", nullable: false),
                     STOCHSELLPRICE = table.Column<double>(name: "STOCH_SELL_PRICE", type: "REAL", nullable: false),
                     YEARHI = table.Column<double>(name: "YEAR_HI", type: "REAL", nullable: false),

@@ -68,6 +68,9 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_CLOSE)
+            </th>
+            <th>
                 <a asp-page="./rsiv40" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERSOLD)
                 </a>
@@ -104,6 +107,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.PrevClose)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RSI_CLOSE)
                 </td>
                 <td>
                     @Html.CheckBoxFor(modelItem => item.RSI_OVERSOLD,  new { @disabled = "disabled" })

@@ -52,43 +52,43 @@ namespace MarketAnalytics.Models
         //public virtual StockMaster StockMaster { get; set; }
         public StockMaster StockMaster { get; set; }
 
-        public StockPriceHistory()
-        {
+        //public StockPriceHistory()
+        //{
 
-        }
-        public StockPriceHistory(StockPriceHistory source)
-        {
-            this.StockPriceHistoryID = source.StockPriceHistoryID;
-            this.Change = source.Change;
-            this.ChangePercent = source.ChangePercent;
-            this.Close = source.Close;
-            this.PrevClose = source.PrevClose;
-            this.PriceDate = source.PriceDate;
-            this.High = source.High;
-            this.Low = source.Low;
-            this.Volume = source.Volume;
-            this.Open = source.Open;
-            this.StockMasterID = source.StockMasterID;
+        //}
+        //public StockPriceHistory(StockPriceHistory source)
+        //{
+        //    this.StockPriceHistoryID = source.StockPriceHistoryID;
+        //    this.Change = source.Change;
+        //    this.ChangePercent = source.ChangePercent;
+        //    this.Close = source.Close;
+        //    this.PrevClose = source.PrevClose;
+        //    this.PriceDate = source.PriceDate;
+        //    this.High = source.High;
+        //    this.Low = source.Low;
+        //    this.Volume = source.Volume;
+        //    this.Open = source.Open;
+        //    this.StockMasterID = source.StockMasterID;
 
-            this.RSI_OPEN = source.RSI_OPEN;
-            this.RSI_CLOSE = source.RSI_CLOSE;
-            this.RSI_HIGH = source.RSI_HIGH;
-            this.RSI_LOW = source.RSI_LOW;
+        //    this.RSI_OPEN = source.RSI_OPEN;
+        //    this.RSI_CLOSE = source.RSI_CLOSE;
+        //    this.RSI_HIGH = source.RSI_HIGH;
+        //    this.RSI_LOW = source.RSI_LOW;
 
-            this.SMA_SMALL = source.SMA_SMALL;
-            this.SMA_MID = source.SMA_MID;
-            this.SMA_LONG = source.SMA_LONG;
-            this.CROSSOVER_FLAG = source.CROSSOVER_FLAG;
-            this.LOWER_THAN_SMA_SMALL = source.LOWER_THAN_SMA_SMALL;
+        //    this.SMA_SMALL = source.SMA_SMALL;
+        //    this.SMA_MID = source.SMA_MID;
+        //    this.SMA_LONG = source.SMA_LONG;
+        //    this.CROSSOVER_FLAG = source.CROSSOVER_FLAG;
+        //    this.LOWER_THAN_SMA_SMALL = source.LOWER_THAN_SMA_SMALL;
 
-            this.BULLISH_ENGULFING = source.BULLISH_ENGULFING;
-            this.BUY_SMA_STRATEGY = source.BUY_SMA_STRATEGY;
-            this.SELL_SMA_STRATEGY = source.SELL_SMA_STRATEGY;
+        //    this.BULLISH_ENGULFING = source.BULLISH_ENGULFING;
+        //    this.BUY_SMA_STRATEGY = source.BUY_SMA_STRATEGY;
+        //    this.SELL_SMA_STRATEGY = source.SELL_SMA_STRATEGY;
 
-            this.V20_CANDLE = source.V20_CANDLE;
-            this.V20_CANDLE_BUY_PRICE = source.V20_CANDLE_BUY_PRICE;
-            this.V20_CANDLE_SELL_PRICE = source.V20_CANDLE_SELL_PRICE;
-        }
+        //    this.V20_CANDLE = source.V20_CANDLE;
+        //    this.V20_CANDLE_BUY_PRICE = source.V20_CANDLE_BUY_PRICE;
+        //    this.V20_CANDLE_SELL_PRICE = source.V20_CANDLE_SELL_PRICE;
+        //}
     }
 }
     

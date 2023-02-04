@@ -8,46 +8,54 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
+            <th style="border:solid thin">
                 <form asp-page="./stochv40" method="get">
                     <div class="form-actions no-color">
-                        <p>
-                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
-                            <input type="submit" value="Search symbol or company name" class="btn btn-sm btn-primary"
-                                   style="font-size:small" />
-                        </p>
+                        <select id="groupid" name="groupsel" asp-items="Model.groupList" style="font-size:small"
+                                onchange="groupselchange()">
+                        </select>
+                        <input type="submit" name="filterCategory" value="Show Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                        <input type="submit" name="filterCategory" value="Show & Update Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                        @*<a asp-page="./Index" asp-route-groupsel="@Model.CurrentSel" asp-route-updateStrategy="true" class="btn btn-sm btn-primary" style="font-size:small">Run Strategy model</a>*@
                     </div>
                 </form>
             </th>
-            <th>
-                <form asp-page="./stochv40" method="get">
-                    <div class="form-actions no-color">
-                        <p>
-                            <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
-                                <option value="">Select Symbol</option>
-                            </select>
 
-                            <input type="submit" value="Update Strategy" class="btn btn-sm btn-primary"
-                                   style="font-size:small" />
-                        </p>
+            <th style="border:solid thin;">
+                <form asp-page="./stochv40" method="get">
+                    <div class="form-actions no-color">
+                        <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
+                        <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                        <input type="submit" value="Search" class="btn btn-sm btn-primary" style="font-size:small" />
                     </div>
                 </form>
             </th>
-            <th>
-                <div class="form-actions no-color">
-                    <p>
-                        <a asp-page="./stochv40" asp-route-refreshAll="true" class="btn btn-sm btn-primary"
-                           style="font-size:small">Refresh strategy for All</a>
-                    </p>
-                </div>
+            <th style="border:solid thin;">
+                <form asp-page="./stochv40" method="get">
+                    <div class="form-actions no-color">
+                        <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
+                        <select name="symbolToUpdate" asp-items="Model.symbolList" style="font-size:small">
+                            <option value="">Select Symbol</option>
+                        </select>
+                        <input type="submit" value="Update Strategy" class="btn btn-sm btn-primary" style="font-size:small" />
+                    </div>
+                </form>
             </th>
-            <th>
-                <div class="form-actions no-color">
-                    <p>
-                        <a asp-page="./stochv40" style="font-size:small">Back to full List</a>
-                    </p>
-                </div>
-            </th>
+            @*<th>
+            <div class="form-actions no-color">
+            <p>
+            <a asp-page="./stochv40" asp-route-refreshAll="true" class="btn btn-sm btn-primary"
+            style="font-size:small">Refresh strategy for All</a>
+            </p>
+            </div>
+            </th>*@
+            @*<th>
+            <div class="form-actions no-color">
+            <p>
+            <a asp-page="./stochv40" class="btn btn-sm btn-primary" style="font-size:small">Back to full List</a>
+            </p>
+            </div>
+            </th>*@
         </tr>
     </thead>
 </table>
@@ -55,7 +63,7 @@
     <thead>
         <tr style="text-align:center; font-size:small;">
             <th>
-                <a asp-page="./stochv40" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.SymbolSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].Symbol)
                 </a>
             </th>
@@ -69,12 +77,18 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].PrevClose)
             </th>
             <th>
-                <a asp-page="./stochv40" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                @Html.DisplayNameFor(model => model.StockMaster[0].SlowD)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockMaster[0].FastK)
+            </th>
+            <th>
+                <a asp-page="./stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.BuySignalSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_SIGNAL)
                 </a>
             </th>
             <th>
-                <a asp-page="./stochv40" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
+                <a asp-page="./stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.SellSignalSort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_SIGNAL)
                 </a>
             </th>
@@ -113,6 +127,12 @@
                     @Html.DisplayFor(modelItem => item.PrevClose)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.SlowD)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FastK)
+                </td>
+                <td>
                     @Html.CheckBoxFor(modelItem => item.STOCH_BUY_SIGNAL,  new { @disabled = "disabled" })
                 </td>
                 <td>
@@ -132,29 +152,29 @@
     var prevDisabled = !Model.StockMaster.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.StockMaster.HasNextPage ? "disabled" : "";
 }
-<a asp-page="./stochv40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
+<a asp-page="./stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
-<a asp-page="./stochv40" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
+<a asp-page="./stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
    asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
 
 @section scripts{
-        <script>
-            $(function () {
-                $(".menuitemselect").change(function () {
-                    $(this).closest("form").submit();
-                    //$('#TheForm').submit();
-                })
+    <script>
+        $(function () {
+            $(".menuitemselect").change(function () {
+                $(this).closest("form").submit();
+                //$('#TheForm').submit();
             })
-            //function groupselchange()
-            //{
-            //    var grouplist = document.getElementById("groupid");
-            //    var value = grouplist.value;
-            //    alert('value='+ value);
-            //    var text = grouplist.options[grouplist.selectedIndex].text;
-            //    alert('text='+text);
-            //    document.getElementById("CurrentSel").value = value;
-            //    alert(document.getElementById("CurrentSel").value);
-            //    //return value;
-            //}
-        </script>
+        })
+                                    //function groupselchange()
+                                    //{
+                                    //    var grouplist = document.getElementById("groupid");
+                                    //    var value = grouplist.value;
+                                    //    alert('value='+ value);
+                                    //    var text = grouplist.options[grouplist.selectedIndex].text;
+                                    //    alert('text='+text);
+                                    //    document.getElementById("CurrentSel").value = value;
+                                    //    alert(document.getElementById("CurrentSel").value);
+                                    //    //return value;
+                                    //}
+    </script>
 }

@@ -110,9 +110,20 @@
                             </div>
                         </form>
                     </td>
-                    <td>
+                    @*<td>
                         @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_NAME)
+                    </td>*@
+                    <td style="font-size:small">
+                        <a asp-page="./portfolioTxnIndex"
+                   asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID"
+                   asp-route-sortOrder="@Model.CurrentSort"
+                   asp-route-pageIndex="@Model.CurrentPageIndex"
+                   asp-route-currentFilter="@Model.CurrentFilter">
+                            @Html.DisplayFor(modelItem => Model.portfolioMaster[i].PORTFOLIO_NAME)
+                        </a>
                     </td>
+
+
                     <td>
                         @string.Format("{0:0.00}", @Model.portfolioCost.ElementAt(i))
                     </td>

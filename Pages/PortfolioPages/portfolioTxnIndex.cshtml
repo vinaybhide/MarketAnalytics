@@ -5,7 +5,7 @@
     ViewData["Title"] = "PortfolioTxnIndex";
 }
 <h3>Portfolio - @Model.portfolioMasterName</h3>
-<h10>Total Cost = @string.Format("{0:0.00}", @Model.portfolioTotalCost) | Total Value = @string.Format("{0:0.00}", @Model.portfolioTotalValue) | Total Gain = @string.Format("{0:0.00}", @Model.portfolioTotalGain) | Total Gain PCT = @string.Format("{0:0.00}%", (Model.portfolioTotalValue - Model.portfolioTotalCost)/Model.portfolioTotalValue*100)</h10>
+<h10>Total Cost = @string.Format("{0:0.00}", @Model.portfolioTotalCost) | Total Value = @string.Format("{0:0.00}", @Model.portfolioTotalValue) | Total Gain = @string.Format("{0:0.00}", @Model.portfolioTotalGain) | Total Gain PCT = @string.Format("{0:0.00}%", (Model.portfolioTotalValue - Model.portfolioTotalCost)/Model.portfolioTotalCost*100)</h10>
 
 <table class="table">
     <thead>
@@ -113,8 +113,25 @@
                         </form>
 
                     </td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.TotalQty)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.TotalCost)</td>
+                    @*<td style="font-size:small">@Html.DisplayFor(modelItem => item.TotalQty)</td>*@
+                    <td style="font-size:small">
+                        <a asp-page="./portfolioTxnIndex"
+                           asp-route-masterid="@item.MasterId"
+                           asp-route-stockid="@item.StockMasterId"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageSummaryIndex="@Model.CurrentSummaryPageIndex"
+                           asp-route-pageIndex="@Model.CurrentPageIndex"
+                           asp-route-pageClosedIndex="@Model.CurrentClosedPageIndex"
+                           asp-route-currentFilter="@Model.CurrentFilter"
+                           asp-route-getQuote="true"
+                           asp-route-refreshAll="false"
+                           asp-route-lifetimeHighLow="false">
+                            @Html.DisplayFor(modelItem => item.TotalQty)
+                        </a>
+                    </td>
+                    <td style="font-size:small">
+                        @Html.DisplayFor(modelItem => item.TotalCost)
+                    </td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.CMP)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.TotalValue)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.TotalGain)</td>
@@ -182,11 +199,11 @@
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.DIFF_FROM_YEAR_HI)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.LESSTHAN_67PCT_ON)</th>
                 @*<th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40N)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V200)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_FAST)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_MID)</th>
-                <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SLOW)</th>*@
+            <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V40N)</th>
+            <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.V200)</th>
+            <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_FAST)</th>
+            <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_MID)</th>
+            <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SLOW)</th>*@
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_BUY_SIGNAL)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.SMA_SELL_SIGNAL)</th>
                 <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioOpenTxn[0].stockMaster.STOCH_BUY_SIGNAL)</th>
@@ -333,11 +350,11 @@
                         }
                     </td>
                     @*<td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40N)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V200)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_FAST)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_MID)</td>
-                    <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SLOW)</td>*@
+            <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V40N)</td>
+            <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.V200)</td>
+            <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_FAST)</td>
+            <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_MID)</td>
+            <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SLOW)</td>*@
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_BUY_SIGNAL)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.SMA_SELL_SIGNAL)</td>
                     <td style="font-size:small">@Html.DisplayFor(modelItem => item.stockMaster.STOCH_BUY_SIGNAL)</td>

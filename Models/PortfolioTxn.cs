@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using MarketAnalytics.Data;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -116,5 +117,26 @@ namespace MarketAnalytics.Models
         //[Key]
         public int StockMasterID { get; set; }
         public StockMaster stockMaster { get; set; }
+
+        public StockMaster GetStockMaster(DBContext context)
+        {
+            StockMaster stockMaster = null;
+            try
+            {
+                if (this.stockMaster == null)
+                {
+                    stockMaster = context.StockMaster.First(s => s.StockMasterID == this.StockMasterID);
+                }
+                else
+                {
+                    return this.stockMaster;
+                }
+            }
+            catch(Exception ex)
+            {
+                stockMaster= null;
+            }
+            return stockMaster;
+        }
     }
 }

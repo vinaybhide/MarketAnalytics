@@ -65,7 +65,15 @@ namespace MarketAnalytics.Models
         [DisplayName("RSI_CLOSE")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double RSI_CLOSE { get; set; } = default(double);
-        
+
+        [DisplayName("SlowD")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double SlowD { get; set; } = default(double);
+
+        [DisplayName("FastK")]
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double FastK { get; set; } = default(double);
+
         [DisplayName("STOCH BUY PRICE")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double STOCH_BUY_PRICE { get; set; } = default(double);
@@ -108,8 +116,11 @@ namespace MarketAnalytics.Models
 
         public ICollection<V20_CANDLE_STRATEGY> collection_V20_buysell { get; set; }
 
-        public ICollection<PORTFOLIOTXN> collectionTxn { get; set; }
+        public IList<PORTFOLIOTXN> collectionTxn { get; set; }
+
+        public ICollection<StockPriceHistory> collectionStockPriceHistory { get; set;}
         //public List<PortfolioTxn> portfolioTxns { get; set; }
-        //public ICollection<BULLISH_ENGULFING_STRATEGY> collectionEngulfing { get; set; }
+        public ICollection<BULLISH_ENGULFING_STRATEGY> collectionBullishEngulfing { get; set; }
+        public ICollection<BEARISH_ENGULFING> collectionBearishEngulfing { get; set; }
     }
 }

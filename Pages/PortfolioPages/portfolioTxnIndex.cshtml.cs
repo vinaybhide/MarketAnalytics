@@ -10,6 +10,24 @@ namespace MarketAnalytics.Pages.PortfolioPages
 {
     public class PortfolioTxnIndex : PageModel
     {
+        const string constShowTxn = "0";
+        const string constUpdateStrategy = "1";
+        const string constHistoryData = "2";
+        const string constChart_History = "3";
+        const string constChart_SMARSISTOCH = "4";
+        const string constRsiTrendV40 = "5";
+        const string constStochV40 = "6";
+        const string constSmaV40 = "7";
+        const string constV20 = "8";
+        const string constBullishEngulfing = "9";
+        const string constBearishEngulfing = "10";
+
+        const string constClosePosition = "0";
+        const string constEditTxn = "1";
+        const string constDeleteTxn = "2";
+        const string constDetailsTxn = "3";
+
+
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public List<SelectListItem> symbolList { get; set; }
@@ -65,7 +83,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                 //create ordered list of transaction based on stock master id
                 IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
-                                                            && (x.TXN_TYPE.Equals("B"))).OrderBy(a => a.StockMasterID);
+                                                            && (x.TXN_TYPE.Equals("B"))).OrderBy(a => a.StockMasterID)
+                                                            .Include(a => a.stockMaster)
+                                                            .AsSplitQuery();
 
                 //create summary list for each symbol using all transactions for that symbol
                 IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
@@ -86,60 +106,64 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     );
 
                 summarymenuList.Clear();
-                SelectListItem summarymenuItem = new SelectListItem("Show Txn", "0");
+                SelectListItem summarymenuItem = new SelectListItem("Show Txn", constShowTxn);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("Update", "1");
+                summarymenuItem = new SelectListItem("Update Strategy", constUpdateStrategy);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("History", "2");
+                summarymenuItem = new SelectListItem("History Data", constHistoryData);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("Chart-History", "3");
+                summarymenuItem = new SelectListItem("Chart-History", constChart_History);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("Chart-SMA/RSI/STOCH", "4");
+                summarymenuItem = new SelectListItem("Chart-SMA/RSI/STOCH", constChart_SMARSISTOCH);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("SMA V40", "5");
+                summarymenuItem = new SelectListItem("RSI Trend V40", constRsiTrendV40);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("V20", "6");
+                summarymenuItem = new SelectListItem("Stoch V40", constStochV40);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("Bullish Engulfing", "7");
+                summarymenuItem = new SelectListItem("SMA V40", constSmaV40);
                 summarymenuList.Add(summarymenuItem);
 
-                summarymenuItem = new SelectListItem("Bearish Engulfing", "8");
+                summarymenuItem = new SelectListItem("V20", constV20);
+                summarymenuList.Add(summarymenuItem);
+
+                summarymenuItem = new SelectListItem("Bullish Engulfing", constBullishEngulfing);
+                summarymenuList.Add(summarymenuItem);
+
+                summarymenuItem = new SelectListItem("Bearish Engulfing", constBearishEngulfing);
                 summarymenuList.Add(summarymenuItem);
 
 
                 menuList.Clear();
-                int listCntr = -1;
                 //SelectListItem menuItem = new SelectListItem("-- Select Action --", listCntr.ToString());
                 //menuList.Add(menuItem);
 
-                listCntr++;
-                SelectListItem menuItem = new SelectListItem("Close", listCntr.ToString());
+                SelectListItem menuItem = new SelectListItem("Close", constClosePosition);
                 menuList.Add(menuItem);
 
-                listCntr++;
-                menuItem = new SelectListItem("Edit", listCntr.ToString());
+                menuItem = new SelectListItem("Edit", constEditTxn);
                 menuList.Add(menuItem);
 
-                listCntr++;
-                menuItem = new SelectListItem("Delete", listCntr.ToString());
+                menuItem = new SelectListItem("Delete", constDeleteTxn);
                 menuList.Add(menuItem);
 
-                listCntr++;
-                menuItem = new SelectListItem("Details", listCntr.ToString());
+                menuItem = new SelectListItem("Details", constDetailsTxn);
                 menuList.Add(menuItem);
 
 
                 var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioMasterName = masterRec.PORTFOLIO_NAME;
 
-                IQueryable<PORTFOLIOTXN> txnClosedIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")));
+                IQueryable<PORTFOLIOTXN> txnClosedIQ = _context.PORTFOLIOTXN
+                    .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")))
+                    .Include(a => a.stockMaster)
+                    .AsSplitQuery();
 
                 //IQueryable<PORTFOLIOTXN> txnOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
 
@@ -192,7 +216,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (stockid != null)
                 {
                     StockId = stockid;
-                    txnOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid));
+                    txnOpenIQ = _context.PORTFOLIOTXN
+                        .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid))
+                        .Include(a => a.stockMaster)
+                        .AsSplitQuery();
                     var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
                     if (selectedRecord != null)
                     {
@@ -204,7 +231,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if ((refreshAll != null) && (refreshAll == true))
                 {
                     IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                                                                .Select(x => x.FirstOrDefault());
+                        .Select(x => x.FirstOrDefault())
+                        .Include(a => a.stockMaster)
+                        .AsSplitQuery();
                     foreach (var item in distinctOpenIQ)
                     {
                         DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item);
@@ -322,7 +351,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 switch (summarymenuitemsel)
                 {
-                    case "0"://case of show all txn
+                    case constShowTxn://case of show all txn
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
                             sortOrder = sortOrder,
@@ -336,7 +365,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             refreshAll = "false",
                             lifetimeHighLow = "false"
                         });
-                    case "1"://case of update get quote, buy sell, high low
+                    case constUpdateStrategy://case of update get quote, buy sell, high low
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
                             masterid = masterid,
@@ -350,24 +379,28 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             refreshAll = "false",
                             lifetimeHighLow = "false"
                         });
-                    case "2"://case of show history table
+                    case constHistoryData://case of show history table
                         return RedirectToPage("/History/Index", new { id = stockid });
-                    case "3"://case of show history chart
+                    case constChart_History://case of show history chart
                         return RedirectToPage("/StandardIndicators/chartHistory", new
                         {
                             stockid = stockid,
                             onlyhistory = 0,
                             history = true
                         });
-                    case "4"://case of show smarsistoch chart
+                    case constChart_SMARSISTOCH://case of show smarsistoch chart
                         return RedirectToPage("/StandardIndicators/chartSMARSISTOCH", new { id = stockid });
-                    case "5": //case of strategy SMA
+                    case constRsiTrendV40: //case of rsi trend
+                        return RedirectToPage("/BuySell/rsiv40", new { symbolToUpdate = stockid });
+                    case constStochV40: //case of strategy stoch
+                        return RedirectToPage("/BuySell/stochv40", new { symbolToUpdate = stockid });
+                    case constSmaV40: //case of strategy SMA
                         return RedirectToPage("/BuySell/smav40", new { symbolToUpdate = stockid });
-                    case "6": //case of strategy V20
+                    case constV20: //case of strategy V20
                         return RedirectToPage("/BuySell/v20BuySell", new { symbolToUpdate = stockid });
-                    case "7": //case of strategy Bullinsh engulfing
+                    case constBullishEngulfing: //case of strategy Bullinsh engulfing
                         return RedirectToPage("/BuySell/BullishEngulfing", new { symbolToUpdate = stockid });
-                    case "8": //case of strategy Bearish Engulfing
+                    case constBearishEngulfing: //case of strategy Bearish Engulfing
                         return RedirectToPage("/BuySell/BearishEngulfing", new { symbolToUpdate = stockid });
 
                     default:
@@ -406,7 +439,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 //PORTFOLIOTXN currentTxn = _context.PORTFOLIOTXN.FirstOrDefault(t => t.PORTFOLIOTXN_ID== txnid);
                 switch (menuitemsel)
                 {
-                    case "0"://case of sell txn
+                    case constClosePosition://case of sell txn
                         return RedirectToPage("./portfolioTxnCreate", new
                         {
                             txntype = "S",
@@ -420,7 +453,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             currentFilter = currentFilter
                         });
 
-                    case "1"://case of edit txn
+                    case constEditTxn://case of edit txn
                         return RedirectToPage("./portfolioTxnEdit", new
                         {
                             masterid = masterid,
@@ -435,7 +468,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             refreshAll = "false",
                             lifetimeHighLow = "false"
                         });
-                    case "2"://case of delete txn
+                    case constDeleteTxn://case of delete txn
                         return RedirectToPage("./portfolioTxnDelete", new
                         {
                             masterid = masterid,
@@ -450,7 +483,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             refreshAll = "false",
                             lifetimeHighLow = "false"
                         });
-                    case "3"://case of txn details
+                    case constDetailsTxn://case of txn details
                         return RedirectToPage("./portfolioTxnDetails", new
                         {
                             masterid = masterid,
@@ -484,4 +517,5 @@ namespace MarketAnalytics.Pages.PortfolioPages
         }
 
     }
+
 }

@@ -88,26 +88,37 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                 CurrentFilter = searchString;
 
-                IQueryable<Portfolio_Master> portfolioIQ = from s in _context.PORTFOLIO_MASTER select s;
+                //IQueryable<Portfolio_Master> portfolioIQ = from s in _context.PORTFOLIO_MASTER select s;
+                IQueryable<Portfolio_Master> portfolioIQ = _context.PORTFOLIO_MASTER.AsNoTracking();
+                
+                Portfolio_Master searchRecord = null;
 
                 if (masterid != null)
                 {
-                    var currentrecord = portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
-                    if (currentrecord != null)
+                    //var currentrecord = portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
+                    portfolioIQ = portfolioIQ.Where(a => a.PORTFOLIO_MASTER_ID == masterid); ;
+                    searchRecord = portfolioIQ.First();//portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
+                    //if (currentrecord != null)
+                    if(searchRecord != null)
                     {
-                        searchString = currentrecord.PORTFOLIO_NAME;
+                        searchString = searchRecord.PORTFOLIO_NAME;
                     }
                     //CurrentID = masterid;
                 }
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    portfolioIQ = portfolioIQ.Where(s => s.PORTFOLIO_NAME.ToUpper().Contains(searchString.ToUpper()));
-
-                    var searchRecord = portfolioIQ.First();
-
-                    if (masterList.Exists(a => (a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString()) == true)))
+                    if(searchRecord == null)
                     {
-                        masterList.FirstOrDefault(a => a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString())).Selected = true;
+                        portfolioIQ = portfolioIQ.Where(s => s.PORTFOLIO_NAME.ToUpper().Contains(searchString.ToUpper()));
+
+                        searchRecord = portfolioIQ.First();
+                    }
+                    if (searchRecord != null)
+                    {
+                        if (masterList.Exists(a => (a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString()) == true)))
+                        {
+                            masterList.FirstOrDefault(a => a.Value.Equals(searchRecord.PORTFOLIO_MASTER_ID.ToString())).Selected = true;
+                        }
                     }
                     CurrentFilter = searchString;
                 }
@@ -132,12 +143,11 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 foreach (var item in portfolioMaster)
                 {
-
-                    portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                    portfolioCost.Add(_context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID) && (x.TXN_TYPE.Equals("B")))
                                             .Sum(a => a.TOTAL_COST));
-                    portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                    portfolioValue.Add((double)_context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID) && (x.TXN_TYPE.Equals("B")))
                                                             .Sum(a => a.VALUE));
-                    portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID)
+                    portfolioGain.Add((double)_context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == item.PORTFOLIO_MASTER_ID) && (x.TXN_TYPE.Equals("B")))
                                                             .Sum(a => a.GAIN_AMT));
                     if (portfolioValue.Last() == 0)
                     {
@@ -145,7 +155,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     }
                     else
                     {
-                        portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioValue.Last() * 100);
+                        portfolioGainPct.Add((portfolioValue.Last() - portfolioCost.Last()) / portfolioCost.Last() * 100);
                     }
                 }
             }

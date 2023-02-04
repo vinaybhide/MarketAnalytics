@@ -237,7 +237,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
                 portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                 portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
+                if (portfolioTxn.TOTAL_COST > 0)
+                {
+                    portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                }
+                else
+                {
+                    portfolioTxn.GAIN_PCT = 100;
+                }
             }
             else if (TxnType.Equals("S"))
             {
@@ -247,7 +254,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn.TOTAL_SELL_AMT = portfolioTxn.SELL_QUANTITY * portfolioTxn.SELL_AMT_PER_UNIT;
                 //sell value - buy value for sold number of stocks
                 portfolioTxn.SELL_GAIN_AMT = portfolioTxn.TOTAL_SELL_AMT - (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT);
-                portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT)) * 100;
+                if (existingTxn.COST_PER_UNIT > 0)
+                {
+                    portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT)) * 100;
+                }
+                else
+                {
+                    portfolioTxn.SELL_GAIN_PCT = 100;
+                }
                 portfolioTxn.SOLD_AFTER = portfolioTxn.TXN_SELL_DATE.Date.Subtract(existingTxn.TXN_BUY_DATE.Date).Days;
 
                 portfolioTxn.TXN_BUY_DATE = existingTxn.TXN_BUY_DATE;

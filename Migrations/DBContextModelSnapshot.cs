@@ -282,6 +282,12 @@ namespace MarketAnalytics.Migrations
                     b.Property<double>("RSI_CLOSE")
                         .HasColumnType("REAL");
 
+                    b.Property<double>("SlowD")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("FastK")
+                        .HasColumnType("REAL");
+
                     b.Property<double>("STOCH_BUY_PRICE")
                         .HasColumnType("REAL");
 
