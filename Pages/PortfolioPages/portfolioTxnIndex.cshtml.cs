@@ -81,266 +81,269 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 MasterId = (int)masterid;
 
-                //create ordered list of transaction based on stock master id
-                IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
-                                                            && (x.TXN_TYPE.Equals("B"))).OrderBy(a => a.StockMasterID)
-                                                            .Include(a => a.stockMaster)
-                                                            .AsSplitQuery();
-
-                //create summary list for each symbol using all transactions for that symbol
-                IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
-                    .Select(x => new PORTFOLIOTXN_SUMMARY
-                    {
-                        StockMasterId = x.Key,
-                        MasterId = x.First().PORTFOLIO_MASTER_ID,
-                        Symbol = x.First().stockMaster.Symbol,
-                        CompName = x.First().stockMaster.CompName,
-                        Exchange = x.First().stockMaster.Exchange,
-                        TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
-                        TotalCost = x.Sum(s => s.TOTAL_COST),
-                        TotalGain = x.Sum(s => s.GAIN_AMT),
-                        TotalGainPCT = x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
-                        CMP = x.First().CMP,
-                        TotalValue = x.Sum(s => s.VALUE)
-                    }
-                    );
-
-                summarymenuList.Clear();
-                SelectListItem summarymenuItem = new SelectListItem("Show Txn", constShowTxn);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Update Strategy", constUpdateStrategy);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("History Data", constHistoryData);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Chart-History", constChart_History);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Chart-SMA/RSI/STOCH", constChart_SMARSISTOCH);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("RSI Trend V40", constRsiTrendV40);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Stoch V40", constStochV40);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("SMA V40", constSmaV40);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("V20", constV20);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Bullish Engulfing", constBullishEngulfing);
-                summarymenuList.Add(summarymenuItem);
-
-                summarymenuItem = new SelectListItem("Bearish Engulfing", constBearishEngulfing);
-                summarymenuList.Add(summarymenuItem);
-
-
-                menuList.Clear();
-                //SelectListItem menuItem = new SelectListItem("-- Select Action --", listCntr.ToString());
-                //menuList.Add(menuItem);
-
-                SelectListItem menuItem = new SelectListItem("Close", constClosePosition);
-                menuList.Add(menuItem);
-
-                menuItem = new SelectListItem("Edit", constEditTxn);
-                menuList.Add(menuItem);
-
-                menuItem = new SelectListItem("Delete", constDeleteTxn);
-                menuList.Add(menuItem);
-
-                menuItem = new SelectListItem("Details", constDetailsTxn);
-                menuList.Add(menuItem);
-
-
                 var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioMasterName = masterRec.PORTFOLIO_NAME;
-
-                IQueryable<PORTFOLIOTXN> txnClosedIQ = _context.PORTFOLIOTXN
-                    .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")))
-                    .Include(a => a.stockMaster)
-                    .AsSplitQuery();
-
-                //IQueryable<PORTFOLIOTXN> txnOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
-
-                //IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                //                                            .Select(x => x.FirstOrDefault());
-                symbolList.Clear();
-
-                //symbolList = distinctIQ.Select(a =>
-                //                                new SelectListItem
-                //                                {
-                //                                    Value = a.StockMasterID.ToString(),
-                //                                    Text = a.stockMaster.Symbol
-                //                                }).AsEnumerable().ToList();
-
-                //symbolList = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == MasterId) && (x.TXN_TYPE.Equals("B")))
-                //                                      .OrderBy(a => a.stockMaster.Symbol)
-                //                                      .Select(a =>
-                //                                          new SelectListItem
-                //                                          {
-                //                                              Value = a.StockMasterID.ToString(),
-                //                                              Text = a.stockMaster.Symbol
-                //                                          }
-                //                                      ).Distinct().ToList();
-
-                symbolList = listofSummaryTxn.OrderBy(a => a.Symbol)
-                                                        .Select(a =>
-                                                          new SelectListItem
-                                                          {
-                                                              Value = a.StockMasterId.ToString(),
-                                                              Text = a.Symbol
-                                                          }
-                                                      ).ToList();
-
-                CurrentSort = sortOrder;
-                DateSort = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
-                SymbolSort = sortOrder == "Symbol" ? "symbol_desc" : "Symbol";
-                ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
-                CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
-                if (searchString != null)
+                if (masterRec.collectionTxn.Any())
                 {
-                    pageIndex = 1;
-                }
-                else
-                {
-                    searchString = currentFilter;
-                }
+                    //create ordered list of transaction based on stock master id
+                    IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
+                                                                && (x.TXN_TYPE.Equals("B"))).OrderBy(a => a.StockMasterID)
+                                                                .Include(a => a.stockMaster)
+                                                                .AsSplitQuery();
 
-                IQueryable<PORTFOLIOTXN> txnOpenIQ = null; // _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
+                    //create summary list for each symbol using all transactions for that symbol
+                    IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
+                        .Select(x => new PORTFOLIOTXN_SUMMARY
+                        {
+                            StockMasterId = x.Key,
+                            MasterId = x.First().PORTFOLIO_MASTER_ID,
+                            Symbol = x.First().stockMaster.Symbol,
+                            CompName = x.First().stockMaster.CompName,
+                            Exchange = x.First().stockMaster.Exchange,
+                            TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
+                            TotalCost = x.Sum(s => s.TOTAL_COST),
+                            TotalGain = x.Sum(s => s.GAIN_AMT),
+                            TotalGainPCT = x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
+                            CMP = x.First().CMP,
+                            TotalValue = x.Sum(s => s.VALUE)
+                        }
+                        );
 
-                if (stockid != null)
-                {
-                    StockId = stockid;
-                    txnOpenIQ = _context.PORTFOLIOTXN
-                        .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid))
+                    summarymenuList.Clear();
+                    SelectListItem summarymenuItem = new SelectListItem("Show Txn", constShowTxn);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Update Strategy", constUpdateStrategy);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("History Data", constHistoryData);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Chart-History", constChart_History);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Chart-SMA/RSI/STOCH", constChart_SMARSISTOCH);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("RSI Trend V40", constRsiTrendV40);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Stoch V40", constStochV40);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("SMA V40", constSmaV40);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("V20", constV20);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Bullish Engulfing", constBullishEngulfing);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Bearish Engulfing", constBearishEngulfing);
+                    summarymenuList.Add(summarymenuItem);
+
+
+                    menuList.Clear();
+                    //SelectListItem menuItem = new SelectListItem("-- Select Action --", listCntr.ToString());
+                    //menuList.Add(menuItem);
+
+                    SelectListItem menuItem = new SelectListItem("Close", constClosePosition);
+                    menuList.Add(menuItem);
+
+                    menuItem = new SelectListItem("Edit", constEditTxn);
+                    menuList.Add(menuItem);
+
+                    menuItem = new SelectListItem("Delete", constDeleteTxn);
+                    menuList.Add(menuItem);
+
+                    menuItem = new SelectListItem("Details", constDetailsTxn);
+                    menuList.Add(menuItem);
+
+
+
+                    IQueryable<PORTFOLIOTXN> txnClosedIQ = _context.PORTFOLIOTXN
+                        .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")))
                         .Include(a => a.stockMaster)
                         .AsSplitQuery();
-                    var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
-                    if (selectedRecord != null)
+
+                    //IQueryable<PORTFOLIOTXN> txnOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
+
+                    //IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnOpenIQ.GroupBy(a => a.stockMaster.Symbol)
+                    //                                            .Select(x => x.FirstOrDefault());
+                    symbolList.Clear();
+
+                    //symbolList = distinctIQ.Select(a =>
+                    //                                new SelectListItem
+                    //                                {
+                    //                                    Value = a.StockMasterID.ToString(),
+                    //                                    Text = a.stockMaster.Symbol
+                    //                                }).AsEnumerable().ToList();
+
+                    //symbolList = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == MasterId) && (x.TXN_TYPE.Equals("B")))
+                    //                                      .OrderBy(a => a.stockMaster.Symbol)
+                    //                                      .Select(a =>
+                    //                                          new SelectListItem
+                    //                                          {
+                    //                                              Value = a.StockMasterID.ToString(),
+                    //                                              Text = a.stockMaster.Symbol
+                    //                                          }
+                    //                                      ).Distinct().ToList();
+
+                    symbolList = listofSummaryTxn.OrderBy(a => a.Symbol)
+                                                            .Select(a =>
+                                                              new SelectListItem
+                                                              {
+                                                                  Value = a.StockMasterId.ToString(),
+                                                                  Text = a.Symbol
+                                                              }
+                                                          ).ToList();
+
+                    CurrentSort = sortOrder;
+                    DateSort = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
+                    SymbolSort = sortOrder == "Symbol" ? "symbol_desc" : "Symbol";
+                    ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
+                    CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
+                    if (searchString != null)
                     {
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord);
-                        //searchString = selectedRecord.stockMaster.Symbol;
+                        pageIndex = 1;
                     }
-                }
-
-                if ((refreshAll != null) && (refreshAll == true))
-                {
-                    IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                        .Select(x => x.FirstOrDefault())
-                        .Include(a => a.stockMaster)
-                        .AsSplitQuery();
-                    foreach (var item in distinctOpenIQ)
+                    else
                     {
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item);
-                    }
-                }
-
-                portfolioTotalCost = listofSummaryTxn.Sum(a => a.TotalCost); //txnOpenIQ.Sum(a => a.TOTAL_COST);
-                portfolioTotalGain = (double)listofSummaryTxn.Sum(a => a.TotalGain); //(double)txnOpenIQ.Sum(a => a.GAIN_AMT);
-                portfolioTotalValue = (double)listofSummaryTxn.Sum(a => a.TotalValue); //(double)txnOpenIQ.Sum(a => a.VALUE);
-
-                CurrentFilter = searchString;
-
-                //IQueryable<PortfolioTxn> portfolioIQ = from s in _context.PORTFOLIOTxn select s;
-
-                if (!String.IsNullOrEmpty(searchString))
-                {
-                    //txnOpenIQ = txnOpenIQ.Where(s => s.stockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
-                    //                            || s.stockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
-                    listofSummaryTxn = listofSummaryTxn.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
-                                                || s.CompName.ToUpper().Contains(searchString.ToUpper()));
-                    var searchRecord = listofSummaryTxn.FirstOrDefault();
-                    if (searchRecord == null)
-                    {
-                        listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
-                                            .Select(x => new PORTFOLIOTXN_SUMMARY
-                                            {
-                                                StockMasterId = x.Key,
-                                                MasterId = x.First().PORTFOLIO_MASTER_ID,
-                                                Symbol = x.First().stockMaster.Symbol,
-                                                CompName = x.First().stockMaster.CompName,
-                                                Exchange = x.First().stockMaster.Exchange,
-                                                TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
-                                                TotalCost = x.Sum(s => s.TOTAL_COST),
-                                                TotalGain = x.Sum(s => s.GAIN_AMT),
-                                                TotalGainPCT = x.Sum(s => s.GAIN_PCT),
-                                                CMP = x.First().CMP,
-                                                TotalValue = x.Sum(s => s.VALUE)
-                                            }
-                                            );
-                    }
-                    else if (symbolList.Exists(a => (a.Value.Equals(searchRecord.StockMasterId.ToString()) == true)))
-                    {
-                        symbolList.FirstOrDefault(a => a.Value.Equals(searchRecord.StockMasterId.ToString())).Selected = true;
+                        searchString = currentFilter;
                     }
 
+                    IQueryable<PORTFOLIOTXN> txnOpenIQ = null; // _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
+
+                    if (stockid != null)
+                    {
+                        StockId = stockid;
+                        txnOpenIQ = _context.PORTFOLIOTXN
+                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid))
+                            .Include(a => a.stockMaster)
+                            .AsSplitQuery();
+                        var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
+                        if (selectedRecord != null)
+                        {
+                            DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, selectedRecord);
+                            //searchString = selectedRecord.stockMaster.Symbol;
+                        }
+                    }
+
+                    if ((refreshAll != null) && (refreshAll == true))
+                    {
+                        IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
+                            .Select(x => x.FirstOrDefault())
+                            .Include(a => a.stockMaster)
+                            .AsSplitQuery();
+                        foreach (var item in distinctOpenIQ)
+                        {
+                            DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item);
+                        }
+                    }
+
+                    portfolioTotalCost = listofSummaryTxn.Sum(a => a.TotalCost); //txnOpenIQ.Sum(a => a.TOTAL_COST);
+                    portfolioTotalGain = (double)listofSummaryTxn.Sum(a => a.TotalGain); //(double)txnOpenIQ.Sum(a => a.GAIN_AMT);
+                    portfolioTotalValue = (double)listofSummaryTxn.Sum(a => a.TotalValue); //(double)txnOpenIQ.Sum(a => a.VALUE);
+
+                    CurrentFilter = searchString;
+
+                    //IQueryable<PortfolioTxn> portfolioIQ = from s in _context.PORTFOLIOTxn select s;
+
+                    if (!String.IsNullOrEmpty(searchString))
+                    {
+                        //txnOpenIQ = txnOpenIQ.Where(s => s.stockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
+                        //                            || s.stockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
+                        listofSummaryTxn = listofSummaryTxn.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
+                                                    || s.CompName.ToUpper().Contains(searchString.ToUpper()));
+                        var searchRecord = listofSummaryTxn.FirstOrDefault();
+                        if (searchRecord == null)
+                        {
+                            listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
+                                                .Select(x => new PORTFOLIOTXN_SUMMARY
+                                                {
+                                                    StockMasterId = x.Key,
+                                                    MasterId = x.First().PORTFOLIO_MASTER_ID,
+                                                    Symbol = x.First().stockMaster.Symbol,
+                                                    CompName = x.First().stockMaster.CompName,
+                                                    Exchange = x.First().stockMaster.Exchange,
+                                                    TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
+                                                    TotalCost = x.Sum(s => s.TOTAL_COST),
+                                                    TotalGain = x.Sum(s => s.GAIN_AMT),
+                                                    TotalGainPCT = x.Sum(s => s.GAIN_PCT),
+                                                    CMP = x.First().CMP,
+                                                    TotalValue = x.Sum(s => s.VALUE)
+                                                }
+                                                );
+                        }
+                        else if (symbolList.Exists(a => (a.Value.Equals(searchRecord.StockMasterId.ToString()) == true)))
+                        {
+                            symbolList.FirstOrDefault(a => a.Value.Equals(searchRecord.StockMasterId.ToString())).Selected = true;
+                        }
+
+                    }
+                    switch (sortOrder)
+                    {
+                        case "date_desc":
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.TXN_BUY_DATE);
+                            }
+                            break;
+                        case "Symbol":
+                            //txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Symbol);
+                            listofSummaryTxn = listofSummaryTxn.OrderBy(s => s.Symbol);
+                            break;
+                        case "symbol_desc":
+                            //txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Symbol);
+                            listofSummaryTxn = listofSummaryTxn.OrderByDescending(s => s.Symbol);
+                            break;
+                        case "Exchange":
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Exchange);
+                            }
+                            break;
+                        case "exchange_desc":
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Exchange);
+                            }
+                            break;
+                        case "CompName":
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.CompName);
+                            }
+                            break;
+                        case "compname_desc":
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.CompName);
+                            }
+                            break;
+                        default:
+                            if (txnOpenIQ != null)
+                            {
+                                txnOpenIQ = txnOpenIQ.OrderBy(s => s.TXN_BUY_DATE);
+                            }
+                            break;
+                    }
+                    var pageSize = Configuration.GetValue("PageSize", 10);
+
+                    CurrentSummaryPageIndex = pageSummaryIndex;
+                    portfolioSummaryOpenTxn = await PaginatedList<PORTFOLIOTXN_SUMMARY>.CreateAsync(listofSummaryTxn, pageSummaryIndex ?? 1, pageSize);
+
+                    if (txnOpenIQ != null)
+                    {
+
+                        CurrentPageIndex = pageIndex;
+                        portfolioOpenTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnOpenIQ, pageIndex ?? 1, pageSize);
+                    }
+
+                    CurrentClosedPageIndex = pageIndexClosed;
+                    portfolioClosedTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnClosedIQ, pageIndexClosed ?? 1, pageSize);
                 }
-                switch (sortOrder)
-                {
-                    case "date_desc":
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.TXN_BUY_DATE);
-                        }
-                        break;
-                    case "Symbol":
-                        //txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Symbol);
-                        listofSummaryTxn = listofSummaryTxn.OrderBy(s => s.Symbol);
-                        break;
-                    case "symbol_desc":
-                        //txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Symbol);
-                        listofSummaryTxn = listofSummaryTxn.OrderByDescending(s => s.Symbol);
-                        break;
-                    case "Exchange":
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Exchange);
-                        }
-                        break;
-                    case "exchange_desc":
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Exchange);
-                        }
-                        break;
-                    case "CompName":
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.CompName);
-                        }
-                        break;
-                    case "compname_desc":
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.CompName);
-                        }
-                        break;
-                    default:
-                        if (txnOpenIQ != null)
-                        {
-                            txnOpenIQ = txnOpenIQ.OrderBy(s => s.TXN_BUY_DATE);
-                        }
-                        break;
-                }
-                var pageSize = Configuration.GetValue("PageSize", 10);
-
-                CurrentSummaryPageIndex = pageSummaryIndex;
-                portfolioSummaryOpenTxn = await PaginatedList<PORTFOLIOTXN_SUMMARY>.CreateAsync(listofSummaryTxn.AsNoTracking(), pageSummaryIndex ?? 1, pageSize);
-
-                if (txnOpenIQ != null)
-                {
-
-                    CurrentPageIndex = pageIndex;
-                    portfolioOpenTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnOpenIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
-                }
-
-                CurrentClosedPageIndex = pageIndexClosed;
-                portfolioClosedTxn = await PaginatedList<PORTFOLIOTXN>.CreateAsync(txnClosedIQ.AsNoTracking(), pageIndexClosed ?? 1, pageSize);
             }
         }
 

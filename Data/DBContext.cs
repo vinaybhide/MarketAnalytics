@@ -65,7 +65,6 @@ namespace MarketAnalytics.Data
 
             //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory").Navigation(e => e.StockMaster).AutoInclude();
 
-            modelBuilder.Entity<Portfolio_Master>().ToTable("PORTFOLIO_MASTER");
 
             ////for many to many relationship you can use following code or the below commented single statement
             modelBuilder.Entity<PORTFOLIOTXN>()
@@ -78,6 +77,10 @@ namespace MarketAnalytics.Data
                  .HasOne(d => d.stockMaster)
                  .WithMany(dm => dm.collectionTxn)
                  .HasForeignKey(dkey => dkey.StockMasterID);
+
+            //modelBuilder.Entity<Portfolio_Master>().ToTable("PORTFOLIO_MASTER");
+            modelBuilder.Entity<Portfolio_Master>().ToTable("Portfolio_Master").Navigation(e => e.collectionTxn).AutoInclude();
+            modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionTxn).AutoInclude();
 
             //for many to many relationship you can use commented following code or above code for portfolio_master
             //& StockMaster table
