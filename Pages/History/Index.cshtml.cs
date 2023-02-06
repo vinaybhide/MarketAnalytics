@@ -100,28 +100,28 @@ namespace MarketAnalytics.Pages.History
                 IQueryable<StockMaster> stockmasterIQ = null;
                 if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
                     CompanyName = "History for V40+V40N+V200";
 
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true)).AsNoTracking();
                     CompanyName = "History for V40";
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40N == true)).AsNoTracking();
                     CompanyName = "History for V40N";
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
                     CompanyName = "History for V200";
                 }
                 else //if (id == Int32.Parse(constAll))
                 {
-                    stockmasterIQ = _context.StockMaster.AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().AsNoTracking();
                     CompanyName = "History for all stocks";
                 }
                 
@@ -151,7 +151,7 @@ namespace MarketAnalytics.Pages.History
                     StockMaster StockMasterRec = null;
                     //CurrentID = id;
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
-                    StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    StockMasterRec = await _context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     symbolList.FirstOrDefault(a => a.Value.Equals(CurrentID.ToString())).Selected = true;
 
                     CompanyName = StockMasterRec.CompName;
@@ -166,6 +166,7 @@ namespace MarketAnalytics.Pages.History
                     CurrentFilter = searchString;
 
                     stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID)).AsNoTracking();
+                    //stockpriceIQ = StockMasterRec.collectionStockPriceHistory.AsQueryable();
                     if (!String.IsNullOrEmpty(searchString))
                     {
                         stockpriceIQ = stockpriceIQ.Where(s => (s.PriceDate.Date >= (Convert.ToDateTime(searchString).Date))

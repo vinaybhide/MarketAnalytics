@@ -45,10 +45,10 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 }
                 else
                 {
-                    CurrentID = _context.StockPriceHistory.FirstOrDefault().StockMasterID;
+                    CurrentID = _context.StockPriceHistory.Include(a => a.StockMaster).AsSplitQuery().FirstOrDefault().StockMasterID;
                 }
 
-                StockMaster tempSM = _context.StockMaster.FirstOrDefault(a => a.StockMasterID == CurrentID);
+                StockMaster tempSM = _context.StockMaster.AsSplitQuery().FirstOrDefault(a => a.StockMasterID == CurrentID);
                 Symbol = tempSM.Symbol;
                 CompanyName = tempSM.CompName;
 
@@ -86,25 +86,25 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 ChartContent = "Stock history - ";
                 if (onlyHistory == 1)
                 {
-                    listBuyDates = _context.BEARISH_ENGULFING.Where(a => a.StockMasterID == CurrentID)
+                    listBuyDates = _context.BEARISH_ENGULFING.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.BUY_CANDLE_DATE.Year, a.BUY_CANDLE_DATE.Month, a.BUY_CANDLE_DATE.Day)).ToList();
-                    listSellDates = _context.BEARISH_ENGULFING.Where(a => a.StockMasterID == CurrentID)
+                    listSellDates = _context.BEARISH_ENGULFING.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.SELL_CANDLE_DATE.Year, a.SELL_CANDLE_DATE.Month, a.SELL_CANDLE_DATE.Day)).ToList();
                     ChartContent = "Bearish Engulfing Strategy: ";
                 }
                 else if (onlyHistory == 2)
                 {
-                    listBuyDates = _context.BULLISH_ENGULFING_STRATEGY.Where(a => a.StockMasterID == CurrentID)
+                    listBuyDates = _context.BULLISH_ENGULFING_STRATEGY.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.BUY_CANDLE_DATE.Year, a.BUY_CANDLE_DATE.Month, a.BUY_CANDLE_DATE.Day)).ToList();
-                    listSellDates = _context.BULLISH_ENGULFING_STRATEGY.Where(a => a.StockMasterID == CurrentID)
+                    listSellDates = _context.BULLISH_ENGULFING_STRATEGY.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.SELL_CANDLE_DATE.Year, a.SELL_CANDLE_DATE.Month, a.SELL_CANDLE_DATE.Day)).ToList();
                     ChartContent = "Bullish Engulfing Strategy: ";
                 }
                 else if (onlyHistory == 3)
                 {
-                    listBuyDates = _context.V20_CANDLE_STRATEGY.Where(a => a.StockMasterID == CurrentID)
+                    listBuyDates = _context.V20_CANDLE_STRATEGY.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.FROM_DATE.Year, a.FROM_DATE.Month, a.FROM_DATE.Day)).ToList();
-                    listSellDates = _context.V20_CANDLE_STRATEGY.Where(a => a.StockMasterID == CurrentID)
+                    listSellDates = _context.V20_CANDLE_STRATEGY.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID)
                                                                 .Select(a => new DateTime(a.TO_DATE.Year, a.TO_DATE.Month, a.TO_DATE.Day)).ToList();
                     ChartContent = "V20 Strategy: ";
                 }
@@ -113,22 +113,22 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 {
                     if (FromDate != DateTime.MinValue)
                     {
-                        listHistory = _context.StockPriceHistory.Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0)).ToList();
+                        listHistory = _context.StockPriceHistory.Include(a => a.StockMaster).AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0)).ToList();
                     }
                     else
                     {
-                        listHistory = _context.StockPriceHistory.Where(a => a.StockMasterID == CurrentID).ToList();
+                        listHistory = _context.StockPriceHistory.Include(a => a.StockMaster).AsSplitQuery().Where(a => a.StockMasterID == CurrentID).ToList();
                     }
                 }
                 else
                 {
                     if (listBuyDates.Min().Date.CompareTo(listSellDates.Min()) < 0)
                     {
-                        listHistory = _context.StockPriceHistory.Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(listBuyDates.Min().Date.AddDays(-10)) >= 0)).ToList();
+                        listHistory = _context.StockPriceHistory.Include(a => a.StockMaster).AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(listBuyDates.Min().Date.AddDays(-10)) >= 0)).ToList();
                     }
                     else
                     {
-                        listHistory = _context.StockPriceHistory.Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(listSellDates.Min().Date.AddDays(-10)) >= 0)).ToList();
+                        listHistory = _context.StockPriceHistory.Include(a => a.StockMaster).AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(listSellDates.Min().Date.AddDays(-10)) >= 0)).ToList();
                     }
 
                 }

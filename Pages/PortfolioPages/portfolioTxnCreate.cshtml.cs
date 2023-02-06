@@ -73,7 +73,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 parentSortOrder = sortOrder;
                 parentFilter = currentFilter;
 
-                var masterRec = _context.PORTFOLIO_MASTER.FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                var masterRec = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioTxn = new PORTFOLIOTXN();
                 portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterid;
                 portfolioName = masterRec.PORTFOLIO_NAME.ToString();
@@ -83,14 +83,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if (txntype.Equals("B"))
                 {
                     typeList.Clear();
-                    typeList = _context.StockMaster.Select(a => a.INVESTMENT_TYPE).Select(a =>
+                    typeList = _context.StockMaster.AsSplitQuery().Select(a => a.INVESTMENT_TYPE).Select(a =>
                                                             new SelectListItem
                                                             {
                                                                 Value = a.ToString(),
                                                                 Text = a.ToString()
                                                             }).Distinct().ToList();
                     exchangeList.Clear();
-                    exchangeList = _context.StockMaster.Select(a => a.Exchange).Select(a =>
+                    exchangeList = _context.StockMaster.AsSplitQuery().Select(a => a.Exchange).Select(a =>
                                                             new SelectListItem
                                                             {
                                                                 Value = a.ToString(),
@@ -112,11 +112,11 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     portfolioTxn.SELL_AMT_PER_UNIT = 0;
                     portfolioTxn.TOTAL_SELL_AMT = 0;
                     portfolioTxn.StockMasterID = existingTxn.StockMasterID;
-                    portfolioTxn.stockMaster = existingTxn.stockMaster;
+                    portfolioTxn.stockMaster = existingTxn.GetStockMaster(_context);//existingTxn.stockMaster;
 
 
                     symbolList.Clear();
-                    symbolList = _context.StockMaster.Where(a => a.StockMasterID == existingTxn.StockMasterID).Select( a=>
+                    symbolList = _context.StockMaster.AsSplitQuery().Where(a => a.StockMasterID == existingTxn.StockMasterID).Select( a=>
                                                             new SelectListItem
                                                             {
                                                                 Value = a.StockMasterID.ToString(),
@@ -135,7 +135,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             symbolList.Clear();
             if ((string.IsNullOrEmpty(typesel) == false) && (string.IsNullOrEmpty(exchangesel) == false))
             {
-                symbolList = _context.StockMaster.Where(a => a.INVESTMENT_TYPE.Equals(typesel) && a.Exchange.Equals(exchangesel)).OrderBy(a => a.CompName).Select(a =>
+                symbolList = _context.StockMaster.AsSplitQuery().Where(a => a.INVESTMENT_TYPE.Equals(typesel) && a.Exchange.Equals(exchangesel)).OrderBy(a => a.CompName).Select(a =>
                                                   new SelectListItem
                                                   {
                                                       Value = a.StockMasterID.ToString(),
@@ -144,7 +144,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
             else if (string.IsNullOrEmpty(typesel) == false)
             {
-                symbolList = _context.StockMaster.Where(a => a.INVESTMENT_TYPE.Equals(typesel)).OrderBy(a => a.CompName).Select(a =>
+                symbolList = _context.StockMaster.AsSplitQuery().Where(a => a.INVESTMENT_TYPE.Equals(typesel)).OrderBy(a => a.CompName).Select(a =>
                                                   new SelectListItem
                                                   {
                                                       Value = a.StockMasterID.ToString(),
@@ -153,7 +153,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
             else if (string.IsNullOrEmpty(exchangesel) == false)
             {
-                symbolList = _context.StockMaster.Where(a => a.Exchange.Equals(exchangesel)).OrderBy(a => a.CompName).Select(a =>
+                symbolList = _context.StockMaster.AsSplitQuery().Where(a => a.Exchange.Equals(exchangesel)).OrderBy(a => a.CompName).Select(a =>
                                                   new SelectListItem
                                                   {
                                                       Value = a.StockMasterID.ToString(),
@@ -167,7 +167,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             TypeSelected = typesel;
 
             typeList.Clear();
-            typeList = _context.StockMaster.Select(a => a.INVESTMENT_TYPE).Select(a =>
+            typeList = _context.StockMaster.AsSplitQuery().Select(a => a.INVESTMENT_TYPE).Select(a =>
                                                     new SelectListItem
                                                     {
                                                         Value = a.ToString(),
@@ -181,7 +181,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
             ExchangeSelected = exchangesel;
             exchangeList.Clear();
-            exchangeList = _context.StockMaster.Select(a => a.Exchange).Select(a =>
+            exchangeList = _context.StockMaster.AsSplitQuery().Select(a => a.Exchange).Select(a =>
                                                     new SelectListItem
                                                     {
                                                         Value = a.ToString(),
@@ -199,7 +199,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 portfolioTxn = new PORTFOLIOTXN();
                 portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterid;
                 //var masterRec = _context.PORTFOLIO_MASTER.Select(m => (m.PORTFOLIO_MASTER_ID == masterId));
-                var masterRec = _context.PORTFOLIO_MASTER.FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                var masterRec = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 if (masterRec != null)
                 {
                     portfolioName = masterRec.PORTFOLIO_NAME.ToString();

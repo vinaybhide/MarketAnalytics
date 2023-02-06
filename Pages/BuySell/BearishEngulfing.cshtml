@@ -15,20 +15,17 @@
             <th>
                 <form asp-page="./BearishEngulfing" method="get">
                     <div class="form-actions no-color">
-                        <p>
                             <select name="searchString" asp-items="Model.currentSymbolList" style="font-size:small">
                                 <option value="">Select Symbol</option>
                             </select>
 
-                            <input type="submit" value="Search from current list" class="btn btn-sm btn-primary" style="font-size:small" />
-                        </p>
+                            <input type="submit" value="Search current list" class="btn btn-sm btn-primary" style="font-size:small" />
                     </div>
                 </form>
             </th>
             <th>
                 <form asp-page="./BearishEngulfing" method="get">
                     <div class="form-actions no-color">
-                        <p>
                             <label style="font-size:smaller; font-style:normal;">SMA :</label>
                             <input style="font-size:small;" type="text" size="1" maxlength="2" asp-for="@Model.SMAValue" oninput="this.value=this.value.replace(/(?![0-9])./gmi,'')" />
                             <label style="font-size:smaller; font-style:normal;">Trend Span :</label>
@@ -40,8 +37,7 @@
                                 <option value="">Select Symbol</option>
                             </select>
 
-                            <input type="submit" value="Find Bearish Engulfing Trend" class="btn btn-sm btn-primary" style="font-size:small" />
-                        </p>
+                            <input type="submit" value="Find Trend" class="btn btn-sm btn-primary" style="font-size:small" />
                     </div>
                 </form>
             </th>
@@ -54,9 +50,7 @@
             </th>*@
             <th>
                 <div class="form-actions no-color">
-                    <p>
                         <a asp-page="./BearishEngulfing" style="font-size:small">Back to full List</a>
-                    </p>
                 </div>
             </th>
         </tr>
@@ -135,13 +129,12 @@
                     <td>
                         <a asp-page="./BearishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="false" asp-route-updateBuySell="true"
                            asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.listBEARISH_ENGULFING.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
+                           asp-route-currentFilter="@Model.CurrentFilter">Update Trend</a> |
                         <a asp-page="./BearishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
                            asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.listBEARISH_ENGULFING.PageIndex"
                            asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                         <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@item.StockMasterID" 
-                            asp-route-onlyhistory=1 asp-route-history=true>Chart</a>
+                        <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH" asp-route-id="@item.StockMasterID">Chart:SMA RSI STOCH</a>
                     </td>
                 </tr>
             }

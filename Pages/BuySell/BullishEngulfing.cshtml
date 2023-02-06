@@ -19,7 +19,7 @@
                                 <option value="">Select Symbol</option>
                             </select>
 
-                            <input type="submit" value="Search from current list" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <input type="submit" value="Search current list" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
                     </div>
                 </form>
@@ -39,7 +39,7 @@
                                 <option value="">Select Symbol</option>
                             </select>
 
-                            <input type="submit" value="Find Bullish Engulfing Trend" class="btn btn-sm btn-primary" style="font-size:small" />
+                            <input type="submit" value="Find Trend" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
                     </div>
                 </form>
@@ -98,9 +98,9 @@
                     @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].SELL_PRICE)
                 </a>
             </th>
-            <th>
+            @*<th>
                 @Html.DisplayNameFor(model => model.BULLISH_ENGULFING_STRATEGYies[0].AVG_BUY_PRICE)
-            </th>
+            </th>*@
             <th></th>
         </tr>
     </thead>
@@ -134,19 +134,18 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.SELL_PRICE)
                     </td>
-                    <td>
+                    @*<td>
                         @Html.DisplayFor(modelItem => item.AVG_BUY_PRICE)
-                    </td>
+                    </td>*@
                     <td>
                         <a asp-page="./BullishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="false" asp-route-updateBuySell="true"
                            asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.BULLISH_ENGULFING_STRATEGYies.PageIndex"
-                           asp-route-currentFilter="@Model.CurrentFilter">Update Buy Sell</a> |
+                           asp-route-currentFilter="@Model.CurrentFilter">Update Trend</a> |
                         <a asp-page="./BullishEngulfing" asp-route-id="@item.StockMasterID" asp-route-getQuote="true" asp-route-updateBuySell="false"
                            asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@Model.BULLISH_ENGULFING_STRATEGYies.PageIndex"
                            asp-route-currentFilter="@Model.CurrentFilter">Quote</a> |
                         <a asp-page="/History/Index" asp-route-id="@item.StockMasterID" asp-route-refreshAll=false asp-route-history=true>History</a>|
-                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-stockid="@item.StockMasterID"
-                           asp-route-onlyhistory=2 asp-route-history=true>Chart</a>
+                        <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH" asp-route-id="@item.StockMasterID">Chart:SMA RSI STOCH</a>
 
                     </td>
                 </tr>

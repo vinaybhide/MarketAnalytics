@@ -25,7 +25,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
 
-            var selectedrecord = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
+            var selectedrecord = await _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
 
             if (selectedrecord == null)
             {

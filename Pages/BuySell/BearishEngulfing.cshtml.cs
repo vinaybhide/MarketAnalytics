@@ -24,7 +24,7 @@ namespace MarketAnalytics.Pages.BuySell
         public string CurrentFilter { get; set; }
         public int TrendSpan { get; set; }
         public int DaysBehind { get; set; }
-public int SMAValue { get; set; }
+        public int SMAValue { get; set; }
         public string CurrentSort { get; set; }
 
         //public bool RefreshAllStocks { get; set; } = false;
@@ -47,7 +47,9 @@ public int SMAValue { get; set; }
             int? trendSpan, int? daysBehind, int? smaValue)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
+            symbolList = _context.StockMaster.AsSplitQuery().Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true)))
+                                                    .OrderBy(x => x.Symbol)
+                                                    .Select(a =>
                                                           new SelectListItem
                                                           {
                                                               Value = a.StockMasterID.ToString(),
@@ -55,7 +57,7 @@ public int SMAValue { get; set; }
                                                           }).ToList();
 
             SelectListItem selectAll = new SelectListItem("-- Select All --", "-99");
-            symbolList.Insert(0,selectAll);
+            symbolList.Insert(0, selectAll);
 
             if (_context.BEARISH_ENGULFING != null)
             {
@@ -74,7 +76,7 @@ public int SMAValue { get; set; }
                     searchString = currentFilter;
                 }
 
-                if((trendSpan!= null) && (trendSpan > 0))
+                if ((trendSpan != null) && (trendSpan > 0))
                 {
                     TrendSpan = (int)trendSpan;
                 }
@@ -82,7 +84,7 @@ public int SMAValue { get; set; }
                 {
                     TrendSpan = 10;
                 }
-                if((daysBehind != null) && (daysBehind > 0))
+                if ((daysBehind != null) && (daysBehind > 0))
                 {
                     DaysBehind = (int)daysBehind;
                 }
@@ -90,7 +92,7 @@ public int SMAValue { get; set; }
                 {
                     DaysBehind = 180;
                 }
-                if((smaValue != null) && (smaValue >= 0))
+                if ((smaValue != null) && (smaValue >= 0))
                 {
                     SMAValue = (int)smaValue;
                 }
@@ -100,45 +102,46 @@ public int SMAValue { get; set; }
                 }
 
                 //if (refreshAll == true)
-                if((symbolToUpdate != null) &&  (symbolToUpdate == -99))
+                if ((symbolToUpdate != null) && (symbolToUpdate == -99))
                 {
                     RefreshAllBuySellIndicators();
                     //RefreshAllStocks = false;
                     //refreshAll = false;
                 }
 
-                if ( (id != null) || ((symbolToUpdate != null) && (symbolToUpdate != -99)))
+                if ((id != null) || ((symbolToUpdate != null) && (symbolToUpdate != -99)))
                 {
                     if ((id == null) && (symbolToUpdate != null))
                     {
                         id = symbolToUpdate;
                     }
-                    var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    var selectedRecord = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
                         if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            //DateTime quoteDate;
-                            //double open, high, low, close, volume, change, changepercent, prevclose;
-                            DateTime[] quoteDate = null;
-                            double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-                            DbInitializer.GetQuote(selectedRecord.Symbol + (selectedRecord.Exchange.Length == 0 ? "" : ("." + selectedRecord.Exchange)), out quoteDate, out open,
-                            out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
-                            if (quoteDate != null)
-                            {
-                                selectedRecord.QuoteDateTime = quoteDate[0];
-                                selectedRecord.Open = open[0];
-                                selectedRecord.High = high[0];
-                                selectedRecord.Low = low[0];
-                                selectedRecord.Close = close[0];
-                                selectedRecord.Volume = volume[0];
-                                selectedRecord.ChangePercent = changepercent[0];
-                                selectedRecord.Change = change[0];
-                                selectedRecord.PrevClose = prevclose[0];
-                                _context.StockMaster.Update(selectedRecord);
-                                _context.SaveChanges();
-                            }
+                            DbInitializer.UpdateStockQuote(_context, selectedRecord);
+                            ////DateTime quoteDate;
+                            ////double open, high, low, close, volume, change, changepercent, prevclose;
+                            //DateTime[] quoteDate = null;
+                            //double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+                            //DbInitializer.GetQuote(selectedRecord.Symbol + (selectedRecord.Exchange.Length == 0 ? "" : ("." + selectedRecord.Exchange)), out quoteDate, out open,
+                            //out high, out low, out close,
+                            //    out volume, out change, out changepercent, out prevclose);
+                            //if (quoteDate != null)
+                            //{
+                            //    selectedRecord.QuoteDateTime = quoteDate[0];
+                            //    selectedRecord.Open = open[0];
+                            //    selectedRecord.High = high[0];
+                            //    selectedRecord.Low = low[0];
+                            //    selectedRecord.Close = close[0];
+                            //    selectedRecord.Volume = volume[0];
+                            //    selectedRecord.ChangePercent = changepercent[0];
+                            //    selectedRecord.Change = change[0];
+                            //    selectedRecord.PrevClose = prevclose[0];
+                            //    //_context.StockMaster.Update(selectedRecord);
+                            //    _context.SaveChanges();
+                            //}
                             searchString = "";
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
@@ -154,33 +157,47 @@ public int SMAValue { get; set; }
 
                 CurrentFilter = searchString;
 
-                IQueryable<BEARISH_ENGULFING> bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
-                                                                              || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
-                                                                              && (s.StockMaster.Close <= s.BUY_PRICE));
+                //IQueryable<BEARISH_ENGULFING> bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
+                //                                                              || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                //                                                              && (s.StockMaster.Close <= s.BUY_PRICE));
+                IQueryable<BEARISH_ENGULFING> bearishengulfingCandleIQ = _context.BEARISH_ENGULFING
+                                            .Include(s => s.StockMaster)
+                                            .AsSplitQuery()
+                                            .Where(s => ((s.StockMaster.V200 == true)
+                                                  || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                                                    && (s.StockMaster.Close <= s.BUY_PRICE));
                 currentSymbolList.Clear();
 
                 currentSymbolList = bearishengulfingCandleIQ //.Where(x => x.StockMaster.V200 == true)
                                                              //.GroupBy(a => a.StockMaster.Symbol)
-                                            .OrderBy(a => a.StockMasterID)
+                                            .Select(a => a.StockMaster.Symbol)
                                             .Distinct()
+                                            .OrderBy(a => a)
                                                 .Select(a =>
                                                     new SelectListItem
                                                     {
-                                                        Value = a.StockMaster.Symbol.ToString(),
-                                                        Text = a.StockMaster.Symbol.ToString()
-                                                    }).Distinct().ToList();
-               
+                                                        Value = a.ToString(),
+                                                        Text = a.ToString()
+                                                    }).ToList();
+
+
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    bearishengulfingCandleIQ = bearishengulfingCandleIQ.Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
-                                                            || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
-                    if(bearishengulfingCandleIQ.Count() == 0)
+                    bearishengulfingCandleIQ = bearishengulfingCandleIQ
+                            .Where(s => s.StockMaster.Symbol.ToUpper().Contains(searchString.ToUpper())
+                                    || s.StockMaster.CompName.ToUpper().Contains(searchString.ToUpper()));
+                    if (bearishengulfingCandleIQ.Count() == 0)
                     {
+                        //no search result get original list
                         //bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
-                        //                            || (s.StockMaster.V40N == true) || (s.StockMaster.V40 == true)));
-                        bearishengulfingCandleIQ = _context.BEARISH_ENGULFING.Where(s => ((s.StockMaster.V200 == true)
-                                                                              || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
-                                                                              && (s.StockMaster.Close <= s.BUY_PRICE));
+                        //                                                      || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                        //                                                      && (s.StockMaster.Close <= s.BUY_PRICE));
+                        bearishengulfingCandleIQ = _context.BEARISH_ENGULFING
+                                            .Include(s => s.StockMaster).AsSplitQuery()
+                                            .Where(s => ((s.StockMaster.V200 == true)
+                                                      || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                                                      && (s.StockMaster.Close <= s.BUY_PRICE));
+
                     }
                     if (currentSymbolList.Exists(a => (a.Value.Equals(searchString) == true)))
                     {
@@ -222,13 +239,13 @@ public int SMAValue { get; set; }
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
-                listBEARISH_ENGULFING = await PaginatedList<BEARISH_ENGULFING>.CreateAsync(bearishengulfingCandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
+                listBEARISH_ENGULFING = await PaginatedList<BEARISH_ENGULFING>.CreateAsync(bearishengulfingCandleIQ, pageIndex ?? 1, pageSize);
             }
         }
 
         public void RefreshAllBuySellIndicators()
         {
-            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
             try
             {
                 foreach (var item in stockmasterIQ)

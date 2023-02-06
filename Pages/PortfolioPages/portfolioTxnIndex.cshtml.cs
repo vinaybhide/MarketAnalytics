@@ -81,15 +81,17 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 MasterId = (int)masterid;
 
-                var masterRec = await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                var masterRec = await _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefaultAsync(m => (m.PORTFOLIO_MASTER_ID == masterid));
                 portfolioMasterName = masterRec.PORTFOLIO_NAME;
                 if (masterRec.collectionTxn.Any())
                 {
                     //create ordered list of transaction based on stock master id
-                    IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
-                                                                && (x.TXN_TYPE.Equals("B"))).OrderBy(a => a.StockMasterID)
-                                                                .Include(a => a.stockMaster)
-                                                                .AsSplitQuery();
+                    IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN
+                                                            .Include(a => a.stockMaster)
+                                                            .AsSplitQuery()
+                                                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
+                                                                && (x.TXN_TYPE.Equals("B")))
+                                                            .OrderBy(a => a.StockMasterID);
 
                     //create summary list for each symbol using all transactions for that symbol
                     IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
@@ -103,7 +105,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
                             TotalCost = x.Sum(s => s.TOTAL_COST),
                             TotalGain = x.Sum(s => s.GAIN_AMT),
-                            TotalGainPCT = x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
+                            TotalGainPCT =  x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
                             CMP = x.First().CMP,
                             TotalValue = x.Sum(s => s.VALUE)
                         }
@@ -163,9 +165,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
 
                     IQueryable<PORTFOLIOTXN> txnClosedIQ = _context.PORTFOLIOTXN
-                        .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")))
-                        .Include(a => a.stockMaster)
-                        .AsSplitQuery();
+                                            .Include(a => a.stockMaster)
+                                            .AsSplitQuery()
+                                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")));
 
                     //IQueryable<PORTFOLIOTXN> txnOpenIQ = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
 
@@ -195,7 +197,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                                               new SelectListItem
                                                               {
                                                                   Value = a.StockMasterId.ToString(),
-                                                                  Text = a.Symbol
+                                                                  Text = a.Symbol + "." + a.Exchange
                                                               }
                                                           ).ToList();
 
@@ -218,10 +220,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     if (stockid != null)
                     {
                         StockId = stockid;
-                        txnOpenIQ = _context.PORTFOLIOTXN
-                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid))
-                            .Include(a => a.stockMaster)
-                            .AsSplitQuery();
+                        txnOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid));
                         var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
                         if (selectedRecord != null)
                         {
@@ -233,9 +233,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     if ((refreshAll != null) && (refreshAll == true))
                     {
                         IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                            .Select(x => x.FirstOrDefault())
-                            .Include(a => a.stockMaster)
-                            .AsSplitQuery();
+                            .Select(x => x.FirstOrDefault());
+                            //.Include(a => a.stockMaster)
+                            //.AsSplitQuery();
                         foreach (var item in distinctOpenIQ)
                         {
                             DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, item);

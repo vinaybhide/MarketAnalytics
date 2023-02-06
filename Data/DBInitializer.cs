@@ -125,7 +125,7 @@ namespace MarketAnalytics.Data
                                             out volume, out change, out changepercent, out prevclose);
                                 if (quoteDate != null)
                                 { //find if stock exist in StockMaster, if not add it to context
-                                    stockMaster = context.StockMaster.Where(s => s.Symbol.ToUpper().Equals(symbol.ToUpper())
+                                    stockMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(symbol.ToUpper())
                                                         //&& s.CompName.ToUpper().Contains(compname.ToUpper())
                                                         && s.Exchange.ToUpper().Equals(exchange.ToUpper())
                                                         ).FirstOrDefault();
@@ -242,7 +242,7 @@ namespace MarketAnalytics.Data
                         if (quoteDate != null)
                         { //find if stock exist in StockMaster, if not add it to context
                             var recTOAdd = new StockMaster();
-                            currentMaster = context.StockMaster.Where(s => s.Symbol.ToUpper().Equals(fields[0].ToUpper())
+                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(fields[0].ToUpper())
                                                 && s.CompName.ToUpper().Equals(fields[1].ToUpper()));
                             if (currentMaster.Count() <= 0)
                             //if (!context.StockMaster.Any(o => o.Symbol.ToUpper().Equals(fields[0].ToUpper())
@@ -589,7 +589,7 @@ namespace MarketAnalytics.Data
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                 //IQueryable<StockMaster> stockmasterIQ = from s in context.StockMaster select s;
 
-                IQueryable<StockMaster> currentStockIQ = context.StockMaster.Where(s => (s.Symbol.Equals(symbol)) && (s.CompName.Equals(compname)) &&
+                IQueryable<StockMaster> currentStockIQ = context.StockMaster.AsSplitQuery().Where(s => (s.Symbol.Equals(symbol)) && (s.CompName.Equals(compname)) &&
                                                                                   (s.Exchange.Equals(exchange)));
                 if (currentStockIQ.Count() > 0)
                 {
@@ -2819,27 +2819,27 @@ namespace MarketAnalytics.Data
             {
                 if (groupId == -99)
                 {
-                    stockmasterIQ = context.StockMaster.Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
                 }
                 else if (groupId == -98)
                 {
-                    stockmasterIQ = context.StockMaster.Where(s => (s.V40 == true));
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V40 == true));
                 }
                 else if (groupId == -97)
                 {
-                    stockmasterIQ = context.StockMaster.Where(s => (s.V40N == true));
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V40N == true));
                 }
                 else if (groupId == -96)
                 {
-                    stockmasterIQ = context.StockMaster.Where(s => (s.V200 == true));
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V200 == true));
                 }
                 else if (groupId == -95)
                 {
-                    stockmasterIQ = context.StockMaster.AsQueryable();
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().AsQueryable();
                 }
                 else if (groupId > 0)
                 {
-                    stockmasterIQ = context.StockMaster.Where(s => (s.StockMasterID == groupId));
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.StockMasterID == groupId));
                 }
                 if ((stockmasterIQ != null) && (stockmasterIQ.Count() > 0))
                 {

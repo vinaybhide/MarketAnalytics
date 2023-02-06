@@ -36,7 +36,7 @@ namespace MarketAnalytics.Pages.BuySell
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => x.V40 == true).OrderBy(a => a.Symbol).Select(a =>
+            symbolList = _context.StockMaster.AsSplitQuery().Where(x => x.V40 == true).OrderBy(a => a.Symbol).Select(a =>
                                                           new SelectListItem
                                                           {
                                                               Value = a.StockMasterID.ToString(),
@@ -89,7 +89,7 @@ namespace MarketAnalytics.Pages.BuySell
                         id = symbolToUpdate;
                     }
 
-                    var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    var selectedRecord = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
                         if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
@@ -112,10 +112,10 @@ namespace MarketAnalytics.Pages.BuySell
                 //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
                 //stockmasterIQ = stockmasterIQ.Where(s => ((s.V40 == true) && (s.SMA_BUY_SIGNAL == true 
                 //                                            || s.SMA_SELL_SIGNAL == true)));
-                IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
+                IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true));
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    stockmasterIQ = stockmasterIQ.Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
+                    stockmasterIQ = stockmasterIQ.AsSplitQuery().Where(s => s.Symbol.ToUpper().Contains(searchString.ToUpper())
                                                             || s.CompName.ToUpper().Contains(searchString.ToUpper()));
                 }
 
@@ -148,7 +148,7 @@ namespace MarketAnalytics.Pages.BuySell
         public void RefreshAllBuySellIndicators()
         {
             //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true));
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true));
 
             foreach (var item in stockmasterIQ)
             {
@@ -161,7 +161,7 @@ namespace MarketAnalytics.Pages.BuySell
         {
             if ((id != null) && (menuitemsel.Equals("-1") == false))
             {
-                StockMaster stockMaster = _context.StockMaster.FirstOrDefault(m => m.StockMasterID == id);
+                StockMaster stockMaster = _context.StockMaster.AsSplitQuery().FirstOrDefault(m => m.StockMasterID == id);
 
                 switch (menuitemsel)
                 {

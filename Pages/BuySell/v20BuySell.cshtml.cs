@@ -46,7 +46,7 @@ namespace MarketAnalytics.Pages.BuySell
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id, bool? refreshAll, bool? getQuote, bool? updateBuySell, int? symbolToUpdate)
         {
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
+            symbolList = _context.StockMaster.AsSplitQuery().Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
                                                           new SelectListItem
                                                           {
                                                               Value = a.StockMasterID.ToString(),
@@ -89,32 +89,33 @@ namespace MarketAnalytics.Pages.BuySell
                     {
                         id = symbolToUpdate;
                     }
-                    var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    var selectedRecord = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
                         if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
                         {
-                            //DateTime quoteDate;
-                            //double open, high, low, close, volume, change, changepercent, prevclose;
-                            DateTime[] quoteDate = null;
-                            double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-                            DbInitializer.GetQuote(selectedRecord.Symbol + (selectedRecord.Exchange.Length == 0 ? "" : ("." + selectedRecord.Exchange)), out quoteDate, out open,
-                            out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
-                            if (quoteDate != null)
-                            {
-                                selectedRecord.QuoteDateTime = quoteDate[0];
-                                selectedRecord.Open = open[0];
-                                selectedRecord.High = high[0];
-                                selectedRecord.Low = low[0];
-                                selectedRecord.Close = close[0];
-                                selectedRecord.Volume = volume[0];
-                                selectedRecord.ChangePercent = changepercent[0];
-                                selectedRecord.Change = change[0];
-                                selectedRecord.PrevClose = prevclose[0];
-                                _context.StockMaster.Update(selectedRecord);
-                                _context.SaveChanges();
-                            }
+                            DbInitializer.UpdateStockQuote(_context, selectedRecord);
+                            ////DateTime quoteDate;
+                            ////double open, high, low, close, volume, change, changepercent, prevclose;
+                            //DateTime[] quoteDate = null;
+                            //double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+                            //DbInitializer.GetQuote(selectedRecord.Symbol + (selectedRecord.Exchange.Length == 0 ? "" : ("." + selectedRecord.Exchange)), out quoteDate, out open,
+                            //out high, out low, out close,
+                            //    out volume, out change, out changepercent, out prevclose);
+                            //if (quoteDate != null)
+                            //{
+                            //    selectedRecord.QuoteDateTime = quoteDate[0];
+                            //    selectedRecord.Open = open[0];
+                            //    selectedRecord.High = high[0];
+                            //    selectedRecord.Low = low[0];
+                            //    selectedRecord.Close = close[0];
+                            //    selectedRecord.Volume = volume[0];
+                            //    selectedRecord.ChangePercent = changepercent[0];
+                            //    selectedRecord.Change = change[0];
+                            //    selectedRecord.PrevClose = prevclose[0];
+                            //    //_context.StockMaster.Update(selectedRecord);
+                            //    _context.SaveChanges();
+                            //}
                         }
                         if ((updateBuySell == true) || (symbolToUpdate != null))
                         {
@@ -129,9 +130,12 @@ namespace MarketAnalytics.Pages.BuySell
 
                 CurrentFilter = searchString;
 
-                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => ((s.StockMaster.V200 == true) || 
-                                                                             (s.StockMaster.V40==true) || (s.StockMaster.V40N == true))
-                                                                             && (s.StockMaster.Close < s.BUY_PRICE));
+                IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY
+                                            .Include(s => s.StockMaster)
+                                            .AsSplitQuery()
+                                            .Where(s => ((s.StockMaster.V200 == true) || 
+                                                (s.StockMaster.V40==true) || (s.StockMaster.V40N == true))
+                                                && (s.StockMaster.Close < s.BUY_PRICE));
                 currentSymbolList.Clear();
                 //currentSymbolList = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true))
                 //    .OrderBy(x => x.StockMaster.Symbol)
@@ -144,15 +148,16 @@ namespace MarketAnalytics.Pages.BuySell
                 //        }).ToList();
 
                 currentSymbolList = v20CandleIQ //.Where(x => x.StockMaster.V200 == true)
-                                        //.GroupBy(a => a.StockMaster.Symbol)
-                                            .OrderBy(a => a.StockMasterID)
+                                                //.GroupBy(a => a.StockMaster.Symbol)
+                                            .Select(a => a.StockMaster.Symbol)
                                             .Distinct()
+                                            .OrderBy(a => a)
                                                 .Select(a =>
                                                     new SelectListItem
                                                     {
-                                                        Value = a.StockMaster.Symbol.ToString(),
-                                                        Text = a.StockMaster.Symbol.ToString()
-                                                    }).Distinct().ToList();
+                                                        Value = a.ToString(),
+                                                        Text = a.ToString()
+                                                    }).ToList();
                
                 if (!String.IsNullOrEmpty(searchString))
                 {
@@ -161,7 +166,12 @@ namespace MarketAnalytics.Pages.BuySell
 
                     if (v20CandleIQ.Count() == 0)
                     {
-                        v20CandleIQ = _context.V20_CANDLE_STRATEGY.Where(s => (s.StockMaster.V200 == true));
+                        v20CandleIQ = _context.V20_CANDLE_STRATEGY
+                                            .Include(s => s.StockMaster)
+                                            .AsSplitQuery()
+                                            .Where(s => ((s.StockMaster.V200 == true) ||
+                                                (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
+                                                && (s.StockMaster.Close < s.BUY_PRICE));
                     }
 
                     if (currentSymbolList.Exists(a => (a.Value.Equals(searchString) == true)))
@@ -204,14 +214,14 @@ namespace MarketAnalytics.Pages.BuySell
                         break;
                 }
                 var pageSize = Configuration.GetValue("PageSize", 10);
-                V20_CANDLE_STRATEGies = await PaginatedList<V20_CANDLE_STRATEGY>.CreateAsync(v20CandleIQ.AsNoTracking(), pageIndex ?? 1, pageSize);
+                V20_CANDLE_STRATEGies = await PaginatedList<V20_CANDLE_STRATEGY>.CreateAsync(v20CandleIQ, pageIndex ?? 1, pageSize);
             }
         }
 
         public void RefreshAllBuySellIndicators()
         {
             //IQueryable<StockMaster> stockmasterIQ = from s in _context.StockMaster select s;
-            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
+            IQueryable<StockMaster> stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
             try
             {
                 foreach (var item in stockmasterIQ)

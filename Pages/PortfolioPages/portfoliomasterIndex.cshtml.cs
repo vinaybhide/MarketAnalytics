@@ -51,7 +51,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                         int? pageIndex, int? masterid, bool? updateBuySell)
         {
             masterList.Clear();
-            masterList = _context.PORTFOLIO_MASTER.Select(a =>
+            masterList = _context.PORTFOLIO_MASTER.AsSplitQuery().Select(a =>
                                                     new SelectListItem
                                                     {
                                                         Value = a.PORTFOLIO_MASTER_ID.ToString(),
@@ -89,7 +89,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 CurrentFilter = searchString;
 
                 //IQueryable<Portfolio_Master> portfolioIQ = from s in _context.PORTFOLIO_MASTER select s;
-                IQueryable<Portfolio_Master> portfolioIQ = _context.PORTFOLIO_MASTER.AsNoTracking();
+                IQueryable<Portfolio_Master> portfolioIQ = _context.PORTFOLIO_MASTER
+                    .Include(a => a.collectionTxn)
+                    .AsSplitQuery()
+                    .AsNoTracking();
                 
                 Portfolio_Master searchRecord = null;
 
@@ -175,7 +178,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         {
             if ((masterid != null) && (menuitemsel.Equals("-1") == false))
             {
-                Portfolio_Master currentrecord = _context.PORTFOLIO_MASTER.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
+                Portfolio_Master currentrecord = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
                 switch (menuitemsel)
                 {
                     case "0": //case of edit portfolio

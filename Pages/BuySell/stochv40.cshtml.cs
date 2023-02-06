@@ -124,27 +124,27 @@ namespace MarketAnalytics.Pages.BuySell
 
                 if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
                     //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true)).AsNoTracking();
                     //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40N == true)).AsNoTracking();
                     //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
                 {
-                    stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
                     //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else
                 {
-                    stockmasterIQ = _context.StockMaster.AsNoTracking();//from s in _context.StockMaster select s;
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().AsNoTracking();//from s in _context.StockMaster select s;
                 }
                 groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
 
@@ -163,7 +163,7 @@ namespace MarketAnalytics.Pages.BuySell
                         id = symbolToUpdate;
                     }
 
-                    var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    var selectedRecord = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     if (selectedRecord != null)
                     {
                         if ((getQuote == true) || (updateBuySell == true) || (symbolToUpdate != null))
@@ -228,23 +228,23 @@ namespace MarketAnalytics.Pages.BuySell
             IQueryable<StockMaster> stockmasterIQ = null;
             if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40V40NV200)))
             {
-                stockmasterIQ = _context.StockMaster.Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
+                stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
             }
             else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40)))
             {
-                stockmasterIQ = _context.StockMaster.Where(s => (s.V40 == true)).AsNoTracking();
+                stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true)).AsNoTracking();
             }
             else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV40N)))
             {
-                stockmasterIQ = _context.StockMaster.Where(s => (s.V40N == true)).AsNoTracking();
+                stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40N == true)).AsNoTracking();
             }
             else if ((currentSelectedGroup != null) && (currentSelectedGroup == Int32.Parse(constV200)))
             {
-                stockmasterIQ = _context.StockMaster.Where(s => (s.V200 == true)).AsNoTracking();
+                stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
             }
             else 
             {
-                stockmasterIQ = _context.StockMaster.AsNoTracking();
+                stockmasterIQ = _context.StockMaster.AsSplitQuery().AsNoTracking();
             }
 
             foreach (var item in stockmasterIQ)
@@ -258,7 +258,7 @@ namespace MarketAnalytics.Pages.BuySell
         {
             if ((id != null) && (menuitemsel.Equals("-1") == false))
             {
-                StockMaster stockMaster = _context.StockMaster.FirstOrDefault(m => m.StockMasterID == id);
+                StockMaster stockMaster = _context.StockMaster.AsSplitQuery().FirstOrDefault(m => m.StockMasterID == id);
 
                 switch (menuitemsel)
                 {

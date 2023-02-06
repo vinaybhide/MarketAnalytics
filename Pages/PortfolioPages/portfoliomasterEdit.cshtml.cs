@@ -28,7 +28,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
 
-            var selectedrecord =  await _context.PORTFOLIO_MASTER.FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
+            var selectedrecord =  await _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefaultAsync(m => m.PORTFOLIO_MASTER_ID == masterid);
             if (selectedrecord == null)
             {
                 return NotFound();
@@ -47,7 +47,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             {
                 return Page();
             }
-            if (_context.PORTFOLIO_MASTER.FirstOrDefault(x => (x.PORTFOLIO_NAME.ToUpper() == portfolioMaster.PORTFOLIO_NAME.ToUpper())) == null)
+            if (_context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(x => (x.PORTFOLIO_NAME.ToUpper() == portfolioMaster.PORTFOLIO_NAME.ToUpper())) == null)
             {
                 _context.Attach(portfolioMaster).State = EntityState.Modified;
 

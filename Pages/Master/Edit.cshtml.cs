@@ -42,7 +42,7 @@ namespace MarketAnalytics.Pages.Master
             {
                 return NotFound();
             }
-            var stockmaster = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+            var stockmaster = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
             if (stockmaster == null)
             {
                 return NotFound();

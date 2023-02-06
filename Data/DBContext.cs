@@ -8,6 +8,8 @@ using System.Reflection.Metadata;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace MarketAnalytics.Data
 {
@@ -27,6 +29,9 @@ namespace MarketAnalytics.Data
         public DbSet<MarketAnalytics.Models.V20_CANDLE_STRATEGY> V20_CANDLE_STRATEGY { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.BULLISH_ENGULFING_STRATEGY> BULLISH_ENGULFING_STRATEGY { get; set; } = default!;
         public DbSet<MarketAnalytics.Models.BEARISH_ENGULFING> BEARISH_ENGULFING { get; set; } = default!;
+
+        //ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+        //public virtual Microsoft.EntityFrameworkCore.DbContextOptionsBuilder ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

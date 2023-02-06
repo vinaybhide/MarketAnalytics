@@ -39,7 +39,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 return NotFound();
             }
 
-            var selectedrecord = await _context.PORTFOLIOTXN.FirstOrDefaultAsync(m => m.PORTFOLIOTXN_ID == txnid);
+            var selectedrecord = await _context.PORTFOLIOTXN.AsSplitQuery().FirstOrDefaultAsync(m => m.PORTFOLIOTXN_ID == txnid);
             if (selectedrecord == null)
             {
                 return NotFound();

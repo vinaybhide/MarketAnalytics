@@ -49,12 +49,14 @@ namespace MarketAnalytics.Pages.StandardIndicators
         {
             listSMA.Clear();
             symbolList.Clear();
-            symbolList = _context.StockMaster.Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true))).Select(a =>
-                                                          new SelectListItem
-                                                          {
-                                                              Value = a.StockMasterID.ToString(),
-                                                              Text = a.Symbol
-                                                          }).ToList();
+            symbolList = _context.StockMaster.AsSplitQuery()
+                        .Where(x => ((x.V200 == true) || (x.V40 == true) || (x.V40N == true)))
+                        .Select(a =>
+                                new SelectListItem
+                                {
+                                    Value = a.StockMasterID.ToString(),
+                                    Text = a.Symbol
+                                }).ToList();
 
             if (_context.StockPriceHistory != null)
             {
@@ -77,7 +79,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
 
                     CurrentID = id;
                     //var selectedRecord = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
-                    StockMasterRec = await _context.StockMaster.FirstOrDefaultAsync(m => m.StockMasterID == id);
+                    StockMasterRec = await _context.StockMaster.AsSplitQuery().FirstOrDefaultAsync(m => m.StockMasterID == id);
                     //}
                     //else
                     //{
@@ -162,8 +164,10 @@ namespace MarketAnalytics.Pages.StandardIndicators
         {
             //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-            List<StockPriceHistory> chartDataList = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
-                        s.PriceDate.Date >= (fromDate.Date))).OrderBy(s => s.PriceDate).ToList();
+            List<StockPriceHistory> chartDataList = (_context.StockPriceHistory
+                            .Include(a => a.StockMaster).AsSplitQuery()
+                            .Where(s => (s.StockMasterID == CurrentID) &&
+                                    s.PriceDate.Date >= (fromDate.Date))).OrderBy(s => s.PriceDate).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();
             return chartDataList;
         }
