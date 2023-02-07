@@ -7,19 +7,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using System.ComponentModel;
-using SQLitePCL;
-using System.Net.NetworkInformation;
-using NuGet.Versioning;
-using MarketAnalytics.Pages.BuySell;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Drawing;
-using Microsoft.Data.Sqlite;
-using System.Net.Http;
 using System.Xml;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace MarketAnalytics.Data
 {

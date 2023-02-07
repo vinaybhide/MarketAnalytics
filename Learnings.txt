@@ -1,3 +1,8 @@
+a] To share DBContext between web app and web api
+Scaffold-DbContext "Data source=/Database/MarketDatabase.sqlite" "Microsoft.EntityFrameworkCore.SQLite" -OutputDir "BackendProject" -ContextDir "DBContexts" -verbose
+
+
+
 1. To eliminate the warnings from nullable reference types, remove the following line from the csproj file:
 	<Nullable>enable</Nullable>
 2. The scaffolding engine currently does not support nullable reference types, therefore the models used in scaffold can't either.
