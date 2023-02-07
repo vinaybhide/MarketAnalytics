@@ -1505,7 +1505,7 @@ namespace MarketAnalytics.Data
 
                 return;
 
-                IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(s => s.PriceDate);
+                IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.AsSplitQuery().Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(s => s.PriceDate);
 
                 //StockPriceHistory currentHist = symbolIQ.AsEnumerable().ElementAt(symbolIQ.Count() - 1);
                 StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
@@ -1665,7 +1665,7 @@ namespace MarketAnalytics.Data
                     bool bLowerThan20 = FindOverBoughtSoldTrend(context, stockMaster, 5, 0, 22, false);
                     if (bLowerThan20)
                     {
-                        IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(a => a.PriceDate);
+                        IOrderedQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.AsSplitQuery().Where(s => (s.StockMasterID == stockMaster.StockMasterID)).OrderBy(a => a.PriceDate);
                         StockPriceHistory currentHist = symbolIQ.AsEnumerable().Last();
                         //this means recent 5 values are between 0 to 23
                         if (currentHist != null)
@@ -1769,7 +1769,7 @@ namespace MarketAnalytics.Data
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
 
-                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.Where(s => (s.StockMasterID == stockMaster.StockMasterID));
+                IQueryable<StockPriceHistory> symbolIQ = context.StockPriceHistory.AsSplitQuery().Where(s => (s.StockMasterID == stockMaster.StockMasterID));
 
 
                 if ((symbolIQ != null) && (symbolIQ.Count() > 0))

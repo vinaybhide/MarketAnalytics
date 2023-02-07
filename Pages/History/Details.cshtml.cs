@@ -28,7 +28,7 @@ namespace MarketAnalytics.Pages.History
                 return NotFound();
             }
 
-            var stockpricehistory = await _context.StockPriceHistory.FirstOrDefaultAsync(m => m.StockPriceHistoryID == id);
+            var stockpricehistory = await _context.StockPriceHistory.AsSplitQuery().FirstOrDefaultAsync(m => m.StockPriceHistoryID == id);
             if (stockpricehistory == null)
             {
                 return NotFound();

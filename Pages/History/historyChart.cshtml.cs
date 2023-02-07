@@ -1,6 +1,7 @@
 using MarketAnalytics.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketAnalytics.Pages.History
 {
@@ -50,9 +51,11 @@ namespace MarketAnalytics.Pages.History
 
             //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
-            List<StockPriceHistory> chartDataList = (_context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID) &&
-            (s.PriceDate.Date.CompareTo(FromDate) >= 0) && (s.PriceDate.Date.CompareTo(ToDate) <= 0)
-            )).ToList();
+            List<StockPriceHistory> chartDataList = _context.StockPriceHistory
+                .AsSplitQuery()
+                .Where(s => (s.StockMasterID == CurrentID) &&
+                        (s.PriceDate.Date.CompareTo(FromDate) >= 0) && (s.PriceDate.Date.CompareTo(ToDate) <= 0)
+                ).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();
             return chartDataList;
         }

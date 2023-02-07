@@ -165,7 +165,8 @@ namespace MarketAnalytics.Pages.StandardIndicators
             //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
             //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
             List<StockPriceHistory> chartDataList = (_context.StockPriceHistory
-                            .Include(a => a.StockMaster).AsSplitQuery()
+                            //.Include(a => a.StockMaster)
+                            .AsSplitQuery()
                             .Where(s => (s.StockMasterID == CurrentID) &&
                                     s.PriceDate.Date >= (fromDate.Date))).OrderBy(s => s.PriceDate).ToList();
             //chartDataList = _context.StockPriceHistory.ToList();

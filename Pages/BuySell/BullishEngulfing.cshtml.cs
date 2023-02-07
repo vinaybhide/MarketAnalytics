@@ -152,7 +152,7 @@ namespace MarketAnalytics.Pages.BuySell
                 CurrentFilter = searchString;
 
                 IQueryable<BULLISH_ENGULFING_STRATEGY> bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY
-                                            .Include(s => s.StockMaster)
+                                            //.Include(s => s.StockMaster)
                                             .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true)
                                                 || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
@@ -181,7 +181,8 @@ namespace MarketAnalytics.Pages.BuySell
                         //bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY.Where(s => ((s.StockMaster.V200 == true)
                         //                            || (s.StockMaster.V40N == true) || (s.StockMaster.V40 == true)));
                         bullishengulfingCandleIQ = _context.BULLISH_ENGULFING_STRATEGY
-                                            .Include(s => s.StockMaster).AsSplitQuery()
+                                            //.Include(s => s.StockMaster)
+                                            .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true)
                                                 || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                                                 && (s.StockMaster.Close <= s.BUY_PRICE));

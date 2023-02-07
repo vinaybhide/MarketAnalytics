@@ -131,7 +131,7 @@ namespace MarketAnalytics.Pages.BuySell
                 CurrentFilter = searchString;
 
                 IQueryable<V20_CANDLE_STRATEGY> v20CandleIQ = _context.V20_CANDLE_STRATEGY
-                                            .Include(s => s.StockMaster)
+                                            //.Include(s => s.StockMaster)
                                             .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true) || 
                                                 (s.StockMaster.V40==true) || (s.StockMaster.V40N == true))
@@ -167,7 +167,7 @@ namespace MarketAnalytics.Pages.BuySell
                     if (v20CandleIQ.Count() == 0)
                     {
                         v20CandleIQ = _context.V20_CANDLE_STRATEGY
-                                            .Include(s => s.StockMaster)
+                                            //.Include(s => s.StockMaster)
                                             .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true) ||
                                                 (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
