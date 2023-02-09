@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //var connectionString = builder.Configuration.GetConnectionString("DBContextConnection") ?? throw new InvalidOperationException("Connection string 'DBContextConnection' not found.");
@@ -21,6 +23,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>
         options.Password.RequireUppercase = false;
         options.Password.RequireLowercase = false;
     })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<DBContext>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -48,6 +51,7 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<DBContext>();
     context.Database.EnsureCreated();
     //DbInitializer.Initialize(context, fetchedData);
+    context.SetAdminUserRole();
 }
 app.UseHttpsRedirection();
 app.UseStaticFiles();

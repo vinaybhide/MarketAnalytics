@@ -5,10 +5,12 @@ using MarketAnalytics.Data;
 using MarketAnalytics.Models;
 using System.Security.Policy;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
 
+    [Authorize(Roles ="User")]
     public class PortfolioMasterCreateModel : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;

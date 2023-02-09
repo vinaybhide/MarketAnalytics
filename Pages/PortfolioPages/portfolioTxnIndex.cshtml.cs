@@ -5,9 +5,11 @@ using MarketAnalytics.Data;
 using MarketAnalytics.Models;
 using System.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
+    [Authorize(Roles = "Registered, Administrator")]
     public class PortfolioTxnIndex : PageModel
     {
         const string constShowTxn = "0";
@@ -43,14 +45,21 @@ namespace MarketAnalytics.Pages.PortfolioPages
             summarymenuList = new List<SelectListItem> { };
         }
 
+        [BindProperty]
         public string DateSort { get; set; }
-        public string ExchangeSort { get; set; }
+        [BindProperty]
         public string SymbolSort { get; set; }
-        public string CompNameSort { get; set; }
+        [BindProperty]
+        public string ClosedSymbolSort { get; set; }
         [BindProperty]
         public string CurrentFilter { get; set; }
         [BindProperty]
-        public string CurrentSort { get; set; }
+        public string CurrentSummarySort { get; set; }
+        [BindProperty]
+        public string CurrentOpenSort { get; set; }
+        [BindProperty]
+        public string CurrentClosedSort { get; set; }
+
         [BindProperty]
         public int? CurrentPageIndex { get; set; }
 
@@ -74,7 +83,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public int MasterId { get; set; }
         [BindProperty]
         public int? StockId { get; set; }
-        public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageSummaryIndex, int? pageIndex,
+        public async Task OnGetAsync(string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter, string searchString, int? pageSummaryIndex, int? pageIndex,
             int? pageIndexClosed, int? masterid, bool? refreshAll, bool? getQuote, int? stockid, bool? updateBuySell, bool? lifetimeHighLow)
         {
             if ((_context.PORTFOLIOTXN != null) && (masterid != null))
@@ -201,11 +210,16 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                                               }
                                                           ).ToList();
 
-                    CurrentSort = sortOrder;
-                    DateSort = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
-                    SymbolSort = sortOrder == "Symbol" ? "symbol_desc" : "Symbol";
-                    ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
-                    CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
+                    CurrentOpenSort = openSortOrder;
+                    DateSort = String.IsNullOrEmpty(openSortOrder) ? "date_desc" : "";
+                    CurrentSummarySort = summarySortOrder;
+                    SymbolSort = String.IsNullOrEmpty(summarySortOrder) ? "symbol_desc" : "";
+                    CurrentClosedSort = closedSortOrder;
+                    ClosedSymbolSort = String.IsNullOrEmpty(closedSortOrder) ? "closedsymbol_desc" : "";
+
+                    //SymbolSort = sortOrder == "Symbol" ? "symbol_desc" : "Symbol";
+                    //ExchangeSort = sortOrder == "Exchange" ? "exchange_desc" : "Exchange";
+                    //CompNameSort = sortOrder == "CompName" ? "compname_desc" : "CompName";
                     if (searchString != null)
                     {
                         pageIndex = 1;
@@ -282,44 +296,21 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         }
 
                     }
-                    switch (sortOrder)
+                    switch(summarySortOrder)
+                    {
+                        case "symbol_desc":
+                            listofSummaryTxn = listofSummaryTxn.OrderByDescending(s => s.Symbol);
+                            break;
+                        default:
+                            listofSummaryTxn = listofSummaryTxn.OrderBy(s => s.Symbol);
+                            break;
+                    }
+                    switch (openSortOrder)
                     {
                         case "date_desc":
                             if (txnOpenIQ != null)
                             {
                                 txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.TXN_BUY_DATE);
-                            }
-                            break;
-                        case "Symbol":
-                            //txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Symbol);
-                            listofSummaryTxn = listofSummaryTxn.OrderBy(s => s.Symbol);
-                            break;
-                        case "symbol_desc":
-                            //txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Symbol);
-                            listofSummaryTxn = listofSummaryTxn.OrderByDescending(s => s.Symbol);
-                            break;
-                        case "Exchange":
-                            if (txnOpenIQ != null)
-                            {
-                                txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.Exchange);
-                            }
-                            break;
-                        case "exchange_desc":
-                            if (txnOpenIQ != null)
-                            {
-                                txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.Exchange);
-                            }
-                            break;
-                        case "CompName":
-                            if (txnOpenIQ != null)
-                            {
-                                txnOpenIQ = txnOpenIQ.OrderBy(s => s.stockMaster.CompName);
-                            }
-                            break;
-                        case "compname_desc":
-                            if (txnOpenIQ != null)
-                            {
-                                txnOpenIQ = txnOpenIQ.OrderByDescending(s => s.stockMaster.CompName);
                             }
                             break;
                         default:
@@ -329,6 +320,22 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             }
                             break;
                     }
+                    switch (closedSortOrder)
+                    {
+                        case "closedsymbol_desc":
+                            if (txnClosedIQ != null)
+                            {
+                                txnClosedIQ = txnClosedIQ.OrderByDescending(s => s.stockMaster.Symbol);
+                            }
+                            break;
+                        default:
+                            if (txnClosedIQ != null)
+                            {
+                                txnClosedIQ = txnClosedIQ.OrderBy(s => s.stockMaster.Symbol);
+                            }
+                            break;
+                    }
+
                     var pageSize = Configuration.GetValue("PageSize", 10);
 
                     CurrentSummaryPageIndex = pageSummaryIndex;
@@ -347,8 +354,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
         }
 
-        public IActionResult OnPostSummaryAction(string summarymenuitemsel, int? masterid, int? stockid, int? pageSummaryIndex,
-            int? pageIndex, int? pageClosedIndex, string sortOrder, string currentFilter)
+        public IActionResult OnPostSummaryAction(string summarymenuitemsel, int? masterid, int? stockid, 
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, 
+            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
         {
             if ((summarymenuitemsel.Equals("-1") == false) && (masterid != null) && (stockid != null))
             {
@@ -357,7 +365,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     case constShowTxn://case of show all txn
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             currentFilter = currentFilter,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
@@ -373,7 +383,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         {
                             masterid = masterid,
                             stockid = stockid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -409,7 +421,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     default:
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             currentFilter = currentFilter,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
@@ -423,7 +437,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
             return RedirectToPage("./portfolioTxnIndex", new
             {
-                sortOrder = sortOrder,
+                openSortOrder = openSortOrder,
+                summarySortOrder = summarySortOrder,
+                closedSortOrder = closedSortOrder,
                 currentFilter = currentFilter,
                 pageSummaryIndex = pageSummaryIndex,
                 pageIndex = pageIndex,
@@ -435,7 +451,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
             });
 
         }
-        public IActionResult OnPostTransactionAction(string menuitemsel, int? masterid, int? txnid, int? stockid, int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, string sortOrder, string currentFilter)
+        public IActionResult OnPostTransactionAction(string menuitemsel, int? masterid, int? txnid, int? stockid,
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, 
+            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
         {
             if ((menuitemsel.Equals("-1") == false) && (txnid != null) && (masterid != null) && (stockid != null))
             {
@@ -449,7 +467,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             masterid = masterid,
                             txnid = txnid,
                             stockid = stockid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -462,7 +482,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             masterid = masterid,
                             txnid = txnid,
                             stockid = stockid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -477,7 +499,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             masterid = masterid,
                             txnid = txnid,
                             stockid = stockid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -492,7 +516,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             masterid = masterid,
                             txnid = txnid,
                             stockid = stockid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -505,7 +531,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
                             masterid = masterid,
-                            sortOrder = sortOrder,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
                             pageSummaryIndex = pageSummaryIndex,
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
@@ -516,7 +544,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         });
                 }
             }
-            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, sortOrder = sortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = "true", refreshAll = "false", lifetimeHighLow = "false" });
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = "true", refreshAll = "false", lifetimeHighLow = "false" });
         }
 
     }

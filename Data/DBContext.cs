@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Configuration;
 
 namespace MarketAnalytics.Data
 {
@@ -99,6 +100,70 @@ namespace MarketAnalytics.Data
             //modelBuilder.Entity<BULLISH_ENGULFING_STRATEGY>().ToTable("BULLISH_ENGULFING_STRATEGY").Navigation(e => e.StockMaster).AutoInclude();
 
             //modelBuilder.Entity<BEARISH_ENGULFING>().ToTable("BEARISH_ENGULFING").Navigation(e => e.StockMaster).AutoInclude();
+
+
+        }
+
+        public void SetAdminUserRole()
+        {
+            const string adminuserName = "admin@admin.com";
+            const string adminpassword = "123456";
+            const string adminroleName = "Administrator";
+            const string normalrolename = "Registered";
+            try
+            {
+                IdentityUser userAdmin = this.Users.SingleOrDefault(u => u.UserName == adminuserName);
+                IdentityRole roleAdmin = this.Roles.SingleOrDefault(r => r.Name == adminroleName);
+                IdentityRole roleRegistered = this.Roles.SingleOrDefault(r => r.Name == normalrolename);
+                if ((userAdmin == null) || (roleAdmin ==null) || (roleRegistered == null))
+                { 
+                    if (roleAdmin == null)
+                    {
+                        roleAdmin = new IdentityRole(adminroleName);
+                        this.Roles.AddAsync(roleAdmin);
+                        //role = this.Roles.SingleOrDefault(r => r.Name == roleName);
+                    }
+                    if (roleRegistered == null)
+                    {
+                        roleRegistered = new IdentityRole(normalrolename);
+                        this.Roles.AddAsync(roleRegistered);
+                        //role = this.Roles.SingleOrDefault(r => r.Name == roleName);
+                    }
+
+                    if (userAdmin == null)
+                    {
+                        userAdmin = new IdentityUser(adminuserName);
+                        userAdmin.Email = adminuserName;
+                        userAdmin.EmailConfirmed= true;
+                        userAdmin.LockoutEnabled = false;
+                        userAdmin.NormalizedEmail = adminuserName.ToUpper();
+                        userAdmin.NormalizedUserName = adminuserName.ToUpper();
+                        userAdmin.UserName = adminuserName;
+
+                        PasswordHasher<IdentityUser> hasher = new PasswordHasher<IdentityUser>();
+                        userAdmin.PasswordHash = hasher.HashPassword(userAdmin, adminpassword);
+                        this.Users.AddAsync(userAdmin);
+                        //user = this.Users.SingleOrDefault(u => u.UserName == userName);
+                    }
+
+                    var userAdminRole = this.UserRoles
+                        .SingleOrDefault(r => (r.RoleId == roleAdmin.Id) && (r.UserId == userAdmin.Id));
+
+                    if (userAdminRole == null)
+                    {
+                        var userrole = new IdentityUserRole<string>();
+                        userrole.UserId = userAdmin.Id;
+                        userrole.RoleId = roleAdmin.Id;
+                        this.UserRoles.AddAsync(userrole);
+                    }
+                    this.SaveChanges(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Error catched!
+            }
+
         }
     }
 }

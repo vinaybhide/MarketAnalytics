@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -29,13 +30,14 @@ namespace MarketAnalytics.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-
+        private readonly RoleManager<IdentityRole> _roleManager;
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -43,6 +45,7 @@ namespace MarketAnalytics.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _roleManager = roleManager;
         }
 
         /// <summary>
@@ -109,6 +112,20 @@ namespace MarketAnalytics.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
+            //var adminRole = _roleManager.FindByNameAsync("Administrator").Result;
+            //if (adminRole == null)
+            //{
+            //    adminRole = new IdentityRole("Administrator");
+            //    await _roleManager.CreateAsync(adminRole);
+            //}
+
+            var userRole = _roleManager.FindByNameAsync("Registered").Result;
+            if(userRole == null)
+            {
+                userRole = new IdentityRole("Registered");
+                await _roleManager.CreateAsync(userRole);
+            }
+
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
@@ -121,7 +138,14 @@ namespace MarketAnalytics.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-
+                    //if(user.Email.Contains("vinaybhide"))
+                    //{
+                    //    await _userManager.AddToRoleAsync(user, adminRole.Name);
+                    //}
+                    //else
+                    //{
+                        await _userManager.AddToRoleAsync(user, userRole.Name);
+                    //}
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

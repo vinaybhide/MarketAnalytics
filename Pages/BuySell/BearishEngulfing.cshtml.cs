@@ -161,7 +161,7 @@ namespace MarketAnalytics.Pages.BuySell
                 //                                                              || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                 //                                                              && (s.StockMaster.Close <= s.BUY_PRICE));
                 IQueryable<BEARISH_ENGULFING> bearishengulfingCandleIQ = _context.BEARISH_ENGULFING
-                                            //.Include(s => s.StockMaster)
+                                            .Include(s => s.StockMaster)
                                             .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true)
                                                   || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
@@ -193,7 +193,8 @@ namespace MarketAnalytics.Pages.BuySell
                         //                                                      || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                         //                                                      && (s.StockMaster.Close <= s.BUY_PRICE));
                         bearishengulfingCandleIQ = _context.BEARISH_ENGULFING
-                                            //.Include(s => s.StockMaster).AsSplitQuery()
+                                            .Include(s => s.StockMaster)
+                                            .AsSplitQuery()
                                             .Where(s => ((s.StockMaster.V200 == true)
                                                       || (s.StockMaster.V40 == true) || (s.StockMaster.V40N == true))
                                                       && (s.StockMaster.Close <= s.BUY_PRICE));

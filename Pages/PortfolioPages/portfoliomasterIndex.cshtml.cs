@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
-    [Authorize]
+    [Authorize(Roles ="Registered, Administrator")]
     public class PortfolioMasterIndex : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
