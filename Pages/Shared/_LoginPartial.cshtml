@@ -18,10 +18,12 @@
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+            @*<a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register" class="btn btn-sm btn-primary" style="font-size:small">Register</a>*@
+                <a id="register" asp-area="Identity" asp-page="/Account/Register" class="btn btn-sm btn-primary" style="font-size:small">Register</a>
+    @*</li>
+    <li class="nav-item">*@
+            @*<a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-primary" style="font-size:small">Login</a>*@
+            <a id="login" asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-primary" style="font-size:small">Login</a>
     </li>
 }
 </ul>

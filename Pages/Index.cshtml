@@ -3,6 +3,62 @@
 @{
     ViewData["Title"] = "Home page";
 }
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['corechart', 'controls', 'annotationchart'] });
+    google.charts.setOnLoadCallback(drawNifyChart);
+    google.charts.setOnLoadCallback(drawSensexChart);
+    function drawNifyChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Close'],
+    @foreach (var data in Model.niftyHistory)
+    {
+        <text>[new Date('@data.PriceDate.ToShortDateString()'), @data.Close], </text>
+    }
+                                                                    ]);
+        var options = {
+            title: 'Nifty',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+            //pointsVisible: true,
+            //lineWidth: 3,
+            //legend: 'none',
+            //hAxis: { title: 'Date' },
+            //vAxis: { title: 'Points' },
+            //width: '100%',
+            //height: '100%',
+            //chartArea: { width: '85%', height: '75%' }
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('nifty_line_chart_div'));
+        chart.draw(data, options);
+    }
+
+    function drawSensexChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Close'],
+    @foreach (var data in Model.sensexHistory)
+    {
+        <text>[new Date('@data.PriceDate.ToShortDateString()'), @data.Close], </text>
+    }
+                                                                        ]);
+        var options = {
+            title: 'Sensex',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+            //pointsVisible: true,
+            //lineWidth: 3,
+            //legend: 'none',
+            //hAxis: { title: 'Date' },
+            //vAxis: { title: 'Points' },
+            //width: '100%',
+            //height: '100%',
+            //chartArea: { width: '85%', height: '75%' }
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('sensex_line_chart_div'));
+        chart.draw(data, options);
+    }
+
+</script>
 
 <div class="text-center">
     <h1 class="display-4">Market Analyticss</h1>
@@ -11,5 +67,15 @@
     <p>
         <a asp-page="/Master/Index">Start your journey with Market Analytics</a>
     </p>
-    <partial name="_LoginPartial" />
+    @*<partial name="_LoginPartial" />*@
+    <table>
+        <tr>
+            <td >
+                <div id="nifty_line_chart_div" style="width:500px"></div>
+            </td>
+            <td>
+                <div id="sensex_line_chart_div" style="width:500px"></div>
+            </td>
+        </tr>
+    </table>
 </div>

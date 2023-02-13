@@ -109,8 +109,17 @@ namespace MarketAnalytics.Data
                                 //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
                                 DateTime[] quoteDate = null;
                                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
-                                GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" : ("." + exchange)), out quoteDate, out open, out high, out low, out close,
+
+                                //GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" : ("." + exchange)),
+                                    //out quoteDate, out open, out high, out low, out close,
+                                    //out volume, out change, out changepercent, out prevclose);
+
+                                if (GetQuote(symbol + "." + exchange, out quoteDate, out open, out high, out low, out close,
+                                            out volume, out change, out changepercent, out prevclose) == false)
+                                {
+                                    GetQuote(symbol, out quoteDate, out open, out high, out low, out close,
                                             out volume, out change, out changepercent, out prevclose);
+                                }
                                 if (quoteDate != null)
                                 { //find if stock exist in StockMaster, if not add it to context
                                     stockMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(symbol.ToUpper())
@@ -314,9 +323,25 @@ namespace MarketAnalytics.Data
                 //    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
                 //                    out volume, out change, out changepercent, out prevclose);
                 //}
-                GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
-                                out volume, out change, out changepercent, out prevclose);
 
+
+                //GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)),
+                    //Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                    //DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                    //out quoteDate, out open, out high, out low, out close,
+                //                out volume, out change, out changepercent, out prevclose);
+                if(GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange,
+                    Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), 
+                    DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), 
+                    out quoteDate, out open, out high, out low, out close, 
+                    out volume, out change, out changepercent, out prevclose) == false)
+                {
+                    GetHistoryQuote(stockMaster.Symbol,
+                        Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                        DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                        out quoteDate, out open, out high, out low, out close, out volume, 
+                        out change, out changepercent, out prevclose);
+                }
                 //read first line which is list of fields
                 if ((quoteDate != null) && (quoteDate.Length > 0))
                 {
@@ -396,10 +421,11 @@ namespace MarketAnalytics.Data
         /// <param name="change"></param>
         /// <param name="changepercent"></param>
         /// <param name="prevclose"></param>
-        public static void GetQuote(string symbol, out DateTime[] quoteDate, out double[] open, out double[] high,
+        public static bool GetQuote(string symbol, out DateTime[] quoteDate, out double[] open, out double[] high,
                     out double[] low, out double[] close, out double[] volume, out double[] change, out double[] changepercent,
                     out double[] prevclose)
         {
+            bool bfound = false;
             quoteDate = null;
             open = high = low = close = volume = change = changepercent = prevclose = null;
             try
@@ -420,7 +446,7 @@ namespace MarketAnalytics.Data
                 if (httpResponse.Result.StatusCode == HttpStatusCode.OK)
                 {
                     var data = httpResponse.Result.Content.ReadAsStringAsync();
-                    getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
+                    bfound = getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
                                         out change, out changepercent, out prevclose);
                 }
 
@@ -442,6 +468,7 @@ namespace MarketAnalytics.Data
             {
                 //throw ex;
             }
+            return bfound;
         }
 
 
@@ -464,11 +491,12 @@ namespace MarketAnalytics.Data
         /// <param name="interval"></param>
         /// <param name="frequency"></param>
         /// <param name="adjclose"></param>
-        public static void GetHistoryQuote(string symbol, string periodDt1, string periodDt2, out DateTime[] quoteDate, out double[] open, out double[] high,
+        public static bool GetHistoryQuote(string symbol, string periodDt1, string periodDt2, out DateTime[] quoteDate, out double[] open, out double[] high,
                     out double[] low, out double[] close, out double[] volume, out double[] change, out double[] changepercent,
                     out double[] prevclose, string interval = "1d",
                 string frequency = "1d", string adjclose = "true")
         {
+            bool bfound = false;
             quoteDate = null;
             open = high = low = close = volume = change = changepercent = prevclose = null;
             try
@@ -500,7 +528,7 @@ namespace MarketAnalytics.Data
                 if (httpResponse.Result.StatusCode == HttpStatusCode.OK)
                 {
                     var data = httpResponse.Result.Content.ReadAsStringAsync();
-                    getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
+                    bfound = getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
                                         out change, out changepercent, out prevclose);
                 }
                 //getQuoteTableFromJSON(reader.ReadToEnd(), symbol, out quoteDate, out open, out high, out low, out close, out volume,
@@ -513,6 +541,7 @@ namespace MarketAnalytics.Data
             {
                 //throw ex;
             }
+            return bfound;
         }
 
         public static bool IsStockUpdatedToday(StockMaster stockMaster, int whatToCheck)
@@ -611,9 +640,15 @@ namespace MarketAnalytics.Data
                 DateTime[] quoteDate = null;
                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
-                DbInitializer.GetQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
-                    out high, out low, out close,
-                    out volume, out change, out changepercent, out prevclose);
+                //DbInitializer.GetQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
+                //    out high, out low, out close,
+                //    out volume, out change, out changepercent, out prevclose);
+                if (DbInitializer.GetQuote(stockMaster.Symbol + "." + stockMaster.Exchange, out quoteDate, out open,
+                    out high, out low, out close, out volume, out change, out changepercent, out prevclose) == false)
+                {
+                    DbInitializer.GetQuote(stockMaster.Symbol, out quoteDate, out open,
+                    out high, out low, out close, out volume, out change, out changepercent, out prevclose);
+                }
                 if (quoteDate != null)
                 {
                     stockMaster.QuoteDateTime = quoteDate[0];
@@ -1158,7 +1193,7 @@ namespace MarketAnalytics.Data
                     }
                     if (stockMaster.STOCH_BUY_SIGNAL == true)
                     {
-                        if((stockMaster.STOCH_SELL_PRICE > 0) && (stockMaster.Close >= stockMaster.STOCH_SELL_PRICE))
+                        if ((stockMaster.STOCH_SELL_PRICE > 0) && (stockMaster.Close >= stockMaster.STOCH_SELL_PRICE))
                         {
                             stockMaster.STOCH_SELL_SIGNAL = true;
                             stockMaster.STOCH_BUY_SIGNAL = false;
@@ -1529,7 +1564,7 @@ namespace MarketAnalytics.Data
 
                 }
                 stockMaster.SMA_BUYSELL_LastUpDt = DateTime.Today.Date;
-                
+
                 //context.StockMaster.Update(stockMaster);
 
                 context.SaveChanges(true);
@@ -1594,7 +1629,7 @@ namespace MarketAnalytics.Data
                     }
                 }
 
-                if((btrendfound) && (countoftrue <= 1) )
+                if ((btrendfound) && (countoftrue <= 1))
                 {
                     btrendfound = false;
                 }
@@ -1825,7 +1860,7 @@ namespace MarketAnalytics.Data
                         //    bSellFlagSet = true;
                         //    bBuyFlagSet = false;
                         //}
-                        
+
                         //context.StockPriceHistory.Update(currentHist);
                     }
 
@@ -2446,169 +2481,180 @@ namespace MarketAnalytics.Data
             }
             return twentpct;
         }
-        public static void getQuoteTableFromJSON(string record, string symbol, out DateTime[] quoteDate, out double[] open,
+        public static bool getQuoteTableFromJSON(string record, string symbol, out DateTime[] quoteDate, out double[] open,
                 out double[] high, out double[] low, out double[] close, out double[] volume, out double[] change,
                 out double[] changepercent, out double[] prevclose)
         {
+            bool bfound = true;
             quoteDate = null;
             open = high = low = close = volume = change = changepercent = prevclose = null;
 
             if (record.ToUpper().Contains("NOT FOUND"))
             {
-                return;
+                bfound = false;
             }
-            var errors = new List<string>();
-            try
+            else
             {
-                Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(record, new JsonSerializerSettings
+                var errors = new List<string>();
+                try
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DefaultValueHandling = DefaultValueHandling.Populate,
-                    Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+                    Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(record, new JsonSerializerSettings
                     {
-                        errors.Add(args.ErrorContext.Error.Message);
-                        args.ErrorContext.Handled = true;
-                        //args.ErrorContext.Handled = false;
-                    }
-                    //Converters = { new IsoDateTimeConverter() }
-
-                });
-
-                Chart myChart = myDeserializedClass.chart;
-
-                Result myResult = myChart.result[0];
-
-                Meta myMeta = myResult.meta;
-
-                Indicators myIndicators = myResult.indicators;
-
-                //this will be typically only 1 row and quote will have list of close, high, low, open, volume
-                Quote myQuote = myIndicators.quote[0];
-
-                //this will be typically only 1 row and adjClose will have list of adjClose
-                //Adjclose myAdjClose = null;
-                //if (bIsDaily)
-                //{
-                //    myAdjClose = myIndicators.adjclose[0];
-                //}
-
-                if (myResult.timestamp != null)
-                {
-                    quoteDate = new DateTime[myResult.timestamp.Count];
-
-                    open = new double[myResult.timestamp.Count];
-                    high = new double[myResult.timestamp.Count];
-                    low = new double[myResult.timestamp.Count];
-                    close = new double[myResult.timestamp.Count];
-                    volume = new double[myResult.timestamp.Count];
-                    change = new double[myResult.timestamp.Count];
-                    changepercent = new double[myResult.timestamp.Count];
-                    prevclose = new double[myResult.timestamp.Count];
-                    int outCtr = 0;
-                    for (int i = 0; i < myResult.timestamp.Count; i++)
-                    //for (int i = 0; i <= 0; i++)
-                    {
-                        try
+                        NullValueHandling = NullValueHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.Populate,
+                        Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
                         {
-                            //if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
-                            //&& (myQuote.volume[i] == null))
-                            //if(myResult.timestamp[i] == null)
-                            if ((myQuote.close[i] == null) && (myQuote.high[i] == null) &&
-                                (myQuote.low[i] == null) && (myQuote.open[i] == null) && (myQuote.volume[i] == null))
-                            {
-                                //I have seen cases where date is valid but rest of the price data including
-                                //volume is null. Hence we will skip the record
-                                continue;
-                            }
+                            errors.Add(args.ErrorContext.Error.Message);
+                            args.ErrorContext.Handled = true;
+                            //args.ErrorContext.Handled = false;
+                        }
+                        //Converters = { new IsoDateTimeConverter() }
 
-                            quoteDate[outCtr] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
+                    });
 
-                            if (myQuote.close[i] == null)
-                            {
-                                close[outCtr] = 0.00;
-                            }
-                            else
-                            {
-                                //close = (double)myQuote.close[i];
-                                close[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
-                            }
+                    Chart myChart = myDeserializedClass.chart;
 
-                            if (myQuote.high[i] == null)
-                            {
-                                high[outCtr] = 0.00;
-                            }
-                            else
-                            {
-                                //high = (double)myQuote.high[i];
-                                high[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
-                            }
+                    Result myResult = myChart.result[0];
+                    if (myResult == null)
+                    {
+                        bfound = false;
+                    }
+                    else
+                    {
+                        Meta myMeta = myResult.meta;
 
-                            if (myQuote.low[i] == null)
-                            {
-                                low[outCtr] = 0.00;
-                            }
-                            else
-                            {
-                                //low = (double)myQuote.low[i];
-                                low[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
-                            }
+                        Indicators myIndicators = myResult.indicators;
 
-                            if (myQuote.open[i] == null)
-                            {
-                                open[outCtr] = 0.00;
-                            }
-                            else
-                            {
-                                //open = (double)myQuote.open[i];
-                                open[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
-                            }
-                            if (myQuote.volume[i] == null)
-                            {
-                                volume[outCtr] = 0;
-                            }
-                            else
-                            {
-                                volume[outCtr] = (int)myQuote.volume[i];
-                            }
-                            if (outCtr == 0)
+                        //this will be typically only 1 row and quote will have list of close, high, low, open, volume
+                        Quote myQuote = myIndicators.quote[0];
+
+                        //this will be typically only 1 row and adjClose will have list of adjClose
+                        //Adjclose myAdjClose = null;
+                        //if (bIsDaily)
+                        //{
+                        //    myAdjClose = myIndicators.adjclose[0];
+                        //}
+
+                        if (myResult.timestamp != null)
+                        {
+                            quoteDate = new DateTime[myResult.timestamp.Count];
+
+                            open = new double[myResult.timestamp.Count];
+                            high = new double[myResult.timestamp.Count];
+                            low = new double[myResult.timestamp.Count];
+                            close = new double[myResult.timestamp.Count];
+                            volume = new double[myResult.timestamp.Count];
+                            change = new double[myResult.timestamp.Count];
+                            changepercent = new double[myResult.timestamp.Count];
+                            prevclose = new double[myResult.timestamp.Count];
+                            int outCtr = 0;
+                            for (int i = 0; i < myResult.timestamp.Count; i++)
+                            //for (int i = 0; i <= 0; i++)
                             {
                                 try
                                 {
-                                    prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                                    //if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
+                                    //&& (myQuote.volume[i] == null))
+                                    //if(myResult.timestamp[i] == null)
+                                    if ((myQuote.close[i] == null) && (myQuote.high[i] == null) &&
+                                        (myQuote.low[i] == null) && (myQuote.open[i] == null) && (myQuote.volume[i] == null))
+                                    {
+                                        //I have seen cases where date is valid but rest of the price data including
+                                        //volume is null. Hence we will skip the record
+                                        continue;
+                                    }
+
+                                    quoteDate[outCtr] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
+
+                                    if (myQuote.close[i] == null)
+                                    {
+                                        close[outCtr] = 0.00;
+                                    }
+                                    else
+                                    {
+                                        //close = (double)myQuote.close[i];
+                                        close[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
+                                    }
+
+                                    if (myQuote.high[i] == null)
+                                    {
+                                        high[outCtr] = 0.00;
+                                    }
+                                    else
+                                    {
+                                        //high = (double)myQuote.high[i];
+                                        high[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
+                                    }
+
+                                    if (myQuote.low[i] == null)
+                                    {
+                                        low[outCtr] = 0.00;
+                                    }
+                                    else
+                                    {
+                                        //low = (double)myQuote.low[i];
+                                        low[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
+                                    }
+
+                                    if (myQuote.open[i] == null)
+                                    {
+                                        open[outCtr] = 0.00;
+                                    }
+                                    else
+                                    {
+                                        //open = (double)myQuote.open[i];
+                                        open[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
+                                    }
+                                    if (myQuote.volume[i] == null)
+                                    {
+                                        volume[outCtr] = 0;
+                                    }
+                                    else
+                                    {
+                                        volume[outCtr] = (int)myQuote.volume[i];
+                                    }
+                                    if (outCtr == 0)
+                                    {
+                                        try
+                                        {
+                                            prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                                        }
+                                        catch
+                                        {
+                                            prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 0.00));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", close[outCtr - 1]));
+                                    }
+                                    //change[outCtr] = close[outCtr] - prevclose[outCtr];
+                                    change[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[outCtr] - prevclose[outCtr])));
+                                    if (prevclose[outCtr] > 0)
+                                    {
+                                        //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
+                                        changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[outCtr] / prevclose[outCtr]) * 100)));
+                                    }
+                                    else
+                                    {
+                                        changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
+                                    }
+                                    outCtr++;
                                 }
-                                catch
+                                catch (Exception ex)
                                 {
-                                    prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 0.00));
+                                    //throw ex;
                                 }
                             }
-                            else
-                            {
-                                prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", close[outCtr - 1]));
-                            }
-                            //change[outCtr] = close[outCtr] - prevclose[outCtr];
-                            change[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[outCtr] - prevclose[outCtr])));
-                            if (prevclose[outCtr] > 0)
-                            {
-                                //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
-                                changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[outCtr] / prevclose[outCtr]) * 100)));
-                            }
-                            else
-                            {
-                                changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
-                            }
-                            outCtr++;
-                        }
-                        catch (Exception ex)
-                        {
-                            //throw ex;
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    //throw ex;
+                }
             }
-            catch (Exception ex)
-            {
-                //throw ex;
-            }
+            return bfound;
         }
 
         public static string findTimeZoneId(string zoneId)
@@ -2786,14 +2832,14 @@ namespace MarketAnalytics.Data
 
                 //    //context.PORTFOLIOTXN.Update(duplicateitem);
                 //}
-                
+
                 //context.SaveChanges(true);
                 //DbInitializer.UpdateStockModel(context, item.stockMaster);
             }
             context.SaveChanges(true);
         }
 
-        
+
         /// <summary>
         /// For given groupid this method gets quote and also executes other operations
         /// </summary>

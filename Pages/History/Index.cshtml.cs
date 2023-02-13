@@ -139,9 +139,9 @@ namespace MarketAnalytics.Pages.History
 
                 //SelectListItem selectAll = new SelectListItem("-Select Symbol-", "-1");
                 //symbolList.Insert(0, selectAll);
-                if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category"))
+                if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category") && (CurrentGroup != null))
                 {
-                    DbInitializer.UpdateQuoteStrategy(_context, (int)id);
+                    DbInitializer.UpdateQuoteStrategy(_context, (int)CurrentGroup);
                 }
 
                 CurrentID = id;
