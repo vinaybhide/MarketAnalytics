@@ -24,12 +24,12 @@ namespace MarketAnalytics.Pages
             Configuration = configuration;
         }
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
             niftyHistory.Clear();
             sensexHistory.Clear();
 
-            niftyHistory =  ChartData("^NSEI", "NSI");
+            niftyHistory = ChartData("^NSEI", "NSI");
             sensexHistory = ChartData("^BSESN", "BSE");
 
         }
@@ -65,7 +65,7 @@ namespace MarketAnalytics.Pages
             //StockMaster stockMaster = _context.StockMaster.First(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange)));
             var selectedRecord = _context.StockMaster.AsSplitQuery().FirstOrDefault(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange)));
 
-            string lastPriceDate = string.Empty;
+            string lastPriceDate = DateTime.Today.ToString("yyyy-MM-dd");
             if(selectedRecord == null)
             {
                 DbInitializer.SearchOnlineInsertInDB(_context, symbol);
@@ -73,11 +73,11 @@ namespace MarketAnalytics.Pages
             }
             if (selectedRecord != null)
             {
-                lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
-                if (string.IsNullOrEmpty(lastPriceDate) == false)
-                {
+                //lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
+                //if (string.IsNullOrEmpty(lastPriceDate) == false)
+                //{
                     DbInitializer.InitializeHistory(_context, selectedRecord, lastPriceDate);
-                }
+                //}
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
                 chartDataList = selectedRecord.collectionStockPriceHistory
