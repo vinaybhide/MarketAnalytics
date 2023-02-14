@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using MarketAnalytics.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -21,18 +22,11 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public List<double> portfolioValue { get; set; }
         public List<double> portfolioGain { get; set; }
         public List<double> portfolioGainPct { get; set; }
+        [BindProperty]
+        public string UserName { get; set; }
 
-        public PortfolioMasterIndex(MarketAnalytics.Data.DBContext context, IConfiguration configuration)
-        {
-            _context = context;
-            Configuration = configuration;
-            masterList = new List<SelectListItem>();
-            portfolioCost = new List<double>();
-            portfolioValue = new List<double>();
-            portfolioGain = new List<double>();
-            portfolioGainPct = new List<double>();
-            menuList = new List<SelectListItem>();
-        }
+        [BindProperty]
+        public string UserId{get; set; }
 
         public string nameSort { get; set; }
         [BindProperty]
@@ -47,12 +41,36 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         public PaginatedList<Portfolio_Master> portfolioMaster { get; set; } = default!;
 
+        public PortfolioMasterIndex(MarketAnalytics.Data.DBContext context, IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor)
+        {
+            _context = context;
+            Configuration = configuration;
+            masterList = new List<SelectListItem>();
+            portfolioCost = new List<double>();
+            portfolioValue = new List<double>();
+            portfolioGain = new List<double>();
+            portfolioGainPct = new List<double>();
+            menuList = new List<SelectListItem>();
+            UserId = httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            UserName = httpContextAccessor.HttpContext.User.Identity.Name;
+        }
+
         public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString, 
                                         int? pageIndex, int? masterid, bool? updateBuySell)
         {
+            //if (string.IsNullOrEmpty(UserId))
+            //{
+            //    UserId = httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            //}
+            //if(string.IsNullOrEmpty(UserName))
+            //{
+            //    UserName = httpContextAccessor.HttpContext.User.Identity.Name;
+            //}
+
             masterList.Clear();
-            masterList = _context.PORTFOLIO_MASTER.AsSplitQuery().Select(a =>
-                                                    new SelectListItem
+            masterList = _context.PORTFOLIO_MASTER.AsSplitQuery().Where(a => a.Id.Equals(UserId))
+                                            .Select(a => new SelectListItem
                                                     {
                                                         Value = a.PORTFOLIO_MASTER_ID.ToString(),
                                                         Text = a.PORTFOLIO_NAME.ToString()
@@ -92,6 +110,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 IQueryable<Portfolio_Master> portfolioIQ = _context.PORTFOLIO_MASTER
                     .Include(a => a.collectionTxn)
                     .AsSplitQuery()
+                    .Where(a => a.Id.Equals(UserId))
                     .AsNoTracking();
                 
                 Portfolio_Master searchRecord = null;
@@ -142,7 +161,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 //    masterid == null)
                 if ((firsttimemaster == null) || (firsttimemaster == true))
                 {
-                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, null);
+                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, null, null);
                 }
                 foreach (var item in portfolioMaster)
                 {

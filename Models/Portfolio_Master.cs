@@ -15,6 +15,8 @@ namespace MarketAnalytics.Models
         
         public string PORTFOLIO_NAME { get; set; } = string.Empty;
 
+        public string Id { get; set; } = string.Empty;
+        
         public IList<PORTFOLIOTXN> collectionTxn { get; set; }
 
     }

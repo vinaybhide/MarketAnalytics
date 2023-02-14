@@ -111,8 +111,8 @@ namespace MarketAnalytics.Data
                                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
 
                                 //GetQuote(symbol + (((exchange == "NYQ") || (exchange == "NMS")) ? "" : ("." + exchange)),
-                                    //out quoteDate, out open, out high, out low, out close,
-                                    //out volume, out change, out changepercent, out prevclose);
+                                //out quoteDate, out open, out high, out low, out close,
+                                //out volume, out change, out changepercent, out prevclose);
 
                                 if (GetQuote(symbol + "." + exchange, out quoteDate, out open, out high, out low, out close,
                                             out volume, out change, out changepercent, out prevclose) == false)
@@ -326,20 +326,20 @@ namespace MarketAnalytics.Data
 
 
                 //GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)),
-                    //Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
-                    //DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
-                    //out quoteDate, out open, out high, out low, out close,
+                //Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                //DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                //out quoteDate, out open, out high, out low, out close,
                 //                out volume, out change, out changepercent, out prevclose);
-                if(GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange,
-                    Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), 
-                    DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), 
-                    out quoteDate, out open, out high, out low, out close, 
+                if (GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange,
+                    Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                    DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                    out quoteDate, out open, out high, out low, out close,
                     out volume, out change, out changepercent, out prevclose) == false)
                 {
                     GetHistoryQuote(stockMaster.Symbol,
                         Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
                         DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
-                        out quoteDate, out open, out high, out low, out close, out volume, 
+                        out quoteDate, out open, out high, out low, out close, out volume,
                         out change, out changepercent, out prevclose);
                 }
                 //read first line which is list of fields
@@ -2730,54 +2730,101 @@ namespace MarketAnalytics.Data
         /// </summary>
         /// <param name="context"></param>
         /// <param name="txnRec"></param>
-        public static void GetQuoteAndUpdateAllPortfolioTxn(DBContext context, PORTFOLIOTXN txnRec)
+        public static void GetQuoteAndUpdateAllPortfolioTxn(DBContext context, string userid, int? masterid, PORTFOLIOTXN txnRec)
         {
             //IQueryable<PORTFOLIOTXN> txnIQ = context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
 
             //https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries
-            IQueryable<PORTFOLIOTXN> txnIQ = context.PORTFOLIOTXN
-                .Include(a => a.stockMaster)
-                .AsSplitQuery()
-                .AsQueryable();//.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
+            IQueryable<PORTFOLIOTXN> txnIQ;
             IQueryable<PORTFOLIOTXN> distinctIQ = null;
+            IEnumerable<PORTFOLIOTXN> txnEnum= null;
             string lastPriceDate = string.Empty;
+            //if userid is given then we should get all projects beloning to that user and execute updates
+            //for all symbols and respective transactions
+            //If userid is not given then a specific transaction must be provided
+            //get all master projects & associated txn list
+            IQueryable<Portfolio_Master> masterIQ;
+            if (masterid == null)
+            {
+                masterIQ = context.PORTFOLIO_MASTER
+                        .Include(a => a.collectionTxn)
+                        .AsSplitQuery()
+                        .Where(a => a.Id.Equals(userid))
+                        .AsNoTracking();
+            }
+            else
+            {
+                masterIQ = context.PORTFOLIO_MASTER
+                        .Include(a => a.collectionTxn)
+                        .AsSplitQuery()
+                        .Where(a => (a.Id.Equals(userid)) && (a.PORTFOLIO_MASTER_ID == masterid))
+                        .AsNoTracking();
+            }
+            List<int> listMasterId = masterIQ.Select(s => s.PORTFOLIO_MASTER_ID).ToList();
+
+            foreach (var item in masterIQ)
+            {
+                if (txnEnum == null)
+                {
+                    txnEnum = item.collectionTxn.Where(a => a.TXN_TYPE == "B");
+                }
+                else
+                {
+                    txnEnum = txnEnum.Concat(item.collectionTxn.Where(a => a.TXN_TYPE == "B"));
+                }
+            }
+
+            //txnIQ = context.PORTFOLIOTXN
+            //    .Include(a => a.stockMaster)
+            //    .AsSplitQuery()
+            //    .Where()
+            //    .AsQueryable();//.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
 
             if (txnRec == null)
             {
-                distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol)
-                                    .Select(x => x.FirstOrDefault());
+                //distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol)
+                //                    .Select(x => x.FirstOrDefault());
+                distinctIQ = txnEnum.AsQueryable();
+                distinctIQ = distinctIQ.GroupBy(a => a.StockMasterID)
+                            .Select(x => x.FirstOrDefault());
             }
             else //if ((txnRec != null) && (masterRec == null))
             {
-                distinctIQ = txnIQ.Where(a => (a.stockMaster.Symbol == txnRec.stockMaster.Symbol)).GroupBy(a => a.stockMaster.Symbol).Select(a => a.FirstOrDefault());
+                //distinctIQ = txnIQ.Where(a => (a.stockMaster.Symbol == txnRec.stockMaster.Symbol)).GroupBy(a => a.stockMaster.Symbol).Select(a => a.FirstOrDefault());
+                distinctIQ = txnEnum.AsQueryable();
+                distinctIQ = distinctIQ.Where(a => (a.StockMasterID == txnRec.StockMasterID))
+                    .GroupBy(a => a.StockMasterID).Select(a => a.FirstOrDefault());
             }
 
             foreach (var item in distinctIQ)
             {
-                //StockMaster stockMaster = item.GetStockMaster(context);
+                item.stockMaster = item.GetStockMaster(context);
                 DbInitializer.UpdateStockQuote(context, item.stockMaster);
                 DbInitializer.UpdateStockModel(context, item.stockMaster);
                 foreach (var txnitem in item.stockMaster.collectionTxn)
                 {
-                    txnitem.CMP = item.stockMaster.Close;
-                    txnitem.VALUE = item.stockMaster.Close * txnitem.PURCHASE_QUANTITY;
-                    txnitem.GAIN_AMT = txnitem.VALUE - txnitem.TOTAL_COST;
-                    if (txnitem.TOTAL_COST > 0)
+                    if( listMasterId.Contains(txnitem.PORTFOLIO_MASTER_ID) && (txnitem.TXN_TYPE == "B"))
                     {
-                        txnitem.GAIN_PCT = (txnitem.GAIN_AMT / txnitem.VALUE) * 100;
-                    }
-                    else
-                    {
-                        txnitem.GAIN_PCT = 100;
-                    }
-                    txnitem.DAYS_SINCE = DateTime.Today.Date.Subtract(txnitem.TXN_BUY_DATE.Date).Days;
-                    if (txnitem.COST_PER_UNIT > 0)
-                    {
-                        txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
-                    }
-                    else
-                    {
-                        txnitem.BUY_VS_52HI = 100;
+                        txnitem.CMP = item.stockMaster.Close;
+                        txnitem.VALUE = item.stockMaster.Close * txnitem.PURCHASE_QUANTITY;
+                        txnitem.GAIN_AMT = txnitem.VALUE - txnitem.TOTAL_COST;
+                        if (txnitem.TOTAL_COST > 0)
+                        {
+                            txnitem.GAIN_PCT = (txnitem.GAIN_AMT / txnitem.VALUE) * 100;
+                        }
+                        else
+                        {
+                            txnitem.GAIN_PCT = 100;
+                        }
+                        txnitem.DAYS_SINCE = DateTime.Today.Date.Subtract(txnitem.TXN_BUY_DATE.Date).Days;
+                        if (txnitem.COST_PER_UNIT > 0)
+                        {
+                            txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
+                        }
+                        else
+                        {
+                            txnitem.BUY_VS_52HI = 100;
+                        }
                     }
                 }
                 //DbInitializer.UpdateStockQuote(context, item.stockMaster);

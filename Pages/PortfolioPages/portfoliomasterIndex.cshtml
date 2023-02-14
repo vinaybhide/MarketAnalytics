@@ -2,7 +2,7 @@
 @model MarketAnalytics.Pages.PortfolioPages.PortfolioMasterIndex
 
 @{
-    ViewData["Title"] = "PortfolioMaster";
+    ViewData["Title"] = "Portfolio Master";
 }
 
 <h4>Portfolio Master</h4>
@@ -18,10 +18,10 @@
                 </div>
             </th>
             <th>
-                <form asp-page="./portfoliomasterIndex" method="get">
+                <form asp-page="./portfoliomasterIndex" method="get" asp-route-firsttimemaster="false">
                     <div class="form-actions no-color">
                         <p>
-                            <input name="firsttimemaster=false" type="hidden" />
+                            <input name="firsttimemaster" value="false" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
                             <input type="submit" value="Search portfolio" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
@@ -32,7 +32,7 @@
                 <form asp-page="./portfoliomasterIndex" method="get">
                     <div class="form-actions no-color">
                         <p>
-                            <input name="firsttimemaster=false" type="hidden" />
+                            <input name="firsttimemaster" value="false" type="hidden" />
                             <select name="masterid" asp-items="Model.masterList" style="font-size:small">
                                 <option value="">Select Portfolio</option>
                             </select>
