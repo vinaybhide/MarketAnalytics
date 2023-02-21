@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
-    [Authorize(Roles ="Registered, Administrator")]
+    [Authorize(Roles = "Registered, Administrator")]
     public class PortfolioMasterIndex : PageModel
     {
         private readonly MarketAnalytics.Data.DBContext _context;
@@ -26,7 +26,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         public string UserName { get; set; }
 
         [BindProperty]
-        public string UserId{get; set; }
+        public string UserId { get; set; }
 
         public string nameSort { get; set; }
         [BindProperty]
@@ -56,7 +56,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             UserName = httpContextAccessor.HttpContext.User.Identity.Name;
         }
 
-        public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString, 
+        public async Task OnGetAsync(string sortOrder, bool? firsttimemaster, string currentFilter, string searchString,
                                         int? pageIndex, int? masterid, bool? updateBuySell)
         {
             //if (string.IsNullOrEmpty(UserId))
@@ -71,10 +71,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
             masterList.Clear();
             masterList = _context.PORTFOLIO_MASTER.AsSplitQuery().Where(a => a.Id.Equals(UserId))
                                             .Select(a => new SelectListItem
-                                                    {
-                                                        Value = a.PORTFOLIO_MASTER_ID.ToString(),
-                                                        Text = a.PORTFOLIO_NAME.ToString()
-                                                    }).ToList();
+                                            {
+                                                Value = a.PORTFOLIO_MASTER_ID.ToString(),
+                                                Text = a.PORTFOLIO_NAME.ToString()
+                                            }).ToList();
             portfolioCost.Clear();
             portfolioValue.Clear();
             portfolioGain.Clear();
@@ -89,6 +89,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
             menuItem = new SelectListItem("Delete Portfolio", "1");
             menuList.Add(menuItem);
             menuItem = new SelectListItem("Show Transactions", "2");
+            menuList.Add(menuItem);
+            menuItem = new SelectListItem("Update Buy/Sell", "3");
             menuList.Add(menuItem);
 
             if (_context.PORTFOLIO_MASTER != null)
@@ -112,16 +114,16 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     .AsSplitQuery()
                     .Where(a => a.Id.Equals(UserId))
                     .AsNoTracking();
-                
+
                 Portfolio_Master searchRecord = null;
 
-                if (masterid != null)
+                if ((masterid != null) && ((updateBuySell == null) || (updateBuySell == false)))
                 {
                     //var currentrecord = portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
                     portfolioIQ = portfolioIQ.Where(a => a.PORTFOLIO_MASTER_ID == masterid); ;
                     searchRecord = portfolioIQ.First();//portfolioIQ.FirstOrDefault(a => a.PORTFOLIO_MASTER_ID == masterid);
                     //if (currentrecord != null)
-                    if(searchRecord != null)
+                    if (searchRecord != null)
                     {
                         searchString = searchRecord.PORTFOLIO_NAME;
                     }
@@ -129,7 +131,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
                 if (!String.IsNullOrEmpty(searchString))
                 {
-                    if(searchRecord == null)
+                    if (searchRecord == null)
                     {
                         portfolioIQ = portfolioIQ.Where(s => s.PORTFOLIO_NAME.ToUpper().Contains(searchString.ToUpper()));
 
@@ -162,6 +164,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 if ((firsttimemaster == null) || (firsttimemaster == true))
                 {
                     DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, null, null);
+                }
+                else if ((masterid != null) && ((updateBuySell != null) && (updateBuySell == true)))
+                {
+                    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, masterid, null, buysell:true);
                 }
                 foreach (var item in portfolioMaster)
                 {
@@ -206,11 +212,13 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         return RedirectToPage("./portfoliomasterDelete", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, firsttimemaster = firsttimemaster, searchString = searchString });
                     case "2": //case of show transactions portfolio
                         return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, firsttimemaster = firsttimemaster, searchString = searchString });
+                    case "3": //case of update buy sell
+                        return RedirectToPage("./portfoliomasterIndex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, searchString = searchString, updateBuySell = true });
                     default:
-                        return RedirectToPage("./portfoliomasterindex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, firsttimemaster = firsttimemaster, searchString = searchString });
+                        return RedirectToPage("./portfoliomasterindex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, searchString = searchString });
                 }
             }
-            return RedirectToPage("./portfoliomasterindex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, firsttimemaster = firsttimemaster, searchString = searchString });
+            return RedirectToPage("./portfoliomasterindex", new { masterid = masterid, sortOrder = sortOrder, pageIndex = pageIndex, currentFilter = currentFilter, searchString = searchString });
         }
     }
 }

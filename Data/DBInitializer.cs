@@ -2730,7 +2730,7 @@ namespace MarketAnalytics.Data
         /// </summary>
         /// <param name="context"></param>
         /// <param name="txnRec"></param>
-        public static void GetQuoteAndUpdateAllPortfolioTxn(DBContext context, string userid, int? masterid, PORTFOLIOTXN txnRec)
+        public static void GetQuoteAndUpdateAllPortfolioTxn(DBContext context, string userid, int? masterid, PORTFOLIOTXN txnRec, bool buysell = false)
         {
             //IQueryable<PORTFOLIOTXN> txnIQ = context.PORTFOLIOTXN.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
 
@@ -2760,130 +2760,88 @@ namespace MarketAnalytics.Data
                         .Where(a => (a.Id.Equals(userid)) && (a.PORTFOLIO_MASTER_ID == masterid))
                         .AsNoTracking();
             }
-            List<int> listMasterId = masterIQ.Select(s => s.PORTFOLIO_MASTER_ID).ToList();
-
-            foreach (var item in masterIQ)
+            if ((masterIQ != null) && (masterIQ.Any()))
             {
-                if (txnEnum == null)
+
+                List<int> listMasterId = masterIQ.Select(s => s.PORTFOLIO_MASTER_ID).ToList();
+
+                foreach (var item in masterIQ)
                 {
-                    txnEnum = item.collectionTxn.Where(a => a.TXN_TYPE == "B");
-                }
-                else
-                {
-                    txnEnum = txnEnum.Concat(item.collectionTxn.Where(a => a.TXN_TYPE == "B"));
-                }
-            }
-
-            //txnIQ = context.PORTFOLIOTXN
-            //    .Include(a => a.stockMaster)
-            //    .AsSplitQuery()
-            //    .Where()
-            //    .AsQueryable();//.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
-
-            if (txnRec == null)
-            {
-                //distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol)
-                //                    .Select(x => x.FirstOrDefault());
-                distinctIQ = txnEnum.AsQueryable();
-                distinctIQ = distinctIQ.GroupBy(a => a.StockMasterID)
-                            .Select(x => x.FirstOrDefault());
-            }
-            else //if ((txnRec != null) && (masterRec == null))
-            {
-                //distinctIQ = txnIQ.Where(a => (a.stockMaster.Symbol == txnRec.stockMaster.Symbol)).GroupBy(a => a.stockMaster.Symbol).Select(a => a.FirstOrDefault());
-                distinctIQ = txnEnum.AsQueryable();
-                distinctIQ = distinctIQ.Where(a => (a.StockMasterID == txnRec.StockMasterID))
-                    .GroupBy(a => a.StockMasterID).Select(a => a.FirstOrDefault());
-            }
-
-            foreach (var item in distinctIQ)
-            {
-                item.stockMaster = item.GetStockMaster(context);
-                DbInitializer.UpdateStockQuote(context, item.stockMaster);
-                DbInitializer.UpdateStockModel(context, item.stockMaster);
-                foreach (var txnitem in item.stockMaster.collectionTxn)
-                {
-                    if( listMasterId.Contains(txnitem.PORTFOLIO_MASTER_ID) && (txnitem.TXN_TYPE == "B"))
+                    if (txnEnum == null)
                     {
-                        txnitem.CMP = item.stockMaster.Close;
-                        txnitem.VALUE = item.stockMaster.Close * txnitem.PURCHASE_QUANTITY;
-                        txnitem.GAIN_AMT = txnitem.VALUE - txnitem.TOTAL_COST;
-                        if (txnitem.TOTAL_COST > 0)
-                        {
-                            txnitem.GAIN_PCT = (txnitem.GAIN_AMT / txnitem.VALUE) * 100;
-                        }
-                        else
-                        {
-                            txnitem.GAIN_PCT = 100;
-                        }
-                        txnitem.DAYS_SINCE = DateTime.Today.Date.Subtract(txnitem.TXN_BUY_DATE.Date).Days;
-                        if (txnitem.COST_PER_UNIT > 0)
-                        {
-                            txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
-                        }
-                        else
-                        {
-                            txnitem.BUY_VS_52HI = 100;
-                        }
+                        txnEnum = item.collectionTxn.Where(a => a.TXN_TYPE == "B");
+                    }
+                    else
+                    {
+                        txnEnum = txnEnum.Concat(item.collectionTxn.Where(a => a.TXN_TYPE == "B"));
                     }
                 }
-                //DbInitializer.UpdateStockQuote(context, item.stockMaster);
-                //DbInitializer.UpdateStockModel(context, item.stockMaster);
 
-                //item.CMP = item.stockMaster.Close;
-                //item.VALUE = item.stockMaster.Close * item.PURCHASE_QUANTITY;
-                //item.GAIN_AMT = item.VALUE - item.TOTAL_COST;
-                //if (item.TOTAL_COST > 0)
-                //{
-                //    item.GAIN_PCT = (item.GAIN_AMT / item.VALUE) * 100;
-                //}
-                //else
-                //{
-                //    item.GAIN_PCT = 100;
-                //}
-                //item.DAYS_SINCE = DateTime.Today.Date.Subtract(item.TXN_BUY_DATE).Days;
-                //if (item.COST_PER_UNIT > 0)
-                //{
-                //    item.BUY_VS_52HI = (item.stockMaster.YEAR_HI - item.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
-                //}
-                //else
-                //{
-                //    item.BUY_VS_52HI = 100;
-                //}
+                //txnIQ = context.PORTFOLIOTXN
+                //    .Include(a => a.stockMaster)
+                //    .AsSplitQuery()
+                //    .Where()
+                //    .AsQueryable();//.Where(x => x.PORTFOLIO_MASTER_ID == masterRec.PORTFOLIO_MASTER_ID);
 
-                ////context.PORTFOLIOTXN.Update(item);
-                ////now find txn for same symbol in this portfolio
-                //IQueryable<PORTFOLIOTXN> duplicateIQ = context.PORTFOLIOTXN.Where(a => (a.stockMaster.Symbol == item.stockMaster.Symbol) && (a.PORTFOLIOTXN_ID != item.PORTFOLIOTXN_ID));
-                //foreach (var duplicateitem in duplicateIQ)
-                //{
-                //    duplicateitem.CMP = item.stockMaster.Close;
-                //    duplicateitem.VALUE = duplicateitem.PURCHASE_QUANTITY * item.stockMaster.Close;
-                //    duplicateitem.GAIN_AMT = duplicateitem.VALUE - duplicateitem.TOTAL_COST;
-                //    if (duplicateitem.TOTAL_COST > 0)
-                //    {
-                //        duplicateitem.GAIN_PCT = (duplicateitem.GAIN_AMT / duplicateitem.VALUE) * 100;
-                //    }
-                //    else
-                //    {
-                //        duplicateitem.GAIN_PCT = 100;
-                //    }
-                //    duplicateitem.DAYS_SINCE = DateTime.Today.Date.Subtract(duplicateitem.TXN_BUY_DATE).Days;
-                //    if (duplicateitem.COST_PER_UNIT > 0)
-                //    {
-                //        duplicateitem.BUY_VS_52HI = (duplicateitem.stockMaster.YEAR_HI - duplicateitem.COST_PER_UNIT) / duplicateitem.stockMaster.YEAR_HI * 100;
-                //    }
-                //    else
-                //    {
-                //        duplicateitem.BUY_VS_52HI = 100;
-                //    }
+                if ((txnEnum != null) && (txnEnum.Count() > 0))
+                {
+                    if (txnRec == null)
+                    {
+                        //distinctIQ = txnIQ.GroupBy(a => a.stockMaster.Symbol)
+                        //                    .Select(x => x.FirstOrDefault());
+                        distinctIQ = txnEnum.AsQueryable();
+                        distinctIQ = distinctIQ.GroupBy(a => a.StockMasterID)
+                                    .Select(x => x.FirstOrDefault());
+                    }
+                    else //if ((txnRec != null) && (masterRec == null))
+                    {
+                        //distinctIQ = txnIQ.Where(a => (a.stockMaster.Symbol == txnRec.stockMaster.Symbol)).GroupBy(a => a.stockMaster.Symbol).Select(a => a.FirstOrDefault());
+                        distinctIQ = txnEnum.AsQueryable();
+                        distinctIQ = distinctIQ.Where(a => (a.StockMasterID == txnRec.StockMasterID))
+                            .GroupBy(a => a.StockMasterID).Select(a => a.FirstOrDefault());
+                    }
 
-                //    //context.PORTFOLIOTXN.Update(duplicateitem);
-                //}
-
-                //context.SaveChanges(true);
-                //DbInitializer.UpdateStockModel(context, item.stockMaster);
+                    if ((distinctIQ != null) && (distinctIQ.Any()))
+                    {
+                        foreach (var item in distinctIQ)
+                        {
+                            item.stockMaster = item.GetStockMaster(context);
+                            DbInitializer.UpdateStockQuote(context, item.stockMaster);
+                            if (buysell)
+                            {
+                                DbInitializer.UpdateStockModel(context, item.stockMaster);
+                            }
+                            foreach (var txnitem in item.stockMaster.collectionTxn)
+                            {
+                                if (listMasterId.Contains(txnitem.PORTFOLIO_MASTER_ID) && (txnitem.TXN_TYPE == "B"))
+                                {
+                                    txnitem.CMP = item.stockMaster.Close;
+                                    txnitem.VALUE = item.stockMaster.Close * txnitem.PURCHASE_QUANTITY;
+                                    txnitem.GAIN_AMT = txnitem.VALUE - txnitem.TOTAL_COST;
+                                    if (txnitem.TOTAL_COST > 0)
+                                    {
+                                        txnitem.GAIN_PCT = (txnitem.GAIN_AMT / txnitem.VALUE) * 100;
+                                    }
+                                    else
+                                    {
+                                        txnitem.GAIN_PCT = 100;
+                                    }
+                                    txnitem.DAYS_SINCE = DateTime.Today.Date.Subtract(txnitem.TXN_BUY_DATE.Date).Days;
+                                    if (txnitem.COST_PER_UNIT > 0)
+                                    {
+                                        txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
+                                    }
+                                    else
+                                    {
+                                        txnitem.BUY_VS_52HI = 100;
+                                    }
+                                }
+                            }
+                        }
+                        context.SaveChanges(true);
+                    }
+                }
             }
-            context.SaveChanges(true);
         }
 
 

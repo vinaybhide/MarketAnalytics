@@ -63,7 +63,8 @@ namespace MarketAnalytics.Pages
                 ToDate = Convert.ToDateTime(toDate);
             }
             //StockMaster stockMaster = _context.StockMaster.First(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange)));
-            var selectedRecord = _context.StockMaster.AsSplitQuery().FirstOrDefault(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange)));
+            //var selectedRecord = _context.StockMaster.AsSplitQuery().FirstOrDefault(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange)));
+            var selectedRecord = _context.StockMaster.AsSplitQuery().Where(x => (x.Symbol.Equals(symbol) && x.Exchange.Equals(exchange))).FirstOrDefault();
 
             string lastPriceDate = DateTime.Today.ToString("yyyy-MM-dd");
             if(selectedRecord == null)

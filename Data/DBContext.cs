@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MarketAnalytics.Models;
-using System.Reflection.Metadata;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -66,7 +60,7 @@ namespace MarketAnalytics.Data
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionBullishEngulfing).AutoInclude();
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionBearishEngulfing).AutoInclude();
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collection_V20_buysell).AutoInclude();
-            
+
             //modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionTxn).AutoInclude();
 
             //modelBuilder.Entity<StockPriceHistory>().ToTable("StockPriceHistory").Navigation(e => e.StockMaster).AutoInclude();

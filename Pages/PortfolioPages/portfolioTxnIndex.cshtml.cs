@@ -14,16 +14,17 @@ namespace MarketAnalytics.Pages.PortfolioPages
     public class PortfolioTxnIndex : PageModel
     {
         const string constShowTxn = "0";
-        const string constUpdateStrategy = "1";
-        const string constHistoryData = "2";
-        const string constChart_History = "3";
-        const string constChart_SMARSISTOCH = "4";
-        const string constRsiTrendV40 = "5";
-        const string constStochV40 = "6";
-        const string constSmaV40 = "7";
-        const string constV20 = "8";
-        const string constBullishEngulfing = "9";
-        const string constBearishEngulfing = "10";
+        const string constGetQuote = "1";
+        const string constUpdateStrategy = "2";
+        const string constHistoryData = "3";
+        const string constChart_History = "4";
+        const string constChart_SMARSISTOCH = "5";
+        const string constRsiTrendV40 = "6";
+        const string constStochV40 = "7";
+        const string constSmaV40 = "8";
+        const string constV20 = "9";
+        const string constBullishEngulfing = "10";
+        const string constBearishEngulfing = "11";
 
         const string constClosePosition = "0";
         const string constEditTxn = "1";
@@ -113,20 +114,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         txnOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
                             .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid));
                         var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
-                        if (selectedRecord != null)
+                        if((updateBuySell != null) && (updateBuySell == true) && (selectedRecord != null))
                         {
-                            DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, null, selectedRecord);
+                            DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, null, selectedRecord, buysell: true);
                         }
                     }
                     else if ((refreshAll != null) && (refreshAll == true))
                     {
-                        //IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                        //    .Select(x => x.FirstOrDefault());
-                        //foreach (var item in distinctOpenIQ)
-                        //{
-                        //    DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, item);
-                        //}
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, masterid, null);
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, masterid, null, buysell:true);
                     }
 
                     IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN
@@ -156,6 +151,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                     summarymenuList.Clear();
                     SelectListItem summarymenuItem = new SelectListItem("Show Txn", constShowTxn);
+                    summarymenuList.Add(summarymenuItem);
+
+                    summarymenuItem = new SelectListItem("Get Quote", constGetQuote);
                     summarymenuList.Add(summarymenuItem);
 
                     summarymenuItem = new SelectListItem("Update Strategy", constUpdateStrategy);
@@ -241,33 +239,6 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     {
                         searchString = currentFilter;
                     }
-
-                    //IQueryable<PORTFOLIOTXN> txnOpenIQ = null; // _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
-
-                    //if (stockid != null)
-                    //{
-                    //    StockId = stockid;
-                    //    txnOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
-                    //        .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid));
-                    //    var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
-                    //    if (selectedRecord != null)
-                    //    {
-                    //        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, selectedRecord);
-                    //        //searchString = selectedRecord.stockMaster.Symbol;
-                    //    }
-                    //}
-
-                    //if ((refreshAll != null) && (refreshAll == true))
-                    //{
-                    //    IQueryable<PORTFOLIOTXN> distinctOpenIQ = txnSummaryOpenIQ.GroupBy(a => a.stockMaster.Symbol)
-                    //        .Select(x => x.FirstOrDefault());
-                    //        //.Include(a => a.stockMaster)
-                    //        //.AsSplitQuery();
-                    //    foreach (var item in distinctOpenIQ)
-                    //    {
-                    //        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, item);
-                    //    }
-                    //}
 
                     portfolioTotalCost = listofSummaryTxn.Sum(a => a.TotalCost); //txnOpenIQ.Sum(a => a.TOTAL_COST);
                     portfolioTotalGain = (double)listofSummaryTxn.Sum(a => a.TotalGain); //(double)txnOpenIQ.Sum(a => a.GAIN_AMT);
@@ -386,11 +357,29 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             masterid = masterid,
                             pageClosedIndex = pageClosedIndex,
-                            getQuote = "true",
+                            getQuote = false,
                             stockid = stockid,
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
+                    case constGetQuote://case of update get quote, buy sell, high low
+                        return RedirectToPage("./portfolioTxnIndex", new
+                        {
+                            masterid = masterid,
+                            stockid = stockid,
+                            openSortOrder = openSortOrder,
+                            summarySortOrder = summarySortOrder,
+                            closedSortOrder = closedSortOrder,
+                            pageSummaryIndex = pageSummaryIndex,
+                            pageIndex = pageIndex,
+                            pageClosedIndex = pageClosedIndex,
+                            currentFilter = currentFilter,
+                            getQuote = true,
+                            updateBuySell = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
+                        });
+
                     case constUpdateStrategy://case of update get quote, buy sell, high low
                         return RedirectToPage("./portfolioTxnIndex", new
                         {
@@ -403,9 +392,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
                             currentFilter = currentFilter,
-                            getQuote = "true",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = true,
+                            updateBuySell = true,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                     case constHistoryData://case of show history table
                         return RedirectToPage("/History/Index", new { id = stockid });
@@ -442,9 +432,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             masterid = masterid,
                             pageClosedIndex = pageClosedIndex,
-                            getQuote = "false",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                 }
             }
@@ -458,9 +448,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 pageIndex = pageIndex,
                 masterid = masterid,
                 pageClosedIndex = pageClosedIndex,
-                getQuote = "false",
-                refreshAll = "false",
-                lifetimeHighLow = "false"
+                getQuote = false,
+                refreshAll = false,
+                lifetimeHighLow = false
             });
 
         }
@@ -502,9 +492,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
                             currentFilter = currentFilter,
-                            getQuote = "false",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                     case constDeleteTxn://case of delete txn
                         return RedirectToPage("./portfolioTxnDelete", new
@@ -519,9 +509,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
                             currentFilter = currentFilter,
-                            getQuote = "false",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                     case constDetailsTxn://case of txn details
                         return RedirectToPage("./portfolioTxnDetails", new
@@ -536,9 +526,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
                             currentFilter = currentFilter,
-                            getQuote = "false",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                     default:
                         return RedirectToPage("./portfolioTxnIndex", new
@@ -551,13 +541,13 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             pageIndex = pageIndex,
                             pageClosedIndex = pageClosedIndex,
                             currentFilter = currentFilter,
-                            getQuote = "false",
-                            refreshAll = "false",
-                            lifetimeHighLow = "false"
+                            getQuote = false,
+                            refreshAll = false,
+                            lifetimeHighLow = false
                         });
                 }
             }
-            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = "true", refreshAll = "false", lifetimeHighLow = "false" });
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = false, refreshAll = false, lifetimeHighLow = false });
         }
 
     }

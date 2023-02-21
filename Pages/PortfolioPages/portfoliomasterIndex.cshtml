@@ -21,7 +21,7 @@
                 <form asp-page="./portfoliomasterIndex" method="get" asp-route-firsttimemaster="false">
                     <div class="form-actions no-color">
                         <p>
-                            <input name="firsttimemaster" value="false" type="hidden" />
+                            <input name="firsttimemaster" value="false"" type="hidden" />
                             <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
                             <input type="submit" value="Search portfolio" class="btn btn-sm btn-primary" style="font-size:small" />
                         </p>
@@ -101,8 +101,10 @@
             </td>*@
                     <td>
                         <form method="post" asp-page-handler="PortfolioAction" asp-route-firsttimemaster="false"
-                      asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" asp-route-pageIndex="@Model.CurrentPageIndex"
-                      asp-route-sortOrder="@Model.CurrentSort" asp-route-currentFilter="@Model.CurrentFilter">
+                      asp-route-masterid="@Model.portfolioMaster[i].PORTFOLIO_MASTER_ID" 
+                      asp-route-pageIndex="@Model.CurrentPageIndex"
+                      asp-route-sortOrder="@Model.CurrentSort" 
+                      asp-route-currentFilter="@Model.CurrentFilter">
                             <div class="form-actions no-color">
 
                                 <select class="menuitemselect" name="menuitemsel" asp-items="Model.menuList" style="font-size:small">
