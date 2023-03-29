@@ -1,10 +1,10 @@
 # MarketAnalytics
-Stock Strategy implementation
+Stock Strategy implementation - using ASP.Net Core, .Net Core, Entity Framework, Linq with SQLite as database
 <h3>Summary</h3>
-  Project idea is use NSE listed companies (WIP for other global exchanges) for:
+  This Project allows user to search any global investment entity (Stocks, ETF, Futures, Index and Mutual Fund) and provides following functionality:
   <ol>
   <li>Store all companies along with their CMP</li>
-  <li>Store 10 years price data</li>
+  <li>Store historical price data</li>
   <li>Show SMA chart for 200, 50 & 20 periods</li>
   <li>Show RSI chart for period value 14</li>
   <li>Show Stochastics chart for fastk = 20 and slowd = 20</li>
