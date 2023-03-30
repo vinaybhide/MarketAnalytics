@@ -85,7 +85,17 @@
                 <th colspan="2">
                     <div class="form-actions no-color" style="font-size:small">
                         <a target="_blank" asp-page="/StandardIndicators/chartSMARSISTOCH" asp-route-groupsel="@Model.CurrentGroup" asp-route-id="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">Chart: SMA vs RSI vs Stoch</a>
-                        <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-groupsel="@Model.CurrentGroup" asp-route-stockid="@Model.CurrentID" asp-route-onlyhistory=0 asp-route-history=true class="btn btn-sm btn-primary" style="font-size:small">Chart: History</a>
+                        @if (string.IsNullOrEmpty(Model.InvestmenType) == false)
+                        {
+                            if (Model.InvestmenType.Equals("Mutual Fund") == false)
+                            {
+                                <a target="_blank" asp-page="/StandardIndicators/chartHistory" asp-route-groupsel="@Model.CurrentGroup" asp-route-stockid="@Model.CurrentID" asp-route-onlyhistory=0 asp-route-history=true class="btn btn-sm btn-primary" style="font-size:small">Chart: History</a>
+                            }
+                            else
+                            {
+                                <a target="_blank" asp-page="/StandardIndicators/chartMFHistory" asp-route-groupsel="@Model.CurrentGroup" asp-route-stockid="@Model.CurrentID" asp-route-onlyhistory=0 asp-route-history=true class="btn btn-sm btn-primary" style="font-size:small">Chart: MF History</a>
+                            }
+                        }
                         <a target="_blank" asp-page="/BuySell/smav40" asp-route-groupsel="@Model.CurrentGroup" asp-route-symbolToUpdate="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">SMA V40</a>
                         <a target="_blank" asp-page="/BuySell/stochv40" asp-route-groupsel="@Model.CurrentGroup" asp-route-symbolToUpdate="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">STOCH V40</a>
                         <a target="_blank" asp-page="/BuySell/v20BuySell" asp-route-groupsel="@Model.CurrentGroup" asp-route-symbolToUpdate="@Model.CurrentID" class="btn btn-sm btn-primary" style="font-size:small">V20</a>

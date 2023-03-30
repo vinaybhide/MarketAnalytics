@@ -89,7 +89,7 @@
                    asp-route-pageIndex="@(Model.portfolioOpenTxn != null ? Model.portfolioOpenTxn.PageIndex : null)"
                    asp-route-pageIndexClosed="@(Model.portfolioClosedTxn !=null? Model.portfolioClosedTxn.PageIndex : null)"
                    asp-route-currentFilter="@Model.CurrentFilter">
-                    @Html.DisplayNameFor(model => model.portfolioSummaryOpenTxn[0].Symbol)
+                    @Html.DisplayNameFor(model => model.portfolioSummaryOpenTxn[0].CompName)
                 </a>
             </th>
             <th style="font-size:small">@Html.DisplayNameFor(model => model.portfolioSummaryOpenTxn[0].TotalQty)</th>
@@ -120,7 +120,7 @@
                             <div class="form-actions no-color" style="font-size:small">
 
                                 <select class="summarymenuitemselect" name="summarymenuitemsel" asp-items="Model.summarymenuList" style="font-size:small">
-                                    <option selected value="-1" style="font-size:small">@item.Symbol</option>
+                                    <option selected value="-1" style="font-size:small">@item.CompName</option>
                                 </select>
                             </div>
                         </form>

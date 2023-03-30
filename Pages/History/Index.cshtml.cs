@@ -22,6 +22,7 @@ namespace MarketAnalytics.Pages.History
         private const string constV40N = "-97";
         private const string constV200 = "-96";
         private const string constAll = "-95";
+        private const string constMF = "-94";
 
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
@@ -40,6 +41,7 @@ namespace MarketAnalytics.Pages.History
         public int? CurrentGroup { get; set; }
 
         public string CompanyName { get; set; }
+        public string InvestmenType { get; set; }
         //public IList<StockPriceHistory> StockPriceHistory { get;set; } = default!;
         public PaginatedList<StockPriceHistory> StockPriceHistory { get; set; } = default!;
 
@@ -71,6 +73,9 @@ namespace MarketAnalytics.Pages.History
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("All Stocks", constAll);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("All Mutual Funds", constMF);
                 groupList.Add(selectAll);
 
                 IQueryable<StockPriceHistory> stockpriceIQ = null;
@@ -119,6 +124,11 @@ namespace MarketAnalytics.Pages.History
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
                     CompanyName = "History for V200";
                 }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
+                    CompanyName = "History for all Mutual Funds";
+                }
                 else //if (id == Int32.Parse(constAll))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().AsNoTracking();
@@ -128,7 +138,20 @@ namespace MarketAnalytics.Pages.History
                 groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
 
                 symbolList.Clear();
-                symbolList = stockmasterIQ.OrderBy(a => a.Symbol)
+                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                {
+                    symbolList = stockmasterIQ.OrderBy(a => a.Symbol)
+                                            .Select(a =>
+                                                new SelectListItem
+                                                {
+                                                    Value = a.StockMasterID.ToString(),
+                                                    Text = a.CompName
+                                                }
+                                            ).ToList();
+                }
+                else
+                {
+                    symbolList = stockmasterIQ.OrderBy(a => a.Symbol)
                                             .Select(a =>
                                                 new SelectListItem
                                                 {
@@ -136,7 +159,7 @@ namespace MarketAnalytics.Pages.History
                                                     Text = a.Symbol + "." + a.Exchange
                                                 }
                                             ).ToList();
-
+                }
                 //SelectListItem selectAll = new SelectListItem("-Select Symbol-", "-1");
                 //symbolList.Insert(0, selectAll);
                 if ((string.IsNullOrEmpty(filterCategory) == false) && filterCategory.Equals("Show & Update Category") && (CurrentGroup != null))
@@ -155,6 +178,7 @@ namespace MarketAnalytics.Pages.History
                     symbolList.FirstOrDefault(a => a.Value.Equals(CurrentID.ToString())).Selected = true;
 
                     CompanyName = StockMasterRec.CompName;
+                    InvestmenType = StockMasterRec.INVESTMENT_TYPE;
 
                     if ((refreshAll == true) && (StockMasterRec != null) && (sortOrder == null) && (currentFilter == null) && (searchString == null) && (pageIndex == null))
                     {

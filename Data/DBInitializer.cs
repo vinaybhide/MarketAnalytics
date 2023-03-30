@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Xml;
+using System.Web;
 
 namespace MarketAnalytics.Data
 {
@@ -75,6 +76,7 @@ namespace MarketAnalytics.Data
                     {
                         startIndex = responseStr.IndexOf(">", startIndex);
                         dataStr = responseStr.Substring(startIndex + 1, endIndex - startIndex - 1);
+                        dataStr = HttpUtility.HtmlDecode(dataStr);
                     }
                 }
             }
