@@ -130,6 +130,81 @@ namespace MarketAnalytics.Pages.PortfolioPages
             return Page();
         }
 
+        public IActionResult OnPostSearchLocalOnline(string searchString, string searchWhere, string typesel, string exchangesel, int? masterid, 
+            int pageIndex, int pageClosedIndex, string portfolioName)
+        {
+            symbolList.Clear();
+
+            if (searchString != null)
+            {
+                if (string.IsNullOrEmpty(searchWhere) == false)
+                {
+                    if (searchWhere.Equals("Search Online"))
+                    {
+                        DbInitializer.SearchOnlineInsertInDB(_context, searchString);
+                    }
+                }
+                else
+                {
+                    DbInitializer.SearchOnlineInsertInDB(_context, searchString);
+                }
+
+                symbolList = _context.StockMaster.AsSplitQuery().Where(a => a.Symbol.ToUpper().Contains(searchString.ToUpper()) || a.CompName.ToUpper().Contains(searchString.ToUpper())).OrderBy(a => a.CompName).Select(a =>
+                                                  new SelectListItem
+                                                  {
+                                                      Value = a.StockMasterID.ToString(),
+                                                      Text = a.CompName + " (" + a.Symbol + "." + a.Exchange + ")"
+                                                  }).ToList();
+
+            }
+            TypeSelected = typesel;
+
+            typeList.Clear();
+            typeList = _context.StockMaster.AsSplitQuery().Select(a => a.INVESTMENT_TYPE).Select(a =>
+                                                    new SelectListItem
+                                                    {
+                                                        Value = a.ToString(),
+                                                        Text = a.ToString()
+                                                    }).Distinct().ToList();
+
+            if (string.IsNullOrEmpty(TypeSelected) == false)
+            {
+                typeList.FirstOrDefault(a => a.Value.Equals(TypeSelected)).Selected = true;
+            }
+
+            ExchangeSelected = exchangesel;
+            exchangeList.Clear();
+            exchangeList = _context.StockMaster.AsSplitQuery().Select(a => a.Exchange).Select(a =>
+                                                    new SelectListItem
+                                                    {
+                                                        Value = a.ToString(),
+                                                        Text = a.ToString()
+                                                    }).Distinct().ToList();
+
+            if (string.IsNullOrEmpty(ExchangeSelected) == false)
+            {
+                exchangeList.FirstOrDefault(a => a.Value.Equals(ExchangeSelected)).Selected = true;
+            }
+
+            if (masterid != null)
+            {
+                MasterId = (int)masterid;
+                portfolioTxn = new PORTFOLIOTXN();
+                portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterid;
+                //var masterRec = _context.PORTFOLIO_MASTER.Select(m => (m.PORTFOLIO_MASTER_ID == masterId));
+                var masterRec = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                if (masterRec != null)
+                {
+                    portfolioName = masterRec.PORTFOLIO_NAME.ToString();
+                    portfolioTxn.portfolioMaster = masterRec;
+                    portfolioTxn.TXN_BUY_DATE = DateTime.Now;
+                }
+            }
+
+            parentPageIndex = pageIndex;
+            parentClosedPageIndex = pageClosedIndex;
+            return Page();
+        }
         public IActionResult OnPostFilterSelected(string typesel, string exchangesel, int? masterid, int pageIndex, int pageClosedIndex, string portfolioName)
         {
             symbolList.Clear();
@@ -225,78 +300,81 @@ namespace MarketAnalytics.Pages.PortfolioPages
             PORTFOLIOTXN existingTxn = null;
             portfolioTxn.stockMaster = (StockMaster)_context.StockMaster.Find(portfolioTxn.StockMasterID);
 
-            DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
-                        out volume, out change, out changepercent, out prevclose);
-            if (quoteDate != null)
+            if (DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
+                        out volume, out change, out changepercent, out prevclose))
             {
-                portfolioTxn.CMP = close[0];
-                //portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                if (quoteDate != null)
+                {
+                    portfolioTxn.CMP = close[0];
+                    //portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                }
+                if (TxnType.Equals("B"))
+                {
+                    portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
+                    portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                    portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+                    if (portfolioTxn.TOTAL_COST > 0)
+                    {
+                        portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                    }
+                    else
+                    {
+                        portfolioTxn.GAIN_PCT = 100;
+                    }
+                }
+                else if (TxnType.Equals("S"))
+                {
+                    existingTxn = _context.PORTFOLIOTXN.Find(TxnId);
+
+                    portfolioTxn.TXN_TYPE = TxnType;
+                    portfolioTxn.TOTAL_SELL_AMT = portfolioTxn.SELL_QUANTITY * portfolioTxn.SELL_AMT_PER_UNIT;
+                    //sell value - buy value for sold number of stocks
+                    portfolioTxn.SELL_GAIN_AMT = portfolioTxn.TOTAL_SELL_AMT - (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT);
+                    if (existingTxn.COST_PER_UNIT > 0)
+                    {
+                        portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT)) * 100;
+                    }
+                    else
+                    {
+                        portfolioTxn.SELL_GAIN_PCT = 100;
+                    }
+                    portfolioTxn.SOLD_AFTER = portfolioTxn.TXN_SELL_DATE.Date.Subtract(existingTxn.TXN_BUY_DATE.Date).Days;
+
+                    portfolioTxn.TXN_BUY_DATE = existingTxn.TXN_BUY_DATE;
+                    portfolioTxn.COST_PER_UNIT = existingTxn.COST_PER_UNIT;
+
+                    portfolioTxn.PURCHASE_QUANTITY = portfolioTxn.SELL_QUANTITY;
+                    portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
+
+                    portfolioTxn.CMP = existingTxn.CMP = close[0];
+
+                    existingTxn.PURCHASE_QUANTITY = existingTxn.PURCHASE_QUANTITY - portfolioTxn.SELL_QUANTITY;
+
+                    portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                    portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+                    portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
+
+                    if (existingTxn.PURCHASE_QUANTITY > 0)
+                    {
+                        existingTxn.TOTAL_COST = existingTxn.PURCHASE_QUANTITY * existingTxn.COST_PER_UNIT;
+                        existingTxn.VALUE = existingTxn.PURCHASE_QUANTITY * close[0];
+                        existingTxn.GAIN_AMT = existingTxn.VALUE - existingTxn.TOTAL_COST;
+                        existingTxn.GAIN_PCT = (existingTxn.GAIN_AMT / existingTxn.TOTAL_COST) * 100;
+                        _context.PORTFOLIOTXN.Update(existingTxn);
+                    }
+                    else
+                    {
+                        _context.PORTFOLIOTXN.Remove(existingTxn);
+                    }
+                }
+
+                _context.PORTFOLIOTXN.Add(portfolioTxn);
+                await _context.SaveChangesAsync(true);
+
+                //return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex });
+                return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, searchString = portfolioTxn.stockMaster.Symbol });
             }
-            if (TxnType.Equals("B"))
-            {
-                portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
-                portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
-                portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                if (portfolioTxn.TOTAL_COST > 0)
-                {
-                    portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
-                }
-                else
-                {
-                    portfolioTxn.GAIN_PCT = 100;
-                }
-            }
-            else if (TxnType.Equals("S"))
-            {
-                existingTxn = _context.PORTFOLIOTXN.Find(TxnId);
-
-                portfolioTxn.TXN_TYPE = TxnType;
-                portfolioTxn.TOTAL_SELL_AMT = portfolioTxn.SELL_QUANTITY * portfolioTxn.SELL_AMT_PER_UNIT;
-                //sell value - buy value for sold number of stocks
-                portfolioTxn.SELL_GAIN_AMT = portfolioTxn.TOTAL_SELL_AMT - (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT);
-                if (existingTxn.COST_PER_UNIT > 0)
-                {
-                    portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * existingTxn.COST_PER_UNIT)) * 100;
-                }
-                else
-                {
-                    portfolioTxn.SELL_GAIN_PCT = 100;
-                }
-                portfolioTxn.SOLD_AFTER = portfolioTxn.TXN_SELL_DATE.Date.Subtract(existingTxn.TXN_BUY_DATE.Date).Days;
-
-                portfolioTxn.TXN_BUY_DATE = existingTxn.TXN_BUY_DATE;
-                portfolioTxn.COST_PER_UNIT = existingTxn.COST_PER_UNIT;
-                
-                portfolioTxn.PURCHASE_QUANTITY = portfolioTxn.SELL_QUANTITY;
-                portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
-
-                portfolioTxn.CMP = existingTxn.CMP = close[0];
-                
-                existingTxn.PURCHASE_QUANTITY = existingTxn.PURCHASE_QUANTITY - portfolioTxn.SELL_QUANTITY;
-                
-                portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
-                portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
-                portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
-
-                if (existingTxn.PURCHASE_QUANTITY > 0)
-                {
-                    existingTxn.TOTAL_COST = existingTxn.PURCHASE_QUANTITY * existingTxn.COST_PER_UNIT;
-                    existingTxn.VALUE = existingTxn.PURCHASE_QUANTITY * close[0];
-                    existingTxn.GAIN_AMT = existingTxn.VALUE - existingTxn.TOTAL_COST;
-                    existingTxn.GAIN_PCT = (existingTxn.GAIN_AMT / existingTxn.TOTAL_COST) * 100;
-                    _context.PORTFOLIOTXN.Update(existingTxn);
-                }
-                else
-                {
-                    _context.PORTFOLIOTXN.Remove(existingTxn);
-                }
-            }
-
-            _context.PORTFOLIOTXN.Add(portfolioTxn);
-            await _context.SaveChangesAsync(true);
-
-            //return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, pageIndex = parentpageIndex });
-            return RedirectToPage("./portfolioTxnIndex", new { masterid = portfolioTxn.PORTFOLIO_MASTER_ID, searchString = portfolioTxn.stockMaster.Symbol });
+            return Page();
         }
     }
 }

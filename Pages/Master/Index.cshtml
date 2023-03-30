@@ -17,12 +17,12 @@
             <th style="border:solid thin">
                 <form asp-page="./Index" method="get">
                     <div class="form-actions no-color">
-                            <select id="groupid" name="groupsel" asp-items="Model.groupList" style="font-size:small"
-                                    onchange="groupselchange()">
-                            </select>
-                            <input type="submit" name="filterCategory" value="Show Category" class="btn btn-sm btn-primary" style="font-size:small" />
-                            <input type="submit" name="filterCategory" value="Show & Update Category" class="btn btn-sm btn-primary" style="font-size:small" />
-                            @*<a asp-page="./Index" asp-route-groupsel="@Model.CurrentSel" asp-route-updateStrategy="true" class="btn btn-sm btn-primary" style="font-size:small">Run Strategy model</a>*@
+                        <select id="groupid" name="groupsel" asp-items="Model.groupList" style="font-size:small"
+                                onchange="groupselchange()">
+                        </select>
+                        <input type="submit" name="filterCategory" value="Show Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                        <input type="submit" name="filterCategory" value="Show & Update Category" class="btn btn-sm btn-primary" style="font-size:small" />
+                        @*<a asp-page="./Index" asp-route-groupsel="@Model.CurrentSel" asp-route-updateStrategy="true" class="btn btn-sm btn-primary" style="font-size:small">Run Strategy model</a>*@
                     </div>
                 </form>
             </th>
@@ -30,17 +30,18 @@
             <th style="border:solid thin;">
                 <form asp-page="./Index" method="get">
                     <div class="form-actions no-color">
-                            <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
-                            <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
-                            <input type="submit" value="Search" class="btn btn-sm btn-primary" style="font-size:small" />
-                            <a asp-page="./Index" class="btn btn-sm btn-primary" style="font-size:small">Back to full List</a>
+                        <input name="groupsel" value="@Model.CurrentGroup" type="hidden" />
+                        <input type="text" name="SearchString" value="@Model.CurrentFilter" style="font-size:small" />
+                        <input type="submit" name="searchWhere" value="Search local" class="btn btn-sm btn-primary" style="font-size:small" />
+                        <input type="submit" name="searchWhere" value="Search Online" class="btn btn-sm btn-primary" style="font-size:small" />
+                        <a asp-page="./Index" class="btn btn-sm btn-primary" style="font-size:small">Full List</a>
                     </div>
                 </form>
             </th>
 
             <th style="border:solid thin;">
                 <div class="form-actions no-color">
-                        <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Update Master List</a>
+                    <a asp-page="./Index" asp-route-refreshAll="true" class="btn btn-sm btn-primary" style="font-size:small">Update Master List</a>
                 </div>
             </th>
             @*<th>
@@ -402,9 +403,9 @@
 @if (Model.StockMaster != null)
 {
     <a asp-page="./Index" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex - 1)"
-   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @prevDisabled">Previous</a>
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-sm btn-primary @prevDisabled" style="font-size:small">Previous</a>
     <a asp-page="./Index" asp-route-groupsel="@Model.CurrentGroup" asp-route-sortOrder="@Model.CurrentSort" asp-route-pageIndex="@(Model.StockMaster.PageIndex + 1)"
-   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-primary @nextDisabled">Next</a>
+   asp-route-currentFilter="@Model.CurrentFilter" class="btn btn-sm btn-primary @nextDisabled" style="font-size:small">Next</a>
 }
 @section scripts{
     <script>

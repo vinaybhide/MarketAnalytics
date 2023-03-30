@@ -15,7 +15,8 @@ namespace MarketAnalytics.Models
         public string CompName { get; set; }
         public string Exchange { get; set; }
         [DisplayName("Total QTY")]
-        public int TotalQty { get; set; }
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double TotalQty { get; set; }
         [DisplayName("Total Cost")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
         public double TotalCost { get; set; }
@@ -48,7 +49,8 @@ namespace MarketAnalytics.Models
         public string TXN_TYPE { get; set; }
         
         [DisplayName("BUY QTY")]
-        public int PURCHASE_QUANTITY { get; set; } = default(int);
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double PURCHASE_QUANTITY { get; set; } = default(double);
         
         [DisplayName("Cost/Unit")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
@@ -64,7 +66,8 @@ namespace MarketAnalytics.Models
         public DateTime TXN_SELL_DATE { get; set; } = default(DateTime);
 
         [DisplayName("SELL QTY")]
-        public int SELL_QUANTITY { get; set; } = default(int);
+        [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]
+        public double SELL_QUANTITY { get; set; } = default(double);
 
         [DisplayName("Sell Value/Unit")]
         [DisplayFormat(DataFormatString = "{0:0.00}", ApplyFormatInEditMode = true)]

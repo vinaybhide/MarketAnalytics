@@ -19,6 +19,9 @@ namespace MarketAnalytics.Data
         public static string urlGlobalQuote = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?range=1d&interval=1d&indicators=quote&timestamp=true";
         public static string urlSearch = "https://finance.yahoo.com/lookup/{0}?s={1}";
 
+        //https://finance.yahoo.com/quote/0P0001784M.BO?p=0P0001784M.BO
+        public static string urlMFDetails = "https://finance.yahoo.com/quote/{0}?p={1}";
+
         static readonly HttpClient client = new HttpClient();
 
         /// <summary>
@@ -53,7 +56,34 @@ namespace MarketAnalytics.Data
             }
             return responseBody;
         }
+        public static string GetMutualFundName(string fundCode)
+        {
+            string dataStr = string.Empty;
+            try
+            {
+                string url = string.Format(urlMFDetails, fundCode, fundCode);
+                var httpClient = new HttpClient();
+                var httpResponse = httpClient.GetAsync(url).Result;
+                if (httpResponse.Content != null)
+                {
+                    var responseContent = httpResponse.Content.ReadAsStringAsync();
 
+                    string responseStr = responseContent.Result;
+                    int startIndex = responseStr.IndexOf("<h1");
+                    int endIndex = responseStr.IndexOf("</h1>");
+                    if (startIndex > 0 && endIndex > 0)
+                    {
+                        startIndex = responseStr.IndexOf(">", startIndex);
+                        dataStr = responseStr.Substring(startIndex + 1, endIndex - startIndex - 1);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                dataStr = string.Empty;
+            }
+            return dataStr;
+        }
         public static bool SearchOnlineInsertInDB(DBContext context, string searchStr, string qualifier = "all")
         {
             bool breturn = false;
@@ -106,6 +136,15 @@ namespace MarketAnalytics.Data
                                 //lasttradeprice = xmlResult["tbody"].ChildNodes[i].ChildNodes[2].ChildNodes[0].Value; // = "6034.15"
                                 //category = xmlResult["tbody"].ChildNodes[i].ChildNodes[3].ChildNodes[0].Value; // = "Technology"
                                 type = xmlResult["tbody"].ChildNodes[i].ChildNodes[4].ChildNodes[0].Value; // = "Stocks"
+                                if(type.ToUpper().Equals("MUTUAL FUND"))
+                                {
+                                    string fundName = GetMutualFundName(symbol + "." + exchange);
+                                    if(string.IsNullOrEmpty(fundName) == false) 
+                                    {
+                                        compname = fundName;
+                                    }
+
+                                }
                                 //exchange = xmlResult["tbody"].ChildNodes[i].ChildNodes[5].ChildNodes[0].Value; // = "NSI"
                                 DateTime[] quoteDate = null;
                                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
@@ -2522,128 +2561,160 @@ namespace MarketAnalytics.Data
                     else
                     {
                         Meta myMeta = myResult.meta;
-
-                        Indicators myIndicators = myResult.indicators;
-
-                        //this will be typically only 1 row and quote will have list of close, high, low, open, volume
-                        Quote myQuote = myIndicators.quote[0];
-
-                        //this will be typically only 1 row and adjClose will have list of adjClose
-                        //Adjclose myAdjClose = null;
-                        //if (bIsDaily)
-                        //{
-                        //    myAdjClose = myIndicators.adjclose[0];
-                        //}
-
-                        if (myResult.timestamp != null)
+                        if ((myMeta.instrumentType.ToUpper().Equals("MUTUALFUND")) && (myResult.timestamp == null))
                         {
-                            quoteDate = new DateTime[myResult.timestamp.Count];
+                            quoteDate = new DateTime[1];
+                            open = new double[1];
+                            high = new double[1];
+                            low = new double[1];
+                            close = new double[1];
+                            volume = new double[1];
+                            change = new double[1];
+                            changepercent = new double[1];
+                            prevclose = new double[1];
 
-                            open = new double[myResult.timestamp.Count];
-                            high = new double[myResult.timestamp.Count];
-                            low = new double[myResult.timestamp.Count];
-                            close = new double[myResult.timestamp.Count];
-                            volume = new double[myResult.timestamp.Count];
-                            change = new double[myResult.timestamp.Count];
-                            changepercent = new double[myResult.timestamp.Count];
-                            prevclose = new double[myResult.timestamp.Count];
-                            int outCtr = 0;
-                            for (int i = 0; i < myResult.timestamp.Count; i++)
-                            //for (int i = 0; i <= 0; i++)
+                            quoteDate[0] = convertUnixEpochToLocalDateTime(myMeta.regularMarketTime, myMeta.timezone);
+                            close[0] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.regularMarketPrice));
+                            open[0] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.regularMarketPrice));
+                            high[0] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.regularMarketPrice));
+                            low[0] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.regularMarketPrice));
+                            prevclose[0] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                            change[0] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[0] - prevclose[0])));
+                            if (prevclose[0] > 0)
                             {
-                                try
+                                //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
+                                changepercent[0] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[0] / prevclose[0]) * 100)));
+                            }
+                            else
+                            {
+                                changepercent[0] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
+                            }
+
+                        }
+                        else
+                        {
+                            Indicators myIndicators = myResult.indicators;
+
+                            //this will be typically only 1 row and quote will have list of close, high, low, open, volume
+                            Quote myQuote = myIndicators.quote[0];
+
+                            //this will be typically only 1 row and adjClose will have list of adjClose
+                            //Adjclose myAdjClose = null;
+                            //if (bIsDaily)
+                            //{
+                            //    myAdjClose = myIndicators.adjclose[0];
+                            //}
+
+                            if (myResult.timestamp != null)
+                            {
+                                quoteDate = new DateTime[myResult.timestamp.Count];
+
+                                open = new double[myResult.timestamp.Count];
+                                high = new double[myResult.timestamp.Count];
+                                low = new double[myResult.timestamp.Count];
+                                close = new double[myResult.timestamp.Count];
+                                volume = new double[myResult.timestamp.Count];
+                                change = new double[myResult.timestamp.Count];
+                                changepercent = new double[myResult.timestamp.Count];
+                                prevclose = new double[myResult.timestamp.Count];
+                                int outCtr = 0;
+                                for (int i = 0; i < myResult.timestamp.Count; i++)
+                                //for (int i = 0; i <= 0; i++)
                                 {
-                                    //if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
-                                    //&& (myQuote.volume[i] == null))
-                                    //if(myResult.timestamp[i] == null)
-                                    if ((myQuote.close[i] == null) && (myQuote.high[i] == null) &&
-                                        (myQuote.low[i] == null) && (myQuote.open[i] == null) && (myQuote.volume[i] == null))
+                                    try
                                     {
-                                        //I have seen cases where date is valid but rest of the price data including
-                                        //volume is null. Hence we will skip the record
-                                        continue;
-                                    }
-
-                                    quoteDate[outCtr] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
-
-                                    if (myQuote.close[i] == null)
-                                    {
-                                        close[outCtr] = 0.00;
-                                    }
-                                    else
-                                    {
-                                        //close = (double)myQuote.close[i];
-                                        close[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
-                                    }
-
-                                    if (myQuote.high[i] == null)
-                                    {
-                                        high[outCtr] = 0.00;
-                                    }
-                                    else
-                                    {
-                                        //high = (double)myQuote.high[i];
-                                        high[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
-                                    }
-
-                                    if (myQuote.low[i] == null)
-                                    {
-                                        low[outCtr] = 0.00;
-                                    }
-                                    else
-                                    {
-                                        //low = (double)myQuote.low[i];
-                                        low[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
-                                    }
-
-                                    if (myQuote.open[i] == null)
-                                    {
-                                        open[outCtr] = 0.00;
-                                    }
-                                    else
-                                    {
-                                        //open = (double)myQuote.open[i];
-                                        open[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
-                                    }
-                                    if (myQuote.volume[i] == null)
-                                    {
-                                        volume[outCtr] = 0;
-                                    }
-                                    else
-                                    {
-                                        volume[outCtr] = (int)myQuote.volume[i];
-                                    }
-                                    if (outCtr == 0)
-                                    {
-                                        try
+                                        //if ((myQuote.close[i] == null) && (myQuote.high[i] == null) && (myQuote.low[i] == null) && (myQuote.open[i] == null)
+                                        //&& (myQuote.volume[i] == null))
+                                        //if(myResult.timestamp[i] == null)
+                                        if ((myQuote.close[i] == null) && (myQuote.high[i] == null) &&
+                                            (myQuote.low[i] == null) && (myQuote.open[i] == null) && (myQuote.volume[i] == null))
                                         {
-                                            prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                                            //I have seen cases where date is valid but rest of the price data including
+                                            //volume is null. Hence we will skip the record
+                                            continue;
                                         }
-                                        catch
+
+                                        quoteDate[outCtr] = convertUnixEpochToLocalDateTime(myResult.timestamp[i], myMeta.timezone);
+
+                                        if (myQuote.close[i] == null)
                                         {
-                                            prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 0.00));
+                                            close[outCtr] = 0.00;
                                         }
+                                        else
+                                        {
+                                            //close = (double)myQuote.close[i];
+                                            close[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.close[i]));
+                                        }
+
+                                        if (myQuote.high[i] == null)
+                                        {
+                                            high[outCtr] = 0.00;
+                                        }
+                                        else
+                                        {
+                                            //high = (double)myQuote.high[i];
+                                            high[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.high[i]));
+                                        }
+
+                                        if (myQuote.low[i] == null)
+                                        {
+                                            low[outCtr] = 0.00;
+                                        }
+                                        else
+                                        {
+                                            //low = (double)myQuote.low[i];
+                                            low[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.low[i]));
+                                        }
+
+                                        if (myQuote.open[i] == null)
+                                        {
+                                            open[outCtr] = 0.00;
+                                        }
+                                        else
+                                        {
+                                            //open = (double)myQuote.open[i];
+                                            open[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myQuote.open[i]));
+                                        }
+                                        if (myQuote.volume[i] == null)
+                                        {
+                                            volume[outCtr] = 0;
+                                        }
+                                        else
+                                        {
+                                            volume[outCtr] = (int)myQuote.volume[i];
+                                        }
+                                        if (outCtr == 0)
+                                        {
+                                            try
+                                            {
+                                                prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", myMeta.chartPreviousClose));
+                                            }
+                                            catch
+                                            {
+                                                prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 0.00));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", close[outCtr - 1]));
+                                        }
+                                        //change[outCtr] = close[outCtr] - prevclose[outCtr];
+                                        change[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[outCtr] - prevclose[outCtr])));
+                                        if (prevclose[outCtr] > 0)
+                                        {
+                                            //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
+                                            changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[outCtr] / prevclose[outCtr]) * 100)));
+                                        }
+                                        else
+                                        {
+                                            changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
+                                        }
+                                        outCtr++;
                                     }
-                                    else
+                                    catch (Exception ex)
                                     {
-                                        prevclose[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", close[outCtr - 1]));
+                                        //throw ex;
                                     }
-                                    //change[outCtr] = close[outCtr] - prevclose[outCtr];
-                                    change[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", (close[outCtr] - prevclose[outCtr])));
-                                    if (prevclose[outCtr] > 0)
-                                    {
-                                        //changepercent[outCtr] = (change[i] / prevclose[i]) * 100;
-                                        changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", ((change[outCtr] / prevclose[outCtr]) * 100)));
-                                    }
-                                    else
-                                    {
-                                        changepercent[outCtr] = System.Convert.ToDouble(string.Format("{0:0.00}", 100));
-                                    }
-                                    outCtr++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    //throw ex;
                                 }
                             }
                         }
@@ -2875,6 +2946,10 @@ namespace MarketAnalytics.Data
                 else if (groupId == -95)
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().AsQueryable();
+                }
+                else if (groupId == -94)
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")));
                 }
                 else if (groupId > 0)
                 {

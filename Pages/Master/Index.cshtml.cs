@@ -15,6 +15,7 @@ namespace MarketAnalytics.Pages.Master
         private const string constV40N = "-97";
         private const string constV200 = "-96";
         private const string constAll = "-95";
+        private const string constMF = "-94";
 
         private const string constEditCategory = "0";
         private const string constShowDetails = "1";
@@ -68,7 +69,7 @@ namespace MarketAnalytics.Pages.Master
 
         public async Task OnGetAsync(string sortOrder, string currentFilter, string searchString, int? pageIndex, int? id,
                     bool? refreshAll, bool? history, bool? getQuote, bool? lifetimeHighLow, int? groupsel, bool? updateStrategy,
-                    string filterCategory)
+                    string filterCategory, string searchWhere)
         {
             if (_context.StockMaster != null)
             {
@@ -86,6 +87,9 @@ namespace MarketAnalytics.Pages.Master
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("Show V200", constV200);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show Mutual Funds", constMF);
                 groupList.Add(selectAll);
 
                 menuList.Clear();
@@ -134,7 +138,17 @@ namespace MarketAnalytics.Pages.Master
                 if (searchString != null)
                 {
                     pageIndex = 1;
-                    DbInitializer.SearchOnlineInsertInDB(_context, searchString);
+                    if (string.IsNullOrEmpty(searchWhere) == false)
+                    {
+                        if(searchWhere.Equals("Search Online"))
+                        {
+                            DbInitializer.SearchOnlineInsertInDB(_context, searchString);
+                        }
+                    }
+                    else
+                    {
+                        DbInitializer.SearchOnlineInsertInDB(_context, searchString);
+                    }
                 }
                 else
                 {
@@ -187,6 +201,11 @@ namespace MarketAnalytics.Pages.Master
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else
