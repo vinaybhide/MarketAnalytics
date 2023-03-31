@@ -33,8 +33,19 @@
             <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, null], </text>
         }
     }
-                                                                                                ]);
+   ]);
 
+        var dataIndex = google.visualization.arrayToDataTable([
+            ['DateIndex', 'CloseIndex', 'TIP'],
+    @foreach (var item in Model.listIndexHistory)
+    {
+            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Close, null], </text>
+    }
+   ]);
+
+   var dataJoined = google.visualization.data.join(data, dataIndex,'inner', [[0,0]], [1,2,3,4], [1,2]);
+   console.log(dataJoined);
+   dataJoined.setColumnProperty(6, 'role', 'tooltip');
         var sellArray = data.getFilteredRows([{ column: 5, value: 'SELL' }]);
         var buyArray = data.getFilteredRows([{ column: 5, value: 'BUY' }]);
         let sellArrayLength = sellArray.length;
@@ -105,7 +116,7 @@
         }
         else {
             //data.removeColumn(5);
-            drawDashboard(data, true);
+            drawDashboard(dataJoined, true);
         }
     }
 
@@ -298,7 +309,6 @@
         }
     }
 
-
     function drawDashboard(dataTable) {
         var dashboard = new google.visualization.Dashboard(document.getElementById('historychart_div'));
 
@@ -314,10 +324,13 @@
 
         });
         var candleChart;
-
-        candleChart = new google.visualization.ChartWrapper({
+        var investmentType = "@Model.InvestmentType";
+        if(investmentType != 'Mutual Fund')
+        {
+            candleChart = new google.visualization.ChartWrapper({
             'chartType': 'CandlestickChart',
             'containerId': 'dashboard_candle_chart_div',
+            'view': { 'columns': [0, 1,2,3,4] },
             'options': {
                 'pointsVisible': true,
                 'lineWidth': 3,
@@ -339,17 +352,20 @@
                 'height': '100%',
                 'chartArea': { 'width': '85%', 'height': '75%' },
                 'seriesType': 'candlesticks',
-                'view': { 'columns': [0, 4] },
 
                 'candlestick': {
                     'fallingColor': { 'strokeWidth': 0, 'fill': '#a52714' }, // red
                     'risingColor': { 'strokeWidth': 0, 'fill': '#0f9d58' }   // green
+
                     //'chartArea': {'width': '85%', 'height': '75%' }
                 },
-
+                // 'series':
+                //{
+                //    0: { 'type': 'candlesticks', 'view': { 'columns': [0, 1, 2, 3, 4] } }
+                //},
                 'tooltip': {
                     'textStyle': {
-                        'fontSize': 30,
+                        'fontSize': 10,
                         'color': 'red'
                     }
                 }
@@ -357,6 +373,100 @@
             //,
             //view: { columns: [0,3] }
         });
+        }
+        else
+        {
+            candleChart = new google.visualization.ChartWrapper({
+            'chartType': 'LineChart',
+            'containerId': 'dashboard_candle_chart_div',
+            'view': { 'columns': [0, 3] },
+            'options': {
+                'seriesType': 'line',
+                'curveType': 'function',
+                'color': 'black',
+                'pointsVisible': true,
+                'lineWidth': 1,
+                'legend': 'none',
+                'hAxis': {
+                    'title': 'Date',
+                    'format': 'd-MMM-y',
+                    'textStyle': {
+                        'fontSize': 10
+                    }
+                },
+                'vAxis': { 
+                    'title': '@chartUnit',
+                    'textStyle': {
+                        'fontSize': 10
+                    }
+                },
+                'width': '100%',
+                'height': '100%',
+                'chartArea': { 'width': '85%', 'height': '75%' },
+                'series':{
+                            0:{
+                                'type': 'line',
+                                'color': 'black',
+                                'curveType' : 'function',
+                                'lineWidth': 1, 
+                                'pointSize': 1, 
+                                'view':{'columns': [0,3] }
+                            }
+                        },
+                'tooltip': {
+                    'textStyle': {
+                        'fontSize': 10,
+                        'color': 'red'
+                    }
+                }
+            }
+            //,
+
+            //view: { columns: [0, 3] }
+        });
+        }
+
+        //var indexChart = new google.visualization.ChartWrapper({
+        //    'chartType': 'LineChart',
+        //    'containerId': 'dashboard_candle_chart_div',
+        //    'options': {
+        //        'curveType': 'function',
+        //        'pointsVisible': true,
+        //        'pointSize': 1,
+        //        'lineWidth': 1,
+        //        'legend': 'none',
+        //        'hAxis': {
+        //            'title': 'Date',
+        //            'format': 'd-MMM-y',
+        //            'textStyle': {
+        //                'fontSize': 10
+        //            }
+        //        },
+        //        'vAxis': {
+        //            'title': 'Stoch',
+        //            'textStyle': {
+        //                'fontSize': 10
+        //            }
+        //        },
+        //        'width': '100%',
+        //        'height': '100%',
+        //        'chartArea': { width: '85%', height: '75%' },
+        //        'seriesType': 'line',
+        //        'series': {
+        //            0: {
+        //                'type': 'line', 'view': { 'columns': [0, 5] }, 'lineWidth': 1, 'pointSize': 1, 'color': '#008000'
+        //            },
+        //        },
+        //        //'explorer': { 'actions': ['dragToZoom', 'rightClickToReset'] },
+        //        'tooltip': {
+        //            'textStyle': {
+        //                'fontSize': 10,
+        //                'color': 'red'
+        //            }
+        //        }
+        //    }
+        //});
+
 
         var lineChart = new google.visualization.ChartWrapper({
             chartType: 'AnnotationChart',
@@ -365,10 +475,8 @@
                 annotations: {
                     displayAnnotations: true
                 },
-                view: { columns: [0, 3] }
-            }
-            //,
-            //view: { columns: [0, 3] }
+            'view': { 'columns': [0, 4] }
+            },
         });
 
         dashboard.bind(dateRangeSlider, [candleChart, lineChart]);
@@ -409,6 +517,18 @@ div class="text-center">
 <h4>@Model.ChartContent - @Model.CompanyName (@Model.Symbol)</h4>
 @*<div id="historychart_div" style="font-size:small;width: 1200px; height: 700px">*@
 <div id="historychart_div" style="border: 1px solid #ccc">
+        <form asp-page="./chartHistory" method="get">
+                    <div class="form-actions no-color">
+                        <input name="onlyHistory" value="@Model.OnlyHistory" type="hidden" />
+                        <input name="stockid" value="@Model.CurrentID" type="hidden" />
+                        <input name="fromDate" value="@Model.FromDate" type="hidden" />
+                        <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
+                            <option value="-1">Select Index to Compare</option>
+                        </select>
+                        <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
+
+                    </div>
+                </form>
     <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
     <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
     <div id="dashboard_line_chart_div"></div>

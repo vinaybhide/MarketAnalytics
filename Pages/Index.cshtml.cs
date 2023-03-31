@@ -74,11 +74,11 @@ namespace MarketAnalytics.Pages
             }
             if (selectedRecord != null)
             {
-                //lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
-                //if (string.IsNullOrEmpty(lastPriceDate) == false)
-                //{
+                lastPriceDate = DbInitializer.IsHistoryUpdated(_context, selectedRecord);
+                if (string.IsNullOrEmpty(lastPriceDate) == false)
+                {
                     DbInitializer.InitializeHistory(_context, selectedRecord, lastPriceDate);
-                //}
+                }
                 //IQueryable<StockPriceHistory> stockpriceIQ = from s in _context.StockPriceHistory select s;
                 //List<StockPriceHistory> chartDataList = (stockpriceIQ.Where(s => (s.StockMasterID == CurrentID))).ToList();
                 chartDataList = selectedRecord.collectionStockPriceHistory
