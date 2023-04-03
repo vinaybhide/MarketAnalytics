@@ -33,19 +33,18 @@
             <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Low, @item.Open, @item.Close, @item.High, null], </text>
         }
     }
-   ]);
+       ]);
 
         var dataIndex = google.visualization.arrayToDataTable([
             ['DateIndex', 'CloseIndex', 'TIP'],
     @foreach (var item in Model.listIndexHistory)
     {
-            <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Close, null], </text>
+        <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Close, null], </text>
     }
-   ]);
+       ]);
 
-   var dataJoined = google.visualization.data.join(data, dataIndex,'inner', [[0,0]], [1,2,3,4], [1,2]);
-   console.log(dataJoined);
-   dataJoined.setColumnProperty(6, 'role', 'tooltip');
+        var dataJoined = google.visualization.data.join(data, dataIndex, 'inner', [[0, 0]], [1, 2, 3, 4], [1, 2]);
+        dataJoined.setColumnProperty(6, 'role', 'tooltip');
         var sellArray = data.getFilteredRows([{ column: 5, value: 'SELL' }]);
         var buyArray = data.getFilteredRows([{ column: 5, value: 'BUY' }]);
         let sellArrayLength = sellArray.length;
@@ -120,194 +119,6 @@
         }
     }
 
-    function drawAdditionalHAxis(chart, dataTable) {
-        var layout = chart.getChartLayoutInterface();
-        var chartArea = layout.getChartAreaBoundingBox();
-        var svg = chart.getContainer().getElementsByTagName('svg')[0];
-        //var lastVal = dataTable.getValue(dataTable.getNumberOfRows() - 1, 1);
-        //var lastVal = dataTable.getValue(0, 3);
-        var rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'SELL' }]);
-        let len = rowIndex.length;
-        var lastVal;
-        var yLoc;
-        for (let i = 0; i < len; i++) {
-            lastVal = dataTable.getValue(rowIndex[i], 3);
-            yLoc = layout.getYLocation(lastVal);
-            svg.appendChild(createLine(chartArea.left, yLoc, chartArea.width + chartArea.left, yLoc, '#cccccc', 2)); // axis line
-            //svg.appendChild(createText(chartArea.left - 60, yLoc + 5, 'Arial', '13', 'Sell :' + lastVal)); // axis label
-            svg.appendChild(createText(chartArea.width + 80, yLoc, 'Arial', '13', 'Sell :' + lastVal)); // axis label
-        }
-
-        rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'BUY' }]);
-        len = rowIndex.length;
-        for (let i = 0; i < len; i++) {
-            lastVal = dataTable.getValue(rowIndex[i], 1);
-            yLoc = layout.getYLocation(lastVal);
-            svg.appendChild(createLine(chartArea.left, yLoc, chartArea.width + chartArea.left, yLoc, '#cccccc', 2)); // axis line
-            //svg.appendChild(createText(chartArea.left - 60, yLoc + 5, 'Arial', '13', 'Buy :' + lastVal)); // axis label
-            svg.appendChild(createText(chartArea.width + 80, yLoc, 'Arial', '13', 'Buy :' + lastVal)); // axis label
-        }
-    }
-
-    function drawAdditionalVAxis(chart, dataTable) {
-        var layout = chart.getChartLayoutInterface();
-        var chartArea = layout.getChartAreaBoundingBox();
-
-        var svg = chart.getContainer().getElementsByTagName('svg')[0];
-        //var lastVal = dataTable.getValue(dataTable.getNumberOfRows() - 1, 1);
-        //var lastVal = dataTable.getValue(0, 3);
-        var dateVal;
-        var xLoc;
-        var buyVal;
-        var yLoc
-        var rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'SELL' }]);
-        let len = rowIndex.length;
-        for (let i = 0; i < len; i++) {
-            dateVal = dataTable.getValue(rowIndex[i], 0);
-            xLoc = layout.getXLocation(dateVal);
-            buyVal = dataTable.getValue(rowIndex[i], 3);
-            yLoc = layout.getYLocation(buyVal);
-            svg.appendChild(createLine(xLoc, chartArea.top, xLoc, chartArea.height, '#cccccc', 2)); // axis line
-            //svg.appendChild(createText(xLoc, chartArea.height + 0, 'Arial', '13', lastVal)); // axis label
-            svg.appendChild(createCircle(xLoc, yLoc)); // axis label
-        }
-        rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'BUY' }]);
-        len = rowIndex.length;
-        for (let i = 0; i < len; i++) {
-            lastVal = dataTable.getValue(rowIndex[i], 0);
-            xLoc = layout.getXLocation(lastVal);
-            buyVal = dataTable.getValue(rowIndex[i], 1);
-            yLoc = layout.getYLocation(buyVal);
-            svg.appendChild(createLine(xLoc, chartArea.top, xLoc, chartArea.height, '#cccccc', 2)); // vertical line
-            //svg.appendChild(createLine(xLoc - 20, axisdata, xLoc + 20, axisdata, '#000000', 4)); // horizontal line
-            svg.appendChild(createCircle(xLoc, yLoc)); // axis label
-        }
-    }
-
-    function createLine(x1, y1, x2, y2, color, w) {
-        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x1);
-        line.setAttribute('y1', y1);
-        line.setAttribute('x2', x2);
-        line.setAttribute('y2', y2);
-        line.setAttribute('stroke', color);
-        line.setAttribute('stroke-width', w);
-        line.setAttribute('opacity', '0.5');
-        return line;
-    }
-
-    function createCircle(x1, y1) {
-        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttributeNS(null, 'cx', x1);
-        circle.setAttributeNS(null, 'cy', y1);
-        circle.setAttributeNS(null, 'r', 5);
-        circle.setAttributeNS(null, 'fill', '#f72');
-        circle.setAttributeNS(null, 'stroke', '#000000');
-        circle.setAttributeNS(null, 'stroke-width', 2);
-        circle.setAttributeNS(null, 'opacity', '0.5');
-        return circle;
-    }
-
-    function createText(x, y, fontFamily, fontSize, value) {
-        var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', x);
-        text.setAttribute('y', y);
-        text.setAttribute('font-family', fontFamily);
-        text.setAttribute('font-weight', 'normal');
-        text.setAttribute('font-size', fontSize);
-        text.setAttribute('font-style', 'italic');
-        //text.setAttribute('opacity', '0.5');
-        text.innerHTML = value;
-        return text;
-    }
-    
-    let listenerHandler;
-    function drawBuySell(dataTable){
-        var dashboard = new google.visualization.Dashboard(document.getElementById('historychart_div'));
-
-        var dateRangeSlider = new google.visualization.ControlWrapper({
-            //'controlType': 'ChartRangeFilter',
-            'controlType': 'DateRangeFilter',
-            'containerId': 'filter_div',
-            'options': {
-                'filterColumnLabel': 'Date'
-            }
-            //,
-            //view: { columns: [0, 3] }
-        });
-        var candleChart;
-        candleChart = new google.visualization.ChartWrapper({
-            'chartType': 'CandlestickChart',
-            'containerId': 'dashboard_candle_chart_div',
-            'options': {
-                //title: '@chartTitleCandle',
-                'curveType': 'function',
-                'pointsVisible': true,
-                'lineWidth': 3,
-                'legend': 'none',
-                'hAxis': {
-                    'title': 'Date',
-                    'format': 'd-MMM-y',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'vAxis': {
-                    'title': '@chartUnit',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'width': '100%',
-                'height': '100%',
-                'chartArea': { width: '85%', height: '75%' },
-                'seriesType': 'candlesticks',
-                'candlestick': {
-                    'fallingColor': { 'strokeWidth': 0, 'fill': '#a52714' }, // red
-                    'risingColor': { 'strokeWidth': 0, 'fill': '#0f9d58' },   // green
-                    'view': { 'columns': [0, 4] }
-                },
-                'tooltip': {
-                    'textStyle': {
-                        'fontSize': 10,
-                        'color': 'red'
-                    }
-                }
-
-            }
-            //,
-            //view: { columns: [0,3] }
-        });
-        //do drawing here
-        dashboard.bind(dateRangeSlider, candleChart);
-        //dashboard.bind(dateRangeSlider, candleChart);
-        google.visualization.events.addListener(candleChart, 'ready', onReady);
-        dashboard.draw(dataTable);
-
-        //google.visualization.events.addListener(candleChart, 'ready', onReady);
-
-        function onReady() {
-            if(listenerHandler != null)
-            {
-                google.visualization.events.removeListener(listenerHandler);
-            }
-            listenerHandler = google.visualization.events.addListener(candleChart.getChart(), 'select', selectHandler);
-            drawAdditionalHAxis(candleChart.getChart(), dataTable);  //render custom axis (line & label) for the last value
-            drawAdditionalVAxis(candleChart.getChart(), dataTable);  //render custom axis (line & label) for the last value
-        }
-
-        function selectHandler() {
-            var selectedItem = candleChart.getChart().getSelection()[0];
-            if (selectedItem) {
-                var date = candleChart.getDataTable().getValue(selectedItem.row, 0);
-                var low = candleChart.getDataTable().getValue(selectedItem.row, 1);
-                var open = candleChart.getDataTable().getValue(selectedItem.row, 2);
-                var close = candleChart.getDataTable().getValue(selectedItem.row, 3);
-                var high = candleChart.getDataTable().getValue(selectedItem.row, 4);
-                alert("Date: " + date.toDateString() + "\n low: " + low + "\n open: " + open + "\n close: " + close + "\n high: " + high);
-            }
-        }
-    }
 
     function drawDashboard(dataTable) {
         var dashboard = new google.visualization.Dashboard(document.getElementById('historychart_div'));
@@ -325,157 +136,162 @@
         });
         var candleChart;
         var investmentType = "@Model.InvestmentType";
-        if(investmentType != 'Mutual Fund')
-        {
+        if (investmentType != 'Mutual Fund') {
             candleChart = new google.visualization.ChartWrapper({
-            'chartType': 'CandlestickChart',
-            'containerId': 'dashboard_candle_chart_div',
-            'view': { 'columns': [0, 1,2,3,4] },
-            'options': {
-                'pointsVisible': true,
-                'lineWidth': 3,
-                'legend': 'none',
-                'hAxis': {
-                    'title': 'Date',
-                    'format': 'd-MMM-y',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'vAxis': { 
-                    'title': '@chartUnit',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'width': '100%',
-                'height': '100%',
-                'chartArea': { 'width': '85%', 'height': '75%' },
-                'seriesType': 'candlesticks',
+                'chartType': 'CandlestickChart',
+                'containerId': 'dashboard_candle_chart_div',
+                'view': { 'columns': [0, 1, 2, 3, 4, 5] },
+                'options': {
+                    'pointsVisible': true,
+                    'lineWidth': 3,
+                    'legend': 'none',
+                    //'legend':{position: 'top', textStyle: {color: 'blue', fontSize: 10}},
+                    'hAxis': {
+                        'title': 'Date',
+                        'format': 'd-MMM-y',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    'vAxis': {
+                        'title': '@chartUnit',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    vAxes: {
+                        // Adds titles to each axis.
+                        0: { title: 'Close Price', 'titletextStyle': { 'fontSize': 5 } },
+                        1: { title: 'Index Close', 'titletextStyle': { 'fontSize': 5 } }
+                    },
+                    'width': '100%',
+                    'height': '100%',
+                    'chartArea': { 'width': '85%', 'height': '75%' },
+                    'seriesType': 'candlesticks',
 
-                'candlestick': {
-                    'fallingColor': { 'strokeWidth': 0, 'fill': '#a52714' }, // red
-                    'risingColor': { 'strokeWidth': 0, 'fill': '#0f9d58' }   // green
+                    'candlestick': {
+                        'fallingColor': { 'strokeWidth': 0, 'fill': '#a52714' }, // red
+                        'risingColor': { 'strokeWidth': 0, 'fill': '#0f9d58' }   // green
 
-                    //'chartArea': {'width': '85%', 'height': '75%' }
-                },
-                // 'series':
-                //{
-                //    0: { 'type': 'candlesticks', 'view': { 'columns': [0, 1, 2, 3, 4] } }
-                //},
-                'tooltip': {
-                    'textStyle': {
-                        'fontSize': 10,
-                        'color': 'red'
-                    }
-                }
-            }
-            //,
-            //view: { columns: [0,3] }
-        });
-        }
-        else
-        {
-            candleChart = new google.visualization.ChartWrapper({
-            'chartType': 'LineChart',
-            'containerId': 'dashboard_candle_chart_div',
-            'view': { 'columns': [0, 3] },
-            'options': {
-                'seriesType': 'line',
-                'curveType': 'function',
-                'color': 'black',
-                'pointsVisible': true,
-                'lineWidth': 1,
-                'legend': 'none',
-                'hAxis': {
-                    'title': 'Date',
-                    'format': 'd-MMM-y',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'vAxis': { 
-                    'title': '@chartUnit',
-                    'textStyle': {
-                        'fontSize': 10
-                    }
-                },
-                'width': '100%',
-                'height': '100%',
-                'chartArea': { 'width': '85%', 'height': '75%' },
-                'series':{
-                            0:{
-                                'type': 'line',
-                                'color': 'black',
-                                'curveType' : 'function',
-                                'lineWidth': 1, 
-                                'pointSize': 1, 
-                                'view':{'columns': [0,3] }
-                            }
+                        //'chartArea': {'width': '85%', 'height': '75%' }
+                    },
+                    // 'series':
+                    //{
+                    //    0: { 'type': 'candlesticks', 'view': { 'columns': [0, 1, 2, 3, 4] } }
+                    //},
+                    'series': {
+                        0: {
+                            'type': 'candlesticks',
+                            //'color': 'black',
+                            //'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 1, 2, 3] },
+                            'targetAxisIndex': 0
                         },
-                'tooltip': {
-                    'textStyle': {
-                        'fontSize': 10,
-                        'color': 'red'
+                        1: {
+                            'type': 'line',
+                            'color': 'blue',
+                            'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 5] },
+                            'targetAxisIndex': 1
+                        }
+                    },
+
+                    'tooltip': {
+                        'textStyle': {
+                            'fontSize': 10,
+                            'color': 'red'
+                        }
                     }
                 }
-            }
-            //,
+                //,
+                //view: { columns: [0,3] }
+            });
+        }
+        else {
+            candleChart = new google.visualization.ChartWrapper({
+                'chartType': 'LineChart',
+                'containerId': 'dashboard_candle_chart_div',
+                'view': { 'columns': [0, 3, 5] },
+                'options': {
+                    'seriesType': 'line',
+                    'curveType': 'function',
+                    'color': 'black',
+                    'pointsVisible': true,
+                    'lineWidth': 1,
+                    'legend': 'none',
+                    'hAxis': {
+                        'title': 'Date',
+                        'format': 'd-MMM-y',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    'vAxis': {
+                        //'title': '@chartUnit',
+                        'textStyle': { 'fontSize': 10}
+                        //0: { title: 'Close Prics', 'textStyle': { 'fontSize': 10},},
+                        //1: { title: 'Index Close', 'textStyle': { 'fontSize': 10},}
+                    },
+                    vAxes: {
+                        // Adds titles to each axis.
+                        0: { title: 'Close Price', 'titletextStyle': { 'fontSize': 5} },
+                        1: { title: 'Index Close', 'titletextStyle': { 'fontSize': 5 } }
+                    },
+                    'width': '100%',
+                    'height': '100%',
+                    'chartArea': { 'width': '85%', 'height': '75%' },
+                    'series': {
+                        0: {
+                            'type': 'line',
+                            'color': 'black',
+                            'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 3] },
+                            'targetAxisIndex': 0
+                        },
+                        1: {
+                            'type': 'line',
+                            'color': 'blue',
+                            'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 5] },
+                            'targetAxisIndex': 1
+                        }
+                    },
+                    //'axes': {
+                    //    // Adds labels to each axis; they don't have to match the axis names.
+                    //    'y': {
+                    //        Close: { label: 'Close Price' },
+                    //        CloseIndex: { label: 'Index' }
+                    //    }
+                    //},
+                    'tooltip': {
+                        'textStyle': {
+                            'fontSize': 10,
+                            'color': 'red'
+                        }
+                    }
+                }
+                //,
 
-            //view: { columns: [0, 3] }
-        });
+                //view: { columns: [0, 3] }
+            });
         }
 
-        //var indexChart = new google.visualization.ChartWrapper({
-        //    'chartType': 'LineChart',
-        //    'containerId': 'dashboard_candle_chart_div',
-        //    'options': {
-        //        'curveType': 'function',
-        //        'pointsVisible': true,
-        //        'pointSize': 1,
-        //        'lineWidth': 1,
-        //        'legend': 'none',
-        //        'hAxis': {
-        //            'title': 'Date',
-        //            'format': 'd-MMM-y',
-        //            'textStyle': {
-        //                'fontSize': 10
-        //            }
-        //        },
-        //        'vAxis': {
-        //            'title': 'Stoch',
-        //            'textStyle': {
-        //                'fontSize': 10
-        //            }
-        //        },
-        //        'width': '100%',
-        //        'height': '100%',
-        //        'chartArea': { width: '85%', height: '75%' },
-        //        'seriesType': 'line',
-        //        'series': {
-        //            0: {
-        //                'type': 'line', 'view': { 'columns': [0, 5] }, 'lineWidth': 1, 'pointSize': 1, 'color': '#008000'
-        //            },
-        //        },
-        //        //'explorer': { 'actions': ['dragToZoom', 'rightClickToReset'] },
-        //        'tooltip': {
-        //            'textStyle': {
-        //                'fontSize': 10,
-        //                'color': 'red'
-        //            }
-        //        }
-        //    }
-        //});
-
-
-        var lineChart = new google.visualization.ChartWrapper({
+         var lineChart = new google.visualization.ChartWrapper({
             chartType: 'AnnotationChart',
             containerId: 'dashboard_line_chart_div',
             options: {
                 annotations: {
                     displayAnnotations: true
                 },
-            'view': { 'columns': [0, 4] }
+                'view': { 'columns': [0, 1,2,3,4] }
             },
         });
 
@@ -483,6 +299,196 @@
         //dashboard.bind(dateRangeSlider, candleChart);
         dashboard.draw(dataTable);
     }
+/*
+        function drawAdditionalHAxis(chart, dataTable) {
+            var layout = chart.getChartLayoutInterface();
+            var chartArea = layout.getChartAreaBoundingBox();
+            var svg = chart.getContainer().getElementsByTagName('svg')[0];
+            //var lastVal = dataTable.getValue(dataTable.getNumberOfRows() - 1, 1);
+            //var lastVal = dataTable.getValue(0, 3);
+            var rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'SELL' }]);
+            let len = rowIndex.length;
+            var lastVal;
+            var yLoc;
+            for (let i = 0; i < len; i++) {
+                lastVal = dataTable.getValue(rowIndex[i], 3);
+                yLoc = layout.getYLocation(lastVal);
+                svg.appendChild(createLine(chartArea.left, yLoc, chartArea.width + chartArea.left, yLoc, '#cccccc', 2)); // axis line
+                //svg.appendChild(createText(chartArea.left - 60, yLoc + 5, 'Arial', '13', 'Sell :' + lastVal)); // axis label
+                svg.appendChild(createText(chartArea.width + 80, yLoc, 'Arial', '13', 'Sell :' + lastVal)); // axis label
+            }
+
+            rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'BUY' }]);
+            len = rowIndex.length;
+            for (let i = 0; i < len; i++) {
+                lastVal = dataTable.getValue(rowIndex[i], 1);
+                yLoc = layout.getYLocation(lastVal);
+                svg.appendChild(createLine(chartArea.left, yLoc, chartArea.width + chartArea.left, yLoc, '#cccccc', 2)); // axis line
+                //svg.appendChild(createText(chartArea.left - 60, yLoc + 5, 'Arial', '13', 'Buy :' + lastVal)); // axis label
+                svg.appendChild(createText(chartArea.width + 80, yLoc, 'Arial', '13', 'Buy :' + lastVal)); // axis label
+            }
+        }
+
+        function drawAdditionalVAxis(chart, dataTable) {
+            var layout = chart.getChartLayoutInterface();
+            var chartArea = layout.getChartAreaBoundingBox();
+
+            var svg = chart.getContainer().getElementsByTagName('svg')[0];
+            //var lastVal = dataTable.getValue(dataTable.getNumberOfRows() - 1, 1);
+            //var lastVal = dataTable.getValue(0, 3);
+            var dateVal;
+            var xLoc;
+            var buyVal;
+            var yLoc
+            var rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'SELL' }]);
+            let len = rowIndex.length;
+            for (let i = 0; i < len; i++) {
+                dateVal = dataTable.getValue(rowIndex[i], 0);
+                xLoc = layout.getXLocation(dateVal);
+                buyVal = dataTable.getValue(rowIndex[i], 3);
+                yLoc = layout.getYLocation(buyVal);
+                svg.appendChild(createLine(xLoc, chartArea.top, xLoc, chartArea.height, '#cccccc', 2)); // axis line
+                //svg.appendChild(createText(xLoc, chartArea.height + 0, 'Arial', '13', lastVal)); // axis label
+                svg.appendChild(createCircle(xLoc, yLoc)); // axis label
+            }
+            rowIndex = dataTable.getFilteredRows([{ column: 5, value: 'BUY' }]);
+            len = rowIndex.length;
+            for (let i = 0; i < len; i++) {
+                lastVal = dataTable.getValue(rowIndex[i], 0);
+                xLoc = layout.getXLocation(lastVal);
+                buyVal = dataTable.getValue(rowIndex[i], 1);
+                yLoc = layout.getYLocation(buyVal);
+                svg.appendChild(createLine(xLoc, chartArea.top, xLoc, chartArea.height, '#cccccc', 2)); // vertical line
+                //svg.appendChild(createLine(xLoc - 20, axisdata, xLoc + 20, axisdata, '#000000', 4)); // horizontal line
+                svg.appendChild(createCircle(xLoc, yLoc)); // axis label
+            }
+        }
+
+        function createLine(x1, y1, x2, y2, color, w) {
+            var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', w);
+            line.setAttribute('opacity', '0.5');
+            return line;
+        }
+
+        function createCircle(x1, y1) {
+            var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttributeNS(null, 'cx', x1);
+            circle.setAttributeNS(null, 'cy', y1);
+            circle.setAttributeNS(null, 'r', 5);
+            circle.setAttributeNS(null, 'fill', '#f72');
+            circle.setAttributeNS(null, 'stroke', '#000000');
+            circle.setAttributeNS(null, 'stroke-width', 2);
+            circle.setAttributeNS(null, 'opacity', '0.5');
+            return circle;
+        }
+
+        function createText(x, y, fontFamily, fontSize, value) {
+            var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', y);
+            text.setAttribute('font-family', fontFamily);
+            text.setAttribute('font-weight', 'normal');
+            text.setAttribute('font-size', fontSize);
+            text.setAttribute('font-style', 'italic');
+            //text.setAttribute('opacity', '0.5');
+            text.innerHTML = value;
+            return text;
+        }
+
+        let listenerHandler;
+        function drawBuySell(dataTable) {
+            var dashboard = new google.visualization.Dashboard(document.getElementById('historychart_div'));
+
+            var dateRangeSlider = new google.visualization.ControlWrapper({
+                //'controlType': 'ChartRangeFilter',
+                'controlType': 'DateRangeFilter',
+                'containerId': 'filter_div',
+                'options': {
+                    'filterColumnLabel': 'Date'
+                }
+                //,
+                //view: { columns: [0, 3] }
+            });
+            var candleChart;
+            candleChart = new google.visualization.ChartWrapper({
+                'chartType': 'CandlestickChart',
+                'containerId': 'dashboard_candle_chart_div',
+                'options': {
+                    //title: '@chartTitleCandle',
+                    'curveType': 'function',
+                    'pointsVisible': true,
+                    'lineWidth': 3,
+                    'legend': 'none',
+                    'hAxis': {
+                        'title': 'Date',
+                        'format': 'd-MMM-y',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    'vAxis': {
+                        'title': '@chartUnit',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    'width': '100%',
+                    'height': '100%',
+                    'chartArea': { width: '85%', height: '75%' },
+                    'seriesType': 'candlesticks',
+                    'candlestick': {
+                        'fallingColor': { 'strokeWidth': 0, 'fill': '#a52714' }, // red
+                        'risingColor': { 'strokeWidth': 0, 'fill': '#0f9d58' },   // green
+                        'view': { 'columns': [0, 4] }
+                    },
+                    'tooltip': {
+                        'textStyle': {
+                            'fontSize': 10,
+                            'color': 'red'
+                        }
+                    }
+
+                }
+                //,
+                //view: { columns: [0,3] }
+            });
+            //do drawing here
+            dashboard.bind(dateRangeSlider, candleChart);
+            //dashboard.bind(dateRangeSlider, candleChart);
+            google.visualization.events.addListener(candleChart, 'ready', onReady);
+            dashboard.draw(dataTable);
+
+            //google.visualization.events.addListener(candleChart, 'ready', onReady);
+
+            function onReady() {
+                if (listenerHandler != null) {
+                    google.visualization.events.removeListener(listenerHandler);
+                }
+                listenerHandler = google.visualization.events.addListener(candleChart.getChart(), 'select', selectHandler);
+                drawAdditionalHAxis(candleChart.getChart(), dataTable);  //render custom axis (line & label) for the last value
+                drawAdditionalVAxis(candleChart.getChart(), dataTable);  //render custom axis (line & label) for the last value
+            }
+
+            function selectHandler() {
+                var selectedItem = candleChart.getChart().getSelection()[0];
+                if (selectedItem) {
+                    var date = candleChart.getDataTable().getValue(selectedItem.row, 0);
+                    var low = candleChart.getDataTable().getValue(selectedItem.row, 1);
+                    var open = candleChart.getDataTable().getValue(selectedItem.row, 2);
+                    var close = candleChart.getDataTable().getValue(selectedItem.row, 3);
+                    var high = candleChart.getDataTable().getValue(selectedItem.row, 4);
+                    alert("Date: " + date.toDateString() + "\n low: " + low + "\n open: " + open + "\n close: " + close + "\n high: " + high);
+                }
+            }
+        }
+
+*/
 </script>
 
 
@@ -517,18 +523,19 @@ div class="text-center">
 <h4>@Model.ChartContent - @Model.CompanyName (@Model.Symbol)</h4>
 @*<div id="historychart_div" style="font-size:small;width: 1200px; height: 700px">*@
 <div id="historychart_div" style="border: 1px solid #ccc">
-        <form asp-page="./chartHistory" method="get">
-                    <div class="form-actions no-color">
-                        <input name="onlyHistory" value="@Model.OnlyHistory" type="hidden" />
-                        <input name="stockid" value="@Model.CurrentID" type="hidden" />
-                        <input name="fromDate" value="@Model.FromDate" type="hidden" />
-                        <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
-                            <option value="-1">Select Index to Compare</option>
-                        </select>
-                        <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
+    <form asp-page="./chartHistory" method="get">
+        <div class="form-actions no-color">
+            <input name="onlyHistory" value="@Model.OnlyHistory" type="hidden" />
+            <input name="stockid" value="@Model.CurrentID" type="hidden" />
+            <input name="fromDate" value="@Model.FromDate" type="hidden" />
+            <input name="quantity" value="@Model.QuantityHeld" type="hidden" />
+            <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
+                <option value="-1">Select Index to Compare</option>
+            </select>
+            <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
 
-                    </div>
-                </form>
+        </div>
+    </form>
     <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
     <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
     <div id="dashboard_line_chart_div"></div>

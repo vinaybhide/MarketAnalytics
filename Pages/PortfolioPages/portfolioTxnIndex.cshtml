@@ -113,14 +113,15 @@
                       asp-route-summarySortOrder="@Model.CurrentSummarySort"
                       asp-route-openSortOrder="@Model.CurrentOpenSort"
                       asp-route-closedSortOrder="@Model.CurrentClosedSort"
-                   asp-route-pageSummaryIndex="@(Model.portfolioSummaryOpenTxn != null ? Model.portfolioSummaryOpenTxn.PageIndex : null)"
+                      asp-route-quantity="@item.TotalQty"
+                      asp-route-pageSummaryIndex="@(Model.portfolioSummaryOpenTxn != null ? Model.portfolioSummaryOpenTxn.PageIndex : null)"
                    asp-route-pageIndex="@(Model.portfolioOpenTxn != null ? Model.portfolioOpenTxn.PageIndex : null)"
                    asp-route-pageIndexClosed="@(Model.portfolioClosedTxn !=null? Model.portfolioClosedTxn.PageIndex : null)"
                       asp-route-currentFilter="@Model.CurrentFilter">
                             <div class="form-actions no-color" style="font-size:small">
 
                                 <select class="summarymenuitemselect" name="summarymenuitemsel" asp-items="Model.summarymenuList" style="font-size:small">
-                                    <option selected value="-1" style="font-size:small">@item.CompName</option>
+                                    <option selected="selected" value="-1" style="font-size:small">@item.CompName</option>
                                 </select>
                             </div>
                         </form>

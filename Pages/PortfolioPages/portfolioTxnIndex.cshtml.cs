@@ -25,6 +25,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
         const string constV20 = "9";
         const string constBullishEngulfing = "10";
         const string constBearishEngulfing = "11";
+        const string constEntityValuation = "12";
 
         const string constClosePosition = "0";
         const string constEditTxn = "1";
@@ -154,6 +155,9 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     summarymenuList.Add(summarymenuItem);
 
                     summarymenuItem = new SelectListItem("Get Quote", constGetQuote);
+                    summarymenuList.Add(summarymenuItem);
+                    
+                    summarymenuItem = new SelectListItem("Chart-Valuation", constEntityValuation);
                     summarymenuList.Add(summarymenuItem);
 
                     summarymenuItem = new SelectListItem("Update Strategy", constUpdateStrategy);
@@ -340,7 +344,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         public IActionResult OnPostSummaryAction(string summarymenuitemsel, int? masterid, int? stockid, 
             int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, 
-            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
+            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter, string quantity)
         {
             if ((summarymenuitemsel.Equals("-1") == false) && (masterid != null) && (stockid != null))
             {
@@ -379,7 +383,12 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             refreshAll = false,
                             lifetimeHighLow = false
                         });
-
+                    case constEntityValuation://case of show entity valuation
+                        return RedirectToPage("/StandardIndicators/chartEntityValuation", new
+                        {
+                            stockid = stockid,
+                            quantity = quantity
+                        });
                     case constUpdateStrategy://case of update get quote, buy sell, high low
                         return RedirectToPage("./portfolioTxnIndex", new
                         {

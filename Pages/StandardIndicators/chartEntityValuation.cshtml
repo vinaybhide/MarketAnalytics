@@ -1,0 +1,157 @@
+﻿@page
+@model MarketAnalytics.Pages.StandardIndicators.chartEntityValuation
+@{
+    ViewData["Title"] = "Entity Valuation Chart";
+    string chartTitleCandle = "Valuation chart";
+    string chartUnit = "Daily Price";
+
+}
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['line', 'corechart', 'controls', 'annotationchart'] });
+    google.charts.setOnLoadCallback(drawValuationChart);
+
+    function drawValuationChart() {
+        var allHistory = true;
+        var data = google.visualization.arrayToDataTable([
+            ['Date', 'Valuation', 'TIP'],
+            @foreach (var item in Model.listHistory)
+            {
+                <text>[new Date('@item.PriceDate.ToShortDateString()'), @(System.Convert.ToDouble(string.Format("{0:0.00}", Model.QuantityHeld * item.Close))), '@("Date: " +item.PriceDate.ToShortDateString() +" Valuation = " + System.Convert.ToDouble(string.Format("{0:0.00}", Model.QuantityHeld * item.Close))  + " (Quantity: " + Model.QuantityHeld.ToString() + " and Price: " + item.Close + ")")' ], </text>
+            }
+           ]);
+
+        var dataIndex = google.visualization.arrayToDataTable([
+            ['DateIndex', 'CloseIndex'],
+            @foreach (var item in Model.listIndexHistory)
+            {
+                <text>[new Date('@item.PriceDate.ToShortDateString()'), @item.Close], </text>
+            }
+           ]);
+
+        var dataJoined = google.visualization.data.join(dataIndex, data, 'inner', [[0, 0]], [1], [1,2]);
+        dataJoined.setColumnProperty(3, 'role', 'tooltip');
+        console.log(dataJoined);
+        drawDashboard(dataJoined, true);
+    }
+
+
+    function drawDashboard(dataTable) {
+        var dashboard = new google.visualization.Dashboard(document.getElementById('valuationchart_div'));
+
+        var dateRangeSlider = new google.visualization.ControlWrapper({
+            //'controlType': 'ChartRangeFilter',
+            'controlType': 'DateRangeFilter',
+            'containerId': 'filter_div',
+            'options': {
+                'filterColumnLabel': 'DateIndex'
+            }
+            //,
+            //view: { columns: [0, 3] }
+
+        });
+
+        var candleChart = new google.visualization.ChartWrapper({
+                'chartType': 'LineChart',
+                'containerId': 'dashboard_candle_chart_div',
+                'view': { 'columns': [0, 1, 2,3] },
+                'options': {
+                    'seriesType': 'line',
+                    'curveType': 'function',
+                    'color': 'black',
+                    'pointsVisible': true,
+                    'lineWidth': 1,
+                    'legend': 'none',
+                    'hAxis': {
+                        'title': 'Date',
+                        'format': 'd-MMM-y',
+                        'textStyle': {
+                            'fontSize': 10
+                        }
+                    },
+                    'vAxis': {
+                        'textStyle': { 'fontSize': 10}
+                    },
+                    vAxes: {
+                        // Adds titles to each axis.
+                        0: { title: '@Model.IndexSymbol', 'titletextStyle': { 'fontSize': 5} },
+                        1: { title: 'Valuation', 'titletextStyle': { 'fontSize': 5 } }
+                    },
+                    'width': '100%',
+                    'height': '100%',
+                    'chartArea': { 'width': '85%', 'height': '75%' },
+                    'series': {
+                        0: {
+                            'type': 'line',
+                            'color': 'black',
+                            'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 1] },
+                            'targetAxisIndex': 0
+                        },
+                        1: {
+                            'type': 'line',
+                            'color': 'blue',
+                            'curveType': 'function',
+                            'lineWidth': 1,
+                            'pointSize': 1,
+                            'view': { 'columns': [0, 2] },
+                            'targetAxisIndex': 1
+                        }
+                    },
+                    'tooltip': {
+                            'isHtml': 'true',
+                        'textStyle': {
+                            'fontSize': 10,
+                            'color': 'red'
+                        }
+                    }
+                }
+                //,
+
+                //view: { columns: [0, 3] }
+            });
+        
+
+        // var lineChart = new google.visualization.ChartWrapper({
+        //    chartType: 'AnnotationChart',
+        //    containerId: 'dashboard_line_chart_div',
+        //    options: {
+        //        annotations: {
+        //            //displayAnnotations: true
+        //            displayAnnotations: false
+        //        },
+        //        'view': { 'columns': [0, 1,2] }
+        //    },
+        //});
+
+        //dashboard.bind(dateRangeSlider, [candleChart, lineChart]);
+        dashboard.bind(dateRangeSlider, candleChart);
+        dashboard.draw(dataTable);
+    }
+</script>
+
+
+<h4>@Model.ChartContent - @Model.CompanyName (@Model.Symbol)</h4>
+<div id="valuationchart_div" style="border: 1px solid #ccc">
+    <form asp-page="./chartEntityValuation" method="get">
+        <div class="form-actions no-color">
+            <input name="stockid" value="@Model.CurrentID" type="hidden" />
+            <input name="fromDate" value="@Model.FromDate" type="hidden" />
+            <input name="quantity" value="@Model.QuantityHeld" type="hidden" />
+            <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
+                <option value="-1">Select Index to Compare</option>
+            </select>
+            <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
+
+        </div>
+    </form>
+    <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
+    <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
+    <div id="dashboard_line_chart_div"></div>
+</div>
+
+@*<div class="container-fluid lead">
+</div>*@

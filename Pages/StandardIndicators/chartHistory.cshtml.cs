@@ -21,6 +21,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
         private readonly IConfiguration Configuration;
         public int? CurrentID { get; set; }
         public int? OnlyHistory { get; set; }
+        public double? QuantityHeld { get; set; }
         public DateTime SellDate { get; set; }
         public DateTime BuyDate { get; set; }
         public DateTime FromDate { get; set; }
@@ -42,7 +43,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
         //caller should send fromdate in buydate
         //selldate if not specified will be used as today or null
         public async Task OnGetAsync(int? stockid, string buyDate, string sellDate, string fromDate, int? onlyHistory, bool history,
-            int? selectedindex)
+            int? selectedindex, string? quantity)
         {
             listHistory.Clear();
             listIndexHistory.Clear();
@@ -179,6 +180,19 @@ namespace MarketAnalytics.Pages.StandardIndicators
                             listIndexHistory = _context.StockPriceHistory
                             //.Include(a => a.StockMaster)
                             .AsSplitQuery().Where(a => a.StockMasterID == selectedindex).ToList();
+                        }
+                    }
+
+                    if(string.IsNullOrEmpty(quantity) == false)
+                    {
+                        try
+                        {
+                            QuantityHeld = double.Parse(quantity);
+                        }
+                        catch 
+                        {
+                            QuantityHeld = 0;
+
                         }
                     }
                 }
