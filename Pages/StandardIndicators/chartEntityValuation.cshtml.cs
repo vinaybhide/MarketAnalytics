@@ -15,6 +15,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
         public List<StockPriceHistory> listHistory;
         public List<StockPriceHistory> listIndexHistory;
         public List<SelectListItem> indexList;
+
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
         public int? CurrentID { get; set; }
@@ -40,6 +41,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
         {
             listHistory.Clear();
             listIndexHistory.Clear();
+
             if (_context.StockPriceHistory != null)
             {
                 if (stockid != null)
@@ -52,10 +54,12 @@ namespace MarketAnalytics.Pages.StandardIndicators
                         //.Include(a => a.StockMaster)
                         .AsSplitQuery().FirstOrDefault().StockMasterID;
                 }
-
                 StockMaster tempSM = _context.StockMaster.AsSplitQuery().FirstOrDefault(a => a.StockMasterID == CurrentID);
                 Symbol = tempSM.Symbol;
                 CompanyName = tempSM.CompName;
+
+                //listPurchaseTxn = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                //    .Where(x => (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == tempSM.StockMasterID)).ToList();
 
                 indexList.Clear();
                 indexList = _context.StockMaster.Where(a => a.INVESTMENT_TYPE.Equals("Index")).OrderBy(a => a.Symbol)

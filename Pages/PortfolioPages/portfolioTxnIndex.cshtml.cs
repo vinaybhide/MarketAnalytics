@@ -384,9 +384,10 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             lifetimeHighLow = false
                         });
                     case constEntityValuation://case of show entity valuation
-                        return RedirectToPage("/StandardIndicators/chartEntityValuation", new
+                        return RedirectToPage("/StandardIndicators/chartEntityHistoryValuation", new
                         {
                             stockid = stockid,
+                            masterid = masterid,
                             quantity = quantity
                         });
                     case constUpdateStrategy://case of update get quote, buy sell, high low
