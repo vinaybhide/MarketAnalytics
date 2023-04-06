@@ -177,9 +177,9 @@ namespace MarketAnalytics.Pages.StandardIndicators
                             if (currentSummary != null)
                             {
 
-                                currentgraphItem.txnTotalPurchaseQty = listofSummaryTxn.FirstOrDefault().TotalQty;
-                                currentgraphItem.txnTotalPurchaseCost = listofSummaryTxn.FirstOrDefault().TotalCost;
-                                currentgraphItem.txnTotalGain = listofSummaryTxn.FirstOrDefault().TotalGain;
+                                currentgraphItem.txnTotalPurchaseQty = currentSummary.TotalQty;
+                                currentgraphItem.txnTotalPurchaseCost = currentSummary.TotalCost;
+                                currentgraphItem.txnTotalGain = currentSummary.TotalGain;
                                 currentgraphItem.txnTotalGainPCT = currentSummary.TotalGainPCT;
                                 currentgraphItem.txnTotalValuation = currentSummary.TotalValue;
 
