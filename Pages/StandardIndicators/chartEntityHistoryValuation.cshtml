@@ -18,7 +18,7 @@
             ['DateIndex', 'CloseIndex', 'Valuation', 'TIP', 'TXNCost','TXNCostTip', 'TXNValue', 'TXNValueTip'],
             @foreach (var item in Model.graphItems)
             {
-                <text>[new Date('@item.historyDate.ToShortDateString()'), @item.indexClose, @item.totalValuation, '@item.tipTotalValuation', @item.txnTotalPurchaseCost,'@item.tipTxnTotalPurchaseCost', @item.txnTotalValuation, '@item.tipTxnTotalPurchaseCost' ], </text>
+                <text>[new Date('@item.historyDate.ToShortDateString()'), @item.indexClose, @item.totalValuation, '@item.tipTotalValuation', @item.txnTotalPurchaseCost,'@item.tipTxnTotalPurchaseCost', @item.txnTotalValuation, '@item.tipTxnTotalValuation' ], </text>
             }
            ]);
         dataJoined.setColumnProperty(3, 'role', 'tooltip');

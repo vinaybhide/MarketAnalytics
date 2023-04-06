@@ -185,8 +185,11 @@ namespace MarketAnalytics.Pages.StandardIndicators
 
                                 currentgraphItem.tipTxnTotalPurchaseCost = "Purchase Date: " + historyItem.PriceDate + 
                                     " QTY: " + currentgraphItem.txnTotalPurchaseQty +
-                                    " Cost: " + currentgraphItem.txnTotalPurchaseCost + 
-                                    " Value: " + currentgraphItem.txnTotalValuation + 
+                                    " Cost: " + currentgraphItem.txnTotalPurchaseCost;
+
+                                currentgraphItem.tipTxnTotalValuation = "Purchase Date: " + historyItem.PriceDate + 
+                                    " QTY: " + currentgraphItem.txnTotalPurchaseQty +
+                                    " Value: " + currentgraphItem.txnTotalValuation +
                                     " Gain: " + currentgraphItem.txnTotalGain +
                                     " %Gain: " + currentgraphItem.txnTotalGainPCT;
                             }
@@ -213,5 +216,6 @@ namespace MarketAnalytics.Pages.StandardIndicators
         public double? txnTotalGain { get; set; } = null;
         public double? txnTotalGainPCT { get; set; } = null;
         public double? txnTotalValuation { get; set; } = null;
+        public string tipTxnTotalValuation { get; set; } = null;
     }
 }
