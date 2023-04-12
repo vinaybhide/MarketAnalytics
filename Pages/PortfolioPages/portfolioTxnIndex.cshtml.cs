@@ -7,6 +7,11 @@ using System.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System.IO.Compression;
+using System.Globalization;
+using System.Drawing.Drawing2D;
+using Newtonsoft.Json.Linq;
+using System.Numerics;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -558,6 +563,223 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
             }
             return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, txnid = txnid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = false, refreshAll = false, lifetimeHighLow = false });
+        }
+
+        //[HttpPost]
+        public IActionResult OnPostUploadFile(IFormFile postedFile, int? masterid, int? stockid,
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex,
+            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
+        {
+
+            if((masterid != null) && (postedFile.FileName.EndsWith(".csv")))
+            {
+                using (var sreader = new StreamReader(postedFile.OpenReadStream()))
+                {
+                    //Title 
+                    //Symbol,Current Price,Date,Time,Change,Open,High,Low,Volume,Trade Date,Purchase Price,Quantity,Commission,High Limit,Low Limit,Comment
+                    //Sample Data for Buy (note that Symbol must provide exchange code)
+                    //0P00005WDJ.BO,,,,,,,,,20121220,119.2317,208.837,100,,,
+                    //Sample Data for Sell (note that Symbol must provide exchange code)
+                    //0P00005WDJ.BO,,,,,,,,,20121220,119.2317,-208.837,100,,,
+                    string headerFormat = "Symbol,Current Price,Date,Time,Change,Open,High,Low,Volume,Trade Date,Purchase Price,Quantity,Commission,High Limit,Low Limit,Comment";
+                    string strHeader = sreader.ReadLine();     //Title
+                    DateTime[] quoteDate = null;
+                    double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+
+                    if (strHeader.ToUpper().Equals(headerFormat.ToUpper()))
+                    {
+                        var masterRec = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                        StockMaster stockRec = null;
+                        //string[] headers = strHeader.Split(",");
+                        string symbol = string.Empty;
+                        string exchange = string.Empty;
+                        double tradeQty = 0;
+                        double existingAvgCost = 0;
+                        List<long> listTicks = new List<long>();
+                        long avgTicks = 0;
+                        DateTime avgDate = DateTime.MinValue;
+                        List<double> listCost = new List<double>();
+
+                        while (!sreader.EndOfStream)                          //get all the content in rows 
+                        {
+                            try
+                            {
+                                string[] rows = sreader.ReadLine().Split(',');
+                                symbol = rows[0].ToString().Split(".")[0];
+                                exchange = rows[0].ToString().Split(".")[1];
+                                if ((stockRec == null) || (stockRec.Symbol.ToUpper().Equals(symbol.ToUpper()) == false))
+                                {
+                                    stockRec = _context.StockMaster.AsSplitQuery().FirstOrDefault(s => (s.Symbol == symbol) && (s.Exchange == exchange));
+                                    if (stockRec == null)
+                                    {
+                                        //try to find online the imported symbol
+                                        DbInitializer.SearchOnlineInsertInDB(_context, symbol);
+                                        stockRec = _context.StockMaster.AsSplitQuery().FirstOrDefault(s => (s.Symbol == symbol) && (s.Exchange == exchange));
+                                    }
+                                    if (stockRec == null)
+                                    {
+                                        continue;
+                                    }
+                                }
+
+                                //now add to rec
+                                PORTFOLIOTXN portfolioTxn = new PORTFOLIOTXN();
+                                portfolioTxn.PORTFOLIO_MASTER_ID = (int)masterid;
+                                portfolioTxn.portfolioMaster = masterRec;
+                                portfolioTxn.StockMasterID = stockRec.StockMasterID;
+                                portfolioTxn.stockMaster = stockRec;
+                                tradeQty = double.Parse(rows[11].ToString());
+                                IQueryable<PORTFOLIOTXN> existingTxnIQ = null;
+                                if (tradeQty < 0)
+                                {
+                                    portfolioTxn.TXN_TYPE = "S";
+                                    portfolioTxn.TXN_SELL_DATE = DateTime.ParseExact(rows[9].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                                    portfolioTxn.SELL_QUANTITY = double.Abs(tradeQty); 
+                                    portfolioTxn.SELL_AMT_PER_UNIT = double.Parse(rows[10].ToString());
+                                }
+                                else
+                                {
+                                    portfolioTxn.TXN_TYPE = "B";
+                                    portfolioTxn.TXN_BUY_DATE = DateTime.ParseExact(rows[9].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                                    portfolioTxn.PURCHASE_QUANTITY = tradeQty;
+                                    portfolioTxn.COST_PER_UNIT = double.Parse(rows[10].ToString());
+                                }
+
+                                //tradeCommission = double.Parse(rows[12].ToString());
+
+                                if (DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
+                                        out volume, out change, out changepercent, out prevclose))
+                                {
+                                    if (quoteDate != null)
+                                    {
+                                        portfolioTxn.CMP = close[0];
+                                        //portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                                    }
+                                    if (portfolioTxn.TXN_TYPE.Equals("B"))
+                                    {
+                                        portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * portfolioTxn.COST_PER_UNIT;
+                                        portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                                        portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+                                        if (portfolioTxn.TOTAL_COST > 0)
+                                        {
+                                            portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.VALUE) * 100;
+                                        }
+                                        else
+                                        {
+                                            portfolioTxn.GAIN_PCT = 100;
+                                        }
+                                    }
+                                    else if (portfolioTxn.TXN_TYPE.Equals("S"))
+                                    {
+                                        existingTxnIQ = _context.PORTFOLIOTXN.Where(t => (t.PORTFOLIO_MASTER_ID == masterid) &&
+                                                    (t.StockMasterID == stockRec.StockMasterID) &&
+                                                    (t.TXN_TYPE == "B")
+                                                    ).OrderBy(t => t.TXN_BUY_DATE);
+                                        if ((existingTxnIQ == null) || (existingTxnIQ.Count() <= 0))
+                                        {
+                                            continue;
+                                        }
+                                        if (existingTxnIQ.Sum(t => t.PURCHASE_QUANTITY) < double.Abs(tradeQty))
+                                        {
+                                            continue;
+                                        }
+
+                                        listCost.Clear();
+                                        listTicks.Clear();
+                                        tradeQty = double.Abs(tradeQty);
+
+                                        foreach (var txnItem in existingTxnIQ)
+                                        {
+                                            txnItem.CMP = close[0];
+                                            listCost.Add(txnItem.COST_PER_UNIT);
+                                            listTicks.Add(txnItem.TXN_BUY_DATE.Date.Ticks);
+
+                                            if (tradeQty > 0)
+                                            {
+                                                if (txnItem.PURCHASE_QUANTITY <= tradeQty)
+                                                {
+                                                    tradeQty -= txnItem.PURCHASE_QUANTITY;
+                                                    txnItem.PURCHASE_QUANTITY = 0;
+                                                }
+                                                else if (txnItem.PURCHASE_QUANTITY > tradeQty)
+                                                {
+                                                    txnItem.PURCHASE_QUANTITY = txnItem.PURCHASE_QUANTITY - tradeQty;
+                                                    tradeQty = 0;
+                                                }
+                                                if (txnItem.PURCHASE_QUANTITY > 0)
+                                                {
+                                                    txnItem.CMP = close[0];
+                                                    txnItem.TOTAL_COST = txnItem.PURCHASE_QUANTITY * txnItem.COST_PER_UNIT;
+                                                    txnItem.VALUE = txnItem.PURCHASE_QUANTITY * close[0];
+                                                    txnItem.GAIN_AMT = txnItem.VALUE - txnItem.TOTAL_COST;
+                                                    txnItem.GAIN_PCT = (txnItem.GAIN_AMT / txnItem.TOTAL_COST) * 100;
+                                                    _context.PORTFOLIOTXN.Update(txnItem);
+                                                }
+                                                else
+                                                {
+                                                    _context.PORTFOLIOTXN.Remove(txnItem);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+
+                                        existingAvgCost = listCost.Average();
+                                        //avgTicks = Convert.ToInt64( listTicks.Average());
+                                        var total = BigInteger.Zero;
+                                        var count = 0;
+                                        foreach (var t in listTicks)
+                                        {
+                                            count += 1;
+                                            total += t;
+                                        }
+                                        //avgTicks = Convert.ToInt64(total / count);
+                                        avgDate = new DateTime(((long)(total / count)));
+
+                                        portfolioTxn.TOTAL_SELL_AMT = portfolioTxn.SELL_QUANTITY * portfolioTxn.SELL_AMT_PER_UNIT;
+                                        //sell value - buy value for sold number of stocks
+                                        portfolioTxn.SELL_GAIN_AMT = portfolioTxn.TOTAL_SELL_AMT - (portfolioTxn.SELL_QUANTITY * existingAvgCost);
+                                        if (existingAvgCost > 0)
+                                        {
+                                            portfolioTxn.SELL_GAIN_PCT = (portfolioTxn.SELL_GAIN_AMT / (portfolioTxn.SELL_QUANTITY * existingAvgCost)) * 100;
+                                        }
+                                        else
+                                        {
+                                            portfolioTxn.SELL_GAIN_PCT = 100;
+                                        }
+                                        portfolioTxn.SOLD_AFTER = portfolioTxn.TXN_SELL_DATE.Date.Subtract(avgDate.Date).Days;
+
+                                        portfolioTxn.TXN_BUY_DATE = avgDate.Date;
+                                        portfolioTxn.COST_PER_UNIT = existingAvgCost;
+
+                                        portfolioTxn.PURCHASE_QUANTITY = portfolioTxn.SELL_QUANTITY;
+                                        portfolioTxn.TOTAL_COST = portfolioTxn.PURCHASE_QUANTITY * existingAvgCost;
+
+                                        portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
+                                        portfolioTxn.GAIN_AMT = portfolioTxn.VALUE - portfolioTxn.TOTAL_COST;
+                                        portfolioTxn.GAIN_PCT = (portfolioTxn.GAIN_AMT / portfolioTxn.TOTAL_COST) * 100;
+
+                                        portfolioTxn.CMP = close[0];
+                                    }
+
+                                    _context.PORTFOLIOTXN.Add(portfolioTxn);
+                                    _context.SaveChangesAsync(true);
+                                }
+
+
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                        //_context.SaveChangesAsync(true);
+                    }
+                }
+            }
+
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = false, refreshAll = false, lifetimeHighLow = false });
         }
 
     }

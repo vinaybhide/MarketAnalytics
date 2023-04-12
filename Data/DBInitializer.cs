@@ -2902,7 +2902,14 @@ namespace MarketAnalytics.Data
                                     txnitem.DAYS_SINCE = DateTime.Today.Date.Subtract(txnitem.TXN_BUY_DATE.Date).Days;
                                     if (txnitem.COST_PER_UNIT > 0)
                                     {
-                                        txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
+                                        if (item.stockMaster.YEAR_HI > 0)
+                                        {
+                                            txnitem.BUY_VS_52HI = (item.stockMaster.YEAR_HI - txnitem.COST_PER_UNIT) / item.stockMaster.YEAR_HI * 100;
+                                        }
+                                        else
+                                        {
+                                            txnitem.BUY_VS_52HI = 0;
+                                        }
                                     }
                                     else
                                     {
