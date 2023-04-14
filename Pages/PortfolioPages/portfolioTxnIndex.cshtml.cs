@@ -120,14 +120,14 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         txnOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
                             .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == stockid));
                         var selectedRecord = txnOpenIQ.FirstOrDefault(m => (m.StockMasterID == stockid));
-                        if((updateBuySell != null) && (updateBuySell == true) && (selectedRecord != null))
+                        if ((updateBuySell != null) && (updateBuySell == true) && (selectedRecord != null))
                         {
                             DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, null, selectedRecord, buysell: true);
                         }
                     }
                     else if ((refreshAll != null) && (refreshAll == true))
                     {
-                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, masterid, null, buysell:true);
+                        DbInitializer.GetQuoteAndUpdateAllPortfolioTxn(_context, UserId, masterid, null, buysell: true);
                     }
 
                     IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN
@@ -149,7 +149,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                             TotalQty = x.Sum(s => s.PURCHASE_QUANTITY),
                             TotalCost = x.Sum(s => s.TOTAL_COST),
                             TotalGain = x.Sum(s => s.GAIN_AMT),
-                            TotalGainPCT =  x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
+                            TotalGainPCT = x.Sum(s => s.GAIN_AMT) / x.Sum(s => s.TOTAL_COST) * 100,
                             CMP = x.First().CMP,
                             TotalValue = x.Sum(s => s.VALUE)
                         }
@@ -161,7 +161,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                     summarymenuItem = new SelectListItem("Get Quote", constGetQuote);
                     summarymenuList.Add(summarymenuItem);
-                    
+
                     summarymenuItem = new SelectListItem("Chart-Valuation", constEntityValuation);
                     summarymenuList.Add(summarymenuItem);
 
@@ -289,7 +289,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                         }
 
                     }
-                    switch(summarySortOrder)
+                    switch (summarySortOrder)
                     {
                         case "symbol_desc":
                             listofSummaryTxn = listofSummaryTxn.OrderByDescending(s => s.Symbol);
@@ -347,8 +347,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
             }
         }
 
-        public IActionResult OnPostSummaryAction(string summarymenuitemsel, int? masterid, int? stockid, 
-            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, 
+        public IActionResult OnPostSummaryAction(string summarymenuitemsel, int? masterid, int? stockid,
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex,
             string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter, string quantity)
         {
             if ((summarymenuitemsel.Equals("-1") == false) && (masterid != null) && (stockid != null))
@@ -470,7 +470,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
         }
         public IActionResult OnPostTransactionAction(string menuitemsel, int? masterid, int? txnid, int? stockid,
-            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex, 
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex,
             string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
         {
             if ((menuitemsel.Equals("-1") == false) && (txnid != null) && (masterid != null) && (stockid != null))
@@ -571,7 +571,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
             string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
         {
 
-            if((masterid != null) && (postedFile.FileName.EndsWith(".csv")))
+            if ((masterid != null) && (postedFile.FileName.EndsWith(".csv")))
             {
                 using (var sreader = new StreamReader(postedFile.OpenReadStream()))
                 {
@@ -584,7 +584,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                     string headerFormat = "Symbol,Current Price,Date,Time,Change,Open,High,Low,Volume,Trade Date,Purchase Price,Quantity,Commission,High Limit,Low Limit,Comment";
                     string strHeader = sreader.ReadLine();     //Title
                     DateTime[] quoteDate = null;
-                    double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+                    double[] open = null, high = null, low = null, close = null, volume = null, change = null, changepercent = null, prevclose = null;
 
                     if (strHeader.ToUpper().Equals(headerFormat.ToUpper()))
                     {
@@ -613,8 +613,59 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                     if (stockRec == null)
                                     {
                                         //try to find online the imported symbol
-                                        DbInitializer.SearchOnlineInsertInDB(_context, symbol);
-                                        stockRec = _context.StockMaster.AsSplitQuery().FirstOrDefault(s => (s.Symbol == symbol) && (s.Exchange == exchange));
+                                        if (DbInitializer.SearchOnlineInsertInDB(_context, symbol) == true)
+                                        {
+                                            stockRec = _context.StockMaster.AsSplitQuery().FirstOrDefault(s => (s.Symbol == symbol) && (s.Exchange == exchange));
+                                            DbInitializer.GetQuote(stockRec.Symbol + (stockRec.Exchange.Length == 0 ? "" : ("." + stockRec.Exchange)), out quoteDate, out open, out high, out low, out close,
+                                                out volume, out change, out changepercent, out prevclose);
+                                        }
+                                        else
+                                        {
+                                            //Ideally we should not come here but
+                                            //this is added to handle MF that was not found on yahoo, Bandhan Midcap
+                                            try
+                                            {
+                                                stockRec = new StockMaster();
+                                                stockRec.Symbol = symbol;
+                                                stockRec.CompName = symbol;
+                                                stockRec.Exchange = exchange;
+                                                stockRec.INVESTMENT_TYPE = "NA";
+
+                                                stockRec.QuoteDateTime = DateTime.Today.Date;
+                                                stockRec.Open = 1;
+                                                stockRec.High = 1;
+                                                stockRec.Low = 1;
+                                                stockRec.Close = 1;
+                                                stockRec.Volume = 0;
+                                                stockRec.ChangePercent = 0;
+                                                stockRec.Change = 0;
+                                                stockRec.PrevClose = 1;
+                                                _context.StockMaster.Add(stockRec);
+                                                _context.SaveChangesAsync(true);
+
+                                                //since we will not get quote for this non existent stock we will initialize 
+                                                //arrays to 1 and 0 and for today
+                                                quoteDate = new DateTime[1] { DateTime.Today.Date };
+                                                open = new double[1] { 1 };
+                                                high = new double[1] { 1 };
+                                                low = new double[1] { 1 };
+                                                close = new double[1] { 1 };
+                                                volume = new double[1] { 0 };
+                                                change = new double[1] { 0 };
+                                                changepercent = new double[1] { 0 };
+                                                prevclose = new double[1] { 1 };
+                                            }
+                                            catch
+                                            {
+                                                stockRec = null;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //we have a new stock entity, hence get current quote
+                                        DbInitializer.GetQuote(stockRec.Symbol + (stockRec.Exchange.Length == 0 ? "" : ("." + stockRec.Exchange)), out quoteDate, out open, out high, out low, out close,
+                                        out volume, out change, out changepercent, out prevclose);
                                     }
                                     if (stockRec == null)
                                     {
@@ -634,7 +685,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                 {
                                     portfolioTxn.TXN_TYPE = "S";
                                     portfolioTxn.TXN_SELL_DATE = DateTime.ParseExact(rows[9].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
-                                    portfolioTxn.SELL_QUANTITY = double.Abs(tradeQty); 
+                                    portfolioTxn.SELL_QUANTITY = double.Abs(tradeQty);
                                     portfolioTxn.SELL_AMT_PER_UNIT = double.Parse(rows[10].ToString());
                                 }
                                 else
@@ -647,12 +698,12 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                                 //tradeCommission = double.Parse(rows[12].ToString());
 
-                                if (DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
-                                        out volume, out change, out changepercent, out prevclose))
+                                //if (DbInitializer.GetQuote(portfolioTxn.stockMaster.Symbol + (portfolioTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + portfolioTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
+                                //        out volume, out change, out changepercent, out prevclose))
                                 {
                                     if (quoteDate != null)
                                     {
-                                        portfolioTxn.CMP = close[0];
+                                        portfolioTxn.CMP = close != null ? close[0] : 0;
                                         //portfolioTxn.VALUE = portfolioTxn.PURCHASE_QUANTITY * close[0];
                                     }
                                     if (portfolioTxn.TXN_TYPE.Equals("B"))
@@ -708,7 +759,7 @@ namespace MarketAnalytics.Pages.PortfolioPages
                                                 }
                                                 if (txnItem.PURCHASE_QUANTITY > 0)
                                                 {
-                                                    txnItem.CMP = close[0];
+                                                    //txnItem.CMP = close[0];
                                                     txnItem.TOTAL_COST = txnItem.PURCHASE_QUANTITY * txnItem.COST_PER_UNIT;
                                                     txnItem.VALUE = txnItem.PURCHASE_QUANTITY * close[0];
                                                     txnItem.GAIN_AMT = txnItem.VALUE - txnItem.TOTAL_COST;
