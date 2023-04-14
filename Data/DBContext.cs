@@ -79,7 +79,7 @@ namespace MarketAnalytics.Data
                  .HasForeignKey(dkey => dkey.StockMasterID);
 
             //modelBuilder.Entity<Portfolio_Master>().ToTable("PORTFOLIO_MASTER");
-            modelBuilder.Entity<Portfolio_Master>().ToTable("Portfolio_Master").Navigation(e => e.collectionTxn).AutoInclude();
+            modelBuilder.Entity<Portfolio_Master>().ToTable("PORTFOLIO_MASTER").Navigation(e => e.collectionTxn).AutoInclude();
             modelBuilder.Entity<StockMaster>().ToTable("StockMaster").Navigation(e => e.collectionTxn).AutoInclude();
 
             //for many to many relationship you can use commented following code or above code for portfolio_master

@@ -741,12 +741,11 @@ namespace MarketAnalytics.Pages.PortfolioPages
 
                                         foreach (var txnItem in existingTxnIQ)
                                         {
-                                            txnItem.CMP = close[0];
-                                            listCost.Add(txnItem.COST_PER_UNIT);
-                                            listTicks.Add(txnItem.TXN_BUY_DATE.Date.Ticks);
-
                                             if (tradeQty > 0)
                                             {
+                                                txnItem.CMP = close[0];
+                                                listCost.Add(txnItem.COST_PER_UNIT);
+                                                listTicks.Add(txnItem.TXN_BUY_DATE.Date.Ticks);
                                                 if (txnItem.PURCHASE_QUANTITY <= tradeQty)
                                                 {
                                                     tradeQty -= txnItem.PURCHASE_QUANTITY;

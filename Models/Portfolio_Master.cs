@@ -11,7 +11,7 @@ namespace MarketAnalytics.Models
         [DisplayName("Portfolio ID")]
         public int PORTFOLIO_MASTER_ID { get; set; }
 
-        [Required]
+        //[Required]
         [DisplayName("Name")]
         
         public string PORTFOLIO_NAME { get; set; } = string.Empty;

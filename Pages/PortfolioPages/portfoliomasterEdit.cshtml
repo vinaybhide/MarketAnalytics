@@ -18,6 +18,7 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="portfolioMaster.PORTFOLIO_MASTER_ID" />
+            <input type="hidden" asp-for="portfolioMaster.Id" />
             <input type="hidden" asp-for="@Model.FirstTimeMaster" />
             <div class="form-group">
                 <label asp-for="portfolioMaster.PORTFOLIO_NAME" class="control-label"></label>
