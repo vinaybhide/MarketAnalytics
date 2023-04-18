@@ -1,5 +1,29 @@
 # MarketAnalytics
 Stock Strategy implementation - using ASP.Net Core, .Net Core, Entity Framework, Linq with SQLite as database
+  <h3>Technologies Used</h3>
+  <ol>
+  <li>ASP.Net Core 3.0 (Code first) with Razor</li>
+  <li>Entity framework core (EF core) 6.0</li>
+  <li>linq</li>
+  <li>Google charts</li>
+  <li>Java script</li>
+  <li>SQLite</li>
+</ol>
+  <h3>Nuget Packages Used</h3>
+  <ol>
+    <li>microsoft.aspnetcore.diagnostics.entityframeworkcore 7.0.3</li>
+    <li>microsoft.aspnetcore.identity 2.2.0</li>
+    <li>Microsoft.AspNetCore.Identity.EntityFrameworkCore 7.0.3</li>
+    <li>microsoft.aspnetcore.identity.ui 7.0.3</li>
+    <li>microsoft.aspnetcore.mvc.newtonsoftjson 7.0.3</li>
+    <li>microsoft.entityframeworkcore 7.0.3</li>
+    <li>microsoft.entityframeworkcore.design 7.0.3</li>
+    <li>microsoft.entityframeworkcore.sqlite 7.0.3</li>
+    <li>microsoft.entityframeworkcore.sqlserver 7.0.3</li>
+    <li>microsoft.entityframeworkcore.tools 7.0.3</li>
+    <li>microsoft.visualstudio.web.codegeneration.design 7.0.3</li>
+  </ol>
+
 <h3>Summary</h3>
   This Project allows user to search any global investment entity (Stocks, ETF, Futures, Index and Mutual Fund) and provides following functionality:
   <ol>
@@ -27,11 +51,3 @@ Stock Strategy implementation - using ASP.Net Core, .Net Core, Entity Framework,
     </ul>
   </li>
   </ol>
-  <h3>Technologies Used</h3>
-  <ol>
-  <li>ASP.Net Core 3.0 (Code first) with Razor</li>
-  <li>Entity framework core (EF core) 6.0</li>
-  <li>Google charts</li>
-  <li>Java script</li>
-  <li>SQLite</li>
-</ol>
