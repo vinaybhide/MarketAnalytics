@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Drawing.Drawing2D;
 using Newtonsoft.Json.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace MarketAnalytics.Pages.PortfolioPages
 {
@@ -829,6 +830,97 @@ namespace MarketAnalytics.Pages.PortfolioPages
                 }
             }
 
+            return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = false, refreshAll = false, lifetimeHighLow = false });
+        }
+
+        //[HttpPost]
+        /// <summary>
+        /// Method to output poprtfolio data in following format
+        /// Symbol,Current Price,Date,Time,Change,Open,High,Low,Volume,Trade Date,Purchase Price,Quantity,Commission,High Limit,Low Limit,Comment
+        ///Sample Data for Buy (note that Symbol must provide exchange code)
+        /// 0P00005WDJ.BO,,,,,,,,,20121220,119.2317,208.837,100,,,
+        ///Sample Data for Sell (note that Symbol must provide exchange code)
+        /// 0P00005WDJ.BO,,,,,,,,,20121220,119.2317,-208.837,100,,,
+        /// </summary>
+        /// <param name="masterid"></param>
+        /// <param name="stockid"></param>
+        /// <param name="pageSummaryIndex"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageClosedIndex"></param>
+        /// <param name="openSortOrder"></param>
+        /// <param name="summarySortOrder"></param>
+        /// <param name="closedSortOrder"></param>
+        /// <param name="currentFilter"></param>
+        /// <returns></returns>
+        public IActionResult OnPostDownloadFile(int? masterid, int? stockid,
+            int? pageSummaryIndex, int? pageIndex, int? pageClosedIndex,
+            string openSortOrder, string summarySortOrder, string closedSortOrder, string currentFilter)
+        {
+            try
+            {
+                if (masterid != null)
+                {
+                    var masterRec = _context.PORTFOLIO_MASTER.AsSplitQuery().FirstOrDefault(m => (m.PORTFOLIO_MASTER_ID == masterid));
+                    if (masterRec != null)
+                    {
+                        string fileName = masterRec.PORTFOLIO_NAME + ".csv";
+                        string fileContents = "Symbol,Current Price,Date,Time,Change,Open,High,Low,Volume,Trade Date,Purchase Price,Quantity,Commission,High Limit,Low Limit,Comment" + Environment.NewLine;
+                        int originalLen = fileContents.Length;
+                        string fileRecord = string.Empty;
+                        //first add 'B' transactions
+                        IQueryable<PORTFOLIOTXN> iqTxn = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                                    .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("B")));
+                        foreach (var itemOpen in iqTxn)
+                        {
+                            //write data in following format;
+                            // 0P00005WDJ.BO,,,,,,,,,20121220,119.2317,208.837,100,,,
+                            fileRecord = itemOpen.stockMaster.Symbol + "." + itemOpen.stockMaster.Exchange + ",,,,,,,,," +
+                                itemOpen.TXN_BUY_DATE.ToString("yyyyMMdd") + "," +
+                                //itemOpen.TXN_BUY_DATE.Year.ToString() + itemOpen.TXN_BUY_DATE.Month.ToString() + itemOpen.TXN_BUY_DATE.Day.ToString() + "," +
+                                itemOpen.COST_PER_UNIT.ToString() + "," + itemOpen.PURCHASE_QUANTITY.ToString() + ",,,," + Environment.NewLine;
+                            fileContents += fileRecord;
+                            fileRecord = string.Empty;
+                        }
+
+                        iqTxn = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                                    .Where(x => (x.PORTFOLIO_MASTER_ID == masterid) && (x.TXN_TYPE.Equals("S")));
+                        foreach (var itemClose in iqTxn)
+                        {
+                            //first add purchase record so that the sell transaction gets inserted when file is imported
+                            //else we can not match the sell to purchase.
+                            //portfolioTxn.TXN_BUY_DATE = avgDate.Date;
+                            //portfolioTxn.COST_PER_UNIT = existingAvgCost;
+                            //portfolioTxn.PURCHASE_QUANTITY = portfolioTxn.SELL_QUANTITY;
+                            fileRecord = itemClose.stockMaster.Symbol + "." + itemClose.stockMaster.Exchange + ",,,,,,,,," +
+                                itemClose.TXN_BUY_DATE.ToString("yyyyMMdd") + "," +
+                                //itemOpen.TXN_SELL_DATE.Year.ToString() + itemOpen.TXN_SELL_DATE.Month.ToString() + itemOpen.TXN_SELL_DATE.Day.ToString() + "," +
+                                itemClose.COST_PER_UNIT.ToString() + "," + itemClose.PURCHASE_QUANTITY.ToString() + ",,,," + Environment.NewLine;
+
+                            fileContents += fileRecord;
+                            fileRecord = string.Empty;
+
+                            //write data in following format;
+                            // 0P00005WDJ.BO,,,,,,,,,20121220,119.2317,-208.837,100,,,
+                            fileRecord = itemClose.stockMaster.Symbol + "." + itemClose.stockMaster.Exchange + ",,,,,,,,," +
+                                itemClose.TXN_SELL_DATE.ToString("yyyyMMdd") + "," +
+                                //itemOpen.TXN_SELL_DATE.Year.ToString() + itemOpen.TXN_SELL_DATE.Month.ToString() + itemOpen.TXN_SELL_DATE.Day.ToString() + "," +
+                                itemClose.SELL_AMT_PER_UNIT.ToString() + ",-" + itemClose.SELL_QUANTITY.ToString() + ",,,," + Environment.NewLine;
+                            fileContents += fileRecord;
+                            fileRecord = string.Empty;
+                        }
+
+                        if(fileContents.Length > originalLen)
+                        {
+                            byte[] bytes = Encoding.ASCII.GetBytes(fileContents);
+                            return File(bytes, "application/text", fileName);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
             return RedirectToPage("./portfolioTxnIndex", new { masterid = masterid, stockid = stockid, openSortOrder = openSortOrder, summarySortOrder = summarySortOrder, closedSortOrder = closedSortOrder, pageSummaryIndex = pageSummaryIndex, pageIndex = pageIndex, pageClosedIndex = pageClosedIndex, currentFilter = currentFilter, getQuote = false, refreshAll = false, lifetimeHighLow = false });
         }
 

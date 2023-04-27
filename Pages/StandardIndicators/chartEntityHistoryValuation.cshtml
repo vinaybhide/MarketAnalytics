@@ -151,7 +151,7 @@
 
 <h4>@Model.ChartContent - @Model.CompanyName (@Model.Symbol)</h4>
 <div id="valuationchart_div" style="border: 1px solid #ccc">
-    <form asp-page="./chartEntityValuation" method="get">
+    <form asp-page="./chartEntityHistoryValuation" method="get">
         <div class="form-actions no-color">
             <input name="stockid" value="@Model.CurrentID" type="hidden" />
             <input name="fromDate" value="@Model.FromDate" type="hidden" />
@@ -164,6 +164,19 @@
 
         </div>
     </form>
+    <form asp-page="./chartEntityHistoryValuation" method="get">
+        <div class="form-actions no-color">
+            <input name="selectedindex" value="@Model.CurrentIndex" type="hidden" />
+            <input name="fromDate" value="@Model.FromDate" type="hidden" />
+            @*<input name="quantity" value="@Model.QuantityHeld" type="hidden" />*@
+            <input name="masterid" value="@Model.MasterID" type="hidden" />
+            <select name="stockid" asp-items="Model.symbolList" style="font-size:small">
+            </select>
+            <input type="submit" value="Select Entity" class="btn btn-sm btn-primary" style="font-size:small" />
+
+        </div>
+    </form>
+
     <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
     <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>
     <div id="dashboard_line_chart_div"></div>

@@ -13,6 +13,8 @@ namespace MarketAnalytics.Pages.StandardIndicators
     public class chartEntityHistoryValuation : PageModel
     {
         public List<SelectListItem> indexList;
+        public List<SelectListItem> symbolList { get; set; }
+
         public List<classEntityValuationGraphItems> graphItems;
 
         public IQueryable<StockPriceHistory> iqHistory;
@@ -21,6 +23,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
 
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
+        public int? CurrentIndex { get; set; }
         public int? CurrentID { get; set; }
         public int? MasterID { get; set; }
         public double? QuantityHeld { get; set; }
@@ -35,6 +38,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
             _context = context;
             Configuration = configuration;
             indexList = new List<SelectListItem>();
+            symbolList = new List<SelectListItem>();
             graphItems = new List<classEntityValuationGraphItems>();
         }
 
@@ -47,6 +51,21 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 CurrentID = stockid;
                 MasterID = masterid;
 
+                IQueryable<PORTFOLIOTXN> txnIQ = _context.PORTFOLIOTXN
+                                                            .Include(a => a.stockMaster)
+                                                            .AsSplitQuery()
+                                                            .Where(x => (x.PORTFOLIO_MASTER_ID == masterid)
+                                                                && (x.TXN_TYPE.Equals("B")))
+                                                            .OrderBy(a => a.StockMasterID);
+                symbolList.Clear();
+                symbolList = txnIQ.GroupBy(x => x.StockMasterID)
+                                        .Select(a =>
+                                                new SelectListItem
+                                                {
+                                                    Value = a.First().stockMaster.StockMasterID.ToString(),
+                                                    Text = a.First().stockMaster.Symbol + " (" + a.First().stockMaster.CompName + ")"
+                                                }).ToList();
+                symbolList.FirstOrDefault(a => a.Value.Equals(stockid.ToString())).Selected = true;
                 if (string.IsNullOrEmpty(fromDate) == false)
                 {
                     FromDate = System.Convert.ToDateTime(fromDate).Date;
@@ -54,19 +73,6 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 else
                 {
                     FromDate = DateTime.MinValue;
-                }
-
-                if (string.IsNullOrEmpty(quantity) == false)
-                {
-                    try
-                    {
-                        QuantityHeld = double.Parse(quantity);
-                    }
-                    catch
-                    {
-                        QuantityHeld = 0;
-
-                    }
                 }
 
                 //populate the Index list
@@ -85,6 +91,7 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     selectedindex = _context.StockMaster.Where(a => a.Symbol == "^NSEI").FirstOrDefault().StockMasterID;
                     indexList.FirstOrDefault(a => a.Text.Equals("^NSEI")).Selected = true;
                 }
+                CurrentIndex = selectedindex;
                 indexList.FirstOrDefault(a => a.Value.Equals(selectedindex.ToString())).Selected = true;
                 IndexSymbol = indexList.FirstOrDefault(a => a.Value.Equals(selectedindex.ToString())).Text;
 
@@ -97,36 +104,116 @@ namespace MarketAnalytics.Pages.StandardIndicators
 
                 //get all transactions belonging to current portfolio
                 iqPurchaseTxn = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
-                            .Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == CurrentID));
+                            .Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) && (x.TXN_TYPE.Equals("B")) && (x.StockMasterID == CurrentID)).OrderBy(x => x.TXN_BUY_DATE);
+                if (string.IsNullOrEmpty(quantity))
+                {
+                    QuantityHeld = iqPurchaseTxn.Sum(s => s.PURCHASE_QUANTITY);
+                }
+                else
+                {
+                    try
+                    {
+                        QuantityHeld = double.Parse(quantity);
+                    }
+                    catch
+                    {
+                        QuantityHeld = 0;
 
+                    }
+                }
+                DateTime firstTxnDate = iqPurchaseTxn.FirstOrDefault().TXN_BUY_DATE;
+                string firstPurchaseDate = firstTxnDate.ToString("yyyy-MM-dd");//iqPurchaseTxn.FirstOrDefault().TXN_BUY_DATE.ToString("yyyy-MM-dd");
                 //from given date or from the begining, get price history for given stock & also get the index price
+                string lastPriceDate = DbInitializer.IsHistoryUpdated(_context, tempSM, bForceUpdate: true, firstPurchaseDate);
+                if (string.IsNullOrEmpty(lastPriceDate) == false)
+                {
+                    DbInitializer.InitializeHistory(_context, tempSM, lastPriceDate);
+                }
+
+                StockMaster indexRec = _context.StockMaster.Where(a => a.StockMasterID == CurrentIndex).FirstOrDefault();
+                if (indexRec != null)
+                {
+                    lastPriceDate = DbInitializer.IsHistoryUpdated(_context, indexRec, bForceUpdate: true, firstPurchaseDate);
+                    if (string.IsNullOrEmpty(lastPriceDate) == false)
+                    {
+                        DbInitializer.InitializeHistory(_context, indexRec, lastPriceDate);
+                    }
+                }
+
                 if (FromDate != DateTime.MinValue)
                 {
                     iqHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0));
+                        .AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0)).OrderBy(a => a.PriceDate);
 
                     if ((selectedindex != null) && (selectedindex != -1))
                     {
                         iqIndexHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => (a.StockMasterID == selectedindex) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0));
+                        .AsSplitQuery().Where(a => (a.StockMasterID == selectedindex) && (a.PriceDate.Date.CompareTo(FromDate.Date) >= 0)).OrderBy(a => a.PriceDate);
                     }
                 }
                 else
                 {
                     iqHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => a.StockMasterID == CurrentID);
+                        .AsSplitQuery().Where(a => a.StockMasterID == CurrentID).OrderBy(a => a.PriceDate);
                     if ((selectedindex != null) && (selectedindex != -1))
                     {
                         iqIndexHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => a.StockMasterID == selectedindex);
+                        .AsSplitQuery().Where(a => a.StockMasterID == selectedindex).OrderBy(a => a.PriceDate);
                     }
                 }
 
+                DateTime firstHistoryDate = iqHistory.FirstOrDefault().PriceDate;
+                DateTime firstIndexHistoryDate = iqIndexHistory.FirstOrDefault().PriceDate;
+                IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = null;
+                IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = null;
                 StockPriceHistory indexHistoryItem;
+
+                if (firstTxnDate.Date.CompareTo(firstHistoryDate.Date) < 0)
+                {
+                    // mens we do not have history records from first transaction
+                    txnSummaryOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                            .Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) &&
+                                        (x.TXN_TYPE.Equals("B")) &&
+                                        (x.StockMasterID == CurrentID) &&
+                                        (x.TXN_BUY_DATE.Date.CompareTo(firstHistoryDate.Date) < 0)
+                                        );
+                    foreach (var txn in txnSummaryOpenIQ)
+                    {
+                        classEntityValuationGraphItems currentgraphItem = new classEntityValuationGraphItems();
+                        currentgraphItem.historyDate = txn.TXN_BUY_DATE;
+                        currentgraphItem.historyPrice = txn.COST_PER_UNIT;
+                        indexHistoryItem = iqIndexHistory
+                            .Where(a => ((a.PriceDate == txn.TXN_BUY_DATE) && (a.StockMasterID == selectedindex)))
+                            .FirstOrDefault();
+                        if (indexHistoryItem != null)
+                        {
+                            currentgraphItem.indexClose = indexHistoryItem.Close;
+                        }
+                        currentgraphItem.totalPurchaseQty = QuantityHeld;
+                        currentgraphItem.totalValuation = System.Convert.ToDouble(string.Format("{0:0.00}", QuantityHeld * txn.COST_PER_UNIT));
+                        currentgraphItem.tipTotalValuation = "Date: " + txn.TXN_BUY_DATE.ToShortDateString() + " Valuation = " + currentgraphItem.totalValuation + " (Quantity: " + QuantityHeld.ToString() + " and Price: " + txn.COST_PER_UNIT + ")";
+                        currentgraphItem.txnTotalPurchaseQty = txn.PURCHASE_QUANTITY;
+                        currentgraphItem.txnTotalPurchaseCost = txn.TOTAL_COST;
+                        currentgraphItem.txnTotalGain = txn.GAIN_AMT;
+                        currentgraphItem.txnTotalGainPCT = txn.GAIN_PCT;
+                        currentgraphItem.txnTotalValuation = txn.VALUE;
+
+                        currentgraphItem.tipTxnTotalPurchaseCost = "Purchase Date: " + txn.TXN_BUY_DATE +
+                            " QTY: " + currentgraphItem.txnTotalPurchaseQty +
+                            " Cost: " + currentgraphItem.txnTotalPurchaseCost;
+
+                        currentgraphItem.tipTxnTotalValuation = "Purchase Date: " + txn.TXN_BUY_DATE +
+                            " QTY: " + currentgraphItem.txnTotalPurchaseQty +
+                            " Value: " + currentgraphItem.txnTotalValuation +
+                            " Gain: " + currentgraphItem.txnTotalGain +
+                            " %Gain: " + currentgraphItem.txnTotalGainPCT;
+                        graphItems.Add(currentgraphItem);
+                    }
+                }
                 //now we have history & transaction list
                 foreach (var historyItem in iqHistory)
                 {
@@ -141,21 +228,29 @@ namespace MarketAnalytics.Pages.StandardIndicators
                     {
                         currentgraphItem.indexClose = indexHistoryItem.Close;
                     }
-                    currentgraphItem.totalPurchaseQty = QuantityHeld;
-                    currentgraphItem.totalValuation = System.Convert.ToDouble(string.Format("{0:0.00}", QuantityHeld * historyItem.Close));
 
-                    currentgraphItem.tipTotalValuation = "Date: " + historyItem.PriceDate.ToShortDateString() + " Valuation = " + currentgraphItem.totalValuation + " (Quantity: " + QuantityHeld.ToString() + " and Price: " + historyItem.Close + ")";
+                    currentgraphItem.totalPurchaseQty = _context.PORTFOLIOTXN.Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) &&
+                                (x.TXN_TYPE.Equals("B")) &&
+                                (x.StockMasterID == CurrentID) &&
+                                (x.TXN_BUY_DATE.Date.CompareTo(historyItem.PriceDate.Date) <= 0)
+                                ).Sum(x => x.PURCHASE_QUANTITY);
+
+                    //currentgraphItem.totalPurchaseQty = QuantityHeld;
+                    //currentgraphItem.totalValuation = System.Convert.ToDouble(string.Format("{0:0.00}", QuantityHeld * historyItem.Close));
+                    //currentgraphItem.tipTotalValuation = "Date: " + historyItem.PriceDate.ToShortDateString() + " Valuation = " + currentgraphItem.totalValuation + " (Quantity: " + QuantityHeld.ToString() + " and Price: " + historyItem.Close + ")";
+                    currentgraphItem.totalValuation = System.Convert.ToDouble(string.Format("{0:0.00}", currentgraphItem.totalPurchaseQty * historyItem.Close));
+                    currentgraphItem.tipTotalValuation = "Date: " + historyItem.PriceDate.ToShortDateString() + " Valuation = " + currentgraphItem.totalValuation + " (Quantity: " + currentgraphItem.totalPurchaseQty.ToString() + " and Price: " + historyItem.Close + ")";
 
                     //now get all transactions for the current date and if found do the sum
-                    IQueryable<PORTFOLIOTXN> txnSummaryOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
-                            .Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) &&
-                                        (x.TXN_TYPE.Equals("B")) &&
-                                        (x.StockMasterID == CurrentID) &&
-                                        (x.TXN_BUY_DATE.Date.CompareTo(historyItem.PriceDate.Date) == 0)
-                                        );
+                    txnSummaryOpenIQ = _context.PORTFOLIOTXN.Include(a => a.stockMaster).AsSplitQuery()
+                    .Where(x => (x.PORTFOLIO_MASTER_ID == MasterID) &&
+                                (x.TXN_TYPE.Equals("B")) &&
+                                (x.StockMasterID == CurrentID) &&
+                                (x.TXN_BUY_DATE.Date.CompareTo(historyItem.PriceDate.Date) == 0)
+                                );
                     if ((txnSummaryOpenIQ != null) && (txnSummaryOpenIQ.Count() > 0))
                     {
-                        IQueryable<PORTFOLIOTXN_SUMMARY> listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
+                        listofSummaryTxn = txnSummaryOpenIQ.GroupBy(x => x.StockMasterID)
                                                     .Select(x => new PORTFOLIOTXN_SUMMARY
                                                     {
                                                         StockMasterId = x.Key,
@@ -177,17 +272,17 @@ namespace MarketAnalytics.Pages.StandardIndicators
                             if (currentSummary != null)
                             {
 
-                                currentgraphItem.txnTotalPurchaseQty = currentSummary.TotalQty;
-                                currentgraphItem.txnTotalPurchaseCost = currentSummary.TotalCost;
-                                currentgraphItem.txnTotalGain = currentSummary.TotalGain;
-                                currentgraphItem.txnTotalGainPCT = currentSummary.TotalGainPCT;
-                                currentgraphItem.txnTotalValuation = currentSummary.TotalValue;
+                                currentgraphItem.txnTotalPurchaseQty = Math.Round(currentSummary.TotalQty, 2);
+                                currentgraphItem.txnTotalPurchaseCost = Math.Round(currentSummary.TotalCost,2) ;
+                                currentgraphItem.txnTotalGain = Math.Round((double)currentSummary.TotalGain, 2);
+                                currentgraphItem.txnTotalGainPCT = Math.Round((double)currentSummary.TotalGainPCT, 2);
+                                currentgraphItem.txnTotalValuation = Math.Round((double)currentSummary.TotalValue,2);
 
-                                currentgraphItem.tipTxnTotalPurchaseCost = "Purchase Date: " + historyItem.PriceDate + 
+                                currentgraphItem.tipTxnTotalPurchaseCost = "Investment - Purchase Date: " + historyItem.PriceDate +
                                     " QTY: " + currentgraphItem.txnTotalPurchaseQty +
                                     " Cost: " + currentgraphItem.txnTotalPurchaseCost;
 
-                                currentgraphItem.tipTxnTotalValuation = "Purchase Date: " + historyItem.PriceDate + 
+                                currentgraphItem.tipTxnTotalValuation = "Valuation On - Purchase Date: " + historyItem.PriceDate +
                                     " QTY: " + currentgraphItem.txnTotalPurchaseQty +
                                     " Value: " + currentgraphItem.txnTotalValuation +
                                     " Gain: " + currentgraphItem.txnTotalGain +

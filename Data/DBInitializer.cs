@@ -80,7 +80,7 @@ namespace MarketAnalytics.Data
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 dataStr = string.Empty;
             }
@@ -138,10 +138,10 @@ namespace MarketAnalytics.Data
                                 //lasttradeprice = xmlResult["tbody"].ChildNodes[i].ChildNodes[2].ChildNodes[0].Value; // = "6034.15"
                                 //category = xmlResult["tbody"].ChildNodes[i].ChildNodes[3].ChildNodes[0].Value; // = "Technology"
                                 type = xmlResult["tbody"].ChildNodes[i].ChildNodes[4].ChildNodes[0].Value; // = "Stocks"
-                                if(type.ToUpper().Equals("MUTUAL FUND"))
+                                if (type.ToUpper().Equals("MUTUAL FUND"))
                                 {
                                     string fundName = GetMutualFundName(symbol + "." + exchange);
-                                    if(string.IsNullOrEmpty(fundName) == false) 
+                                    if (string.IsNullOrEmpty(fundName) == false)
                                     {
                                         compname = fundName;
                                     }
@@ -820,7 +820,7 @@ namespace MarketAnalytics.Data
         /// <param name="stockMaster"></param>
         /// <param name="stockMasterID"></param>
         /// <returns></returns>
-        public static string IsHistoryUpdated(DBContext context, StockMaster stockMaster)
+        public static string IsHistoryUpdated(DBContext context, StockMaster stockMaster, bool bForceUpdate = false, string firstPurchaseDate = null)
         {
             string lastPriceDate = string.Empty;
             try
@@ -830,8 +830,33 @@ namespace MarketAnalytics.Data
                 //IQueryable<StockPriceHistory> givenStockIQ = stockMaster.collectionStockPriceHistory.AsQueryable();
                 IOrderedEnumerable<StockPriceHistory> givenStockIQ = stockMaster.collectionStockPriceHistory.OrderBy(p => p.PriceDate);
 
+                StockPriceHistory firstHistoryRec = givenStockIQ.FirstOrDefault();
                 StockPriceHistory lastHistoryRec = givenStockIQ.LastOrDefault();
-                if (lastHistoryRec != null)
+                if (bForceUpdate)
+                {
+                    DateTime dtFirstTxnDate = Convert.ToDateTime(firstPurchaseDate);
+                    if (firstHistoryRec != null)
+                    {
+                        //check if history is available from first transaction date
+                        if (dtFirstTxnDate.Date.CompareTo(firstHistoryRec.PriceDate.Date) < 0)
+                        {
+                            lastPriceDate = dtFirstTxnDate.Date.AddDays(-1).ToString("yyyy-MM-dd");
+                        }
+                        else if ((lastHistoryRec != null) && (Convert.ToDateTime(lastHistoryRec.PriceDate.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.ToShortDateString())) < 0))
+                        {
+                            lastPriceDate = lastHistoryRec.PriceDate.ToString("yyyy-MM-dd");
+                        }
+                        //else
+                        //{
+                        //    lastPriceDate = dtFirstTxnDate.Date.AddDays(-1).ToString("yyyy-MM-dd");
+                        //}
+                    }
+                    else
+                    {
+                        lastPriceDate = dtFirstTxnDate.Date.AddDays(-1).ToString("yyyy-MM-dd");
+                    }
+                }
+                else if (lastHistoryRec != null)
                 {
                     //if (Convert.ToDateTime(lastHistoryRec.PriceDate).Date.CompareTo(DateTime.Today.Date) < 0)
                     //if (lastHistoryRec.PriceDate.CompareTo(DateTime.Now) < 0)
@@ -844,6 +869,7 @@ namespace MarketAnalytics.Data
                 {
                     lastPriceDate = DateTime.Today.AddYears(-10).ToString("yyyy-MM-dd");
                 }
+
             }
             catch
             {
@@ -2810,7 +2836,7 @@ namespace MarketAnalytics.Data
             //https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries
             IQueryable<PORTFOLIOTXN> txnIQ;
             IQueryable<PORTFOLIOTXN> distinctIQ = null;
-            IEnumerable<PORTFOLIOTXN> txnEnum= null;
+            IEnumerable<PORTFOLIOTXN> txnEnum = null;
             string lastPriceDate = string.Empty;
             //if userid is given then we should get all projects beloning to that user and execute updates
             //for all symbols and respective transactions

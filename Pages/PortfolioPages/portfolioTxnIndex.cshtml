@@ -54,29 +54,50 @@
                        style="font-size:small">Back to full List</a>
                 </div>
             </th>
-            <th >@*colspan="4">*@
+            <th>
+                @*colspan="4">*@
                 <div class="form-actions no-color">
                     <a asp-page="./portfolioTxnIndex" asp-route-masterid="@Model.MasterId" asp-route-refreshAll="true" class="btn btn-sm btn-primary"
                        style="font-size:small">Refresh All</a>
                 </div>
             </th>
+        </tr>
+        <tr>
             <th>
                 <form method="post" enctype="multipart/form-data" asp-page-handler="UploadFile"
-                    asp-route-masterid="@Model.MasterId"
-                    asp-route-stockid="@Model.StockId"
-                    asp-route-summarySortOrder="@Model.CurrentSummarySort"
-                    asp-route-openSortOrder="@Model.CurrentOpenSort"
-                    asp-route-closedSortOrder="@Model.CurrentClosedSort"
-                    asp-route-pageSummaryIndex="@(Model.portfolioSummaryOpenTxn != null ? Model.portfolioSummaryOpenTxn.PageIndex : null)"
-                    asp-route-pageIndex="@(Model.portfolioOpenTxn != null ? Model.portfolioOpenTxn.PageIndex : null)"
-                    asp-route-pageIndexClosed="@(Model.portfolioClosedTxn != null ? Model.portfolioClosedTxn.PageIndex : null)"
-                    asp-route-currentFilter="@Model.CurrentFilter">
+                      asp-route-masterid="@Model.MasterId"
+                      asp-route-stockid="@Model.StockId"
+                      asp-route-summarySortOrder="@Model.CurrentSummarySort"
+                      asp-route-openSortOrder="@Model.CurrentOpenSort"
+                      asp-route-closedSortOrder="@Model.CurrentClosedSort"
+                      asp-route-pageSummaryIndex="@(Model.portfolioSummaryOpenTxn != null ? Model.portfolioSummaryOpenTxn.PageIndex : null)"
+                      asp-route-pageIndex="@(Model.portfolioOpenTxn != null ? Model.portfolioOpenTxn.PageIndex : null)"
+                      asp-route-pageIndexClosed="@(Model.portfolioClosedTxn != null ? Model.portfolioClosedTxn.PageIndex : null)"
+                      asp-route-currentFilter="@Model.CurrentFilter">
                     <div class="form-actions no-color">
                         <input type="file" name="postedFile" class="btn btn-sm btn-primary" style="font-size:small" />
                         <input type="submit" value="Import" class="btn btn-sm btn-primary" style="font-size:small" />
                     </div>
                 </form>
             </th>
+            <th>
+                <form method="post" enctype="multipart/form-data" asp-page-handler="DownloadFile"
+                      asp-route-masterid="@Model.MasterId"
+                      asp-route-stockid="@Model.StockId"
+                      asp-route-summarySortOrder="@Model.CurrentSummarySort"
+                      asp-route-openSortOrder="@Model.CurrentOpenSort"
+                      asp-route-closedSortOrder="@Model.CurrentClosedSort"
+                      asp-route-pageSummaryIndex="@(Model.portfolioSummaryOpenTxn != null ? Model.portfolioSummaryOpenTxn.PageIndex : null)"
+                      asp-route-pageIndex="@(Model.portfolioOpenTxn != null ? Model.portfolioOpenTxn.PageIndex : null)"
+                      asp-route-pageIndexClosed="@(Model.portfolioClosedTxn != null ? Model.portfolioClosedTxn.PageIndex : null)"
+                      asp-route-currentFilter="@Model.CurrentFilter">
+                    <div class="form-actions no-color">
+                        @*<input type="file" name="postedFile" class="btn btn-sm btn-primary" style="font-size:small" />*@
+                        <input type="submit" value="Export" class="btn btn-sm btn-primary" style="font-size:small" />
+                    </div>
+                </form>
+            </th>
+
         </tr>
     </thead>
 </table>
