@@ -189,12 +189,12 @@ namespace MarketAnalytics.Pages.History
 
                     CurrentFilter = searchString;
 
-                    stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID)).AsNoTracking();
+                    stockpriceIQ = _context.StockPriceHistory.Where(s => (s.StockMasterID == CurrentID)).OrderBy(s => s.PriceDate).AsNoTracking();
                     //stockpriceIQ = StockMasterRec.collectionStockPriceHistory.AsQueryable();
                     if (!String.IsNullOrEmpty(searchString))
                     {
                         stockpriceIQ = stockpriceIQ.Where(s => (s.PriceDate.Date >= (Convert.ToDateTime(searchString).Date))
-                                                                && (s.StockMasterID == CurrentID)).AsNoTracking();
+                                                                && (s.StockMasterID == CurrentID)).OrderBy(s => s.PriceDate).AsNoTracking();
                     }
                     if (stockpriceIQ != null)
                     {
