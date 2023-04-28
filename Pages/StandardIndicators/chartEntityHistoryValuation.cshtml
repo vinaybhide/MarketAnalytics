@@ -15,12 +15,12 @@
     function drawValuationChart() {
         var allHistory = true;
         var dataJoined = google.visualization.arrayToDataTable([
-            ['DateIndex', 'CloseIndex', 'Valuation', 'TIP', 'TXNCost','TXNCostTip', 'TXNValue', 'TXNValueTip'],
-            @foreach (var item in Model.graphItems)
-            {
-                <text>[new Date('@item.historyDate.ToShortDateString()'), @item.indexClose, @item.totalValuation, '@item.tipTotalValuation', @item.txnTotalPurchaseCost,'@item.tipTxnTotalPurchaseCost', @item.txnTotalValuation, '@item.tipTxnTotalValuation' ], </text>
-            }
-           ]);
+            ['DateIndex', 'CloseIndex', 'Valuation', 'TIP', 'TXNCost', 'TXNCostTip', 'TXNValue', 'TXNValueTip'],
+    @foreach (var item in Model.graphItems)
+    {
+        <text>[new Date('@item.historyDate.ToShortDateString()'), @item.indexClose, @item.totalValuation, '@item.tipTotalValuation', @item.txnTotalPurchaseCost, '@item.tipTxnTotalPurchaseCost', @item.txnTotalValuation, '@item.tipTxnTotalValuation'], </text>
+    }
+               ]);
         dataJoined.setColumnProperty(3, 'role', 'tooltip');
         dataJoined.setColumnProperty(5, 'role', 'tooltip');
         dataJoined.setColumnProperty(7, 'role', 'tooltip');
@@ -45,65 +45,65 @@
         });
 
         var candleChart = new google.visualization.ChartWrapper({
-                'chartType': 'LineChart',
-                'containerId': 'dashboard_candle_chart_div',
-                'view': { 'columns': [0, 1, 2,3, 4,5,6,7] },
-                'options': {
-                    'seriesType': 'line',
-                    'curveType': 'function',
-                    'color': 'black',
-                    'pointsVisible': true,
-                    'lineWidth': 1,
-                    //'legend': 'none',
-                    'legend':{'position': 'top'},
-                    'crosshair': { 'trigger': 'both' },
-                    'hAxis': {
-                        'title': 'Date',
-                        'format': 'd-MMM-y',
-                        'textStyle': {
-                            'fontSize': 10
-                        }
+            'chartType': 'LineChart',
+            'containerId': 'dashboard_candle_chart_div',
+            'view': { 'columns': [0, 1, 2, 3, 4, 5, 6, 7] },
+            'options': {
+                'seriesType': 'line',
+                'curveType': 'function',
+                'color': 'black',
+                'pointsVisible': true,
+                'lineWidth': 1,
+                //'legend': 'none',
+                'legend': { 'position': 'top' },
+                'crosshair': { 'trigger': 'both' },
+                'hAxis': {
+                    'title': 'Date',
+                    'format': 'd-MMM-y',
+                    'textStyle': {
+                        'fontSize': 10
+                    }
+                },
+                'vAxis': {
+                    'textStyle': { 'fontSize': 10 }
+                },
+                vAxes: {
+                    // Adds titles to each axis.
+                    0: { title: '@Model.IndexSymbol', 'titletextStyle': { 'fontSize': 5 } },
+                    1: { title: 'Valuation', 'titletextStyle': { 'fontSize': 5 } }
+                },
+                'width': '100%',
+                'height': '100%',
+                'chartArea': { 'width': '85%', 'height': '75%' },
+                'series': {
+                    0: {
+                        'type': 'line',
+                        'color': 'black',
+                        'curveType': 'function',
+                        'lineWidth': 1,
+                        'pointSize': 1,
+                        'view': { 'columns': [0, 1] },
+                        'targetAxisIndex': 0
                     },
-                    'vAxis': {
-                        'textStyle': { 'fontSize': 10}
+                    1: {
+                        'type': 'line',
+                        'color': 'blue',
+                        'curveType': 'function',
+                        'lineWidth': 1,
+                        'pointSize': 1,
+                        'view': { 'columns': [0, 2] },
+                        'targetAxisIndex': 1
                     },
-                    vAxes: {
-                        // Adds titles to each axis.
-                        0: { title: '@Model.IndexSymbol', 'titletextStyle': { 'fontSize': 5} },
-                        1: { title: 'Valuation', 'titletextStyle': { 'fontSize': 5 } }
-                    },
-                    'width': '100%',
-                    'height': '100%',
-                    'chartArea': { 'width': '85%', 'height': '75%' },
-                    'series': {
-                        0: {
-                            'type': 'line',
-                            'color': 'black',
-                            'curveType': 'function',
-                            'lineWidth': 1,
-                            'pointSize': 1,
-                            'view': { 'columns': [0, 1] },
-                            'targetAxisIndex': 0
-                        },
-                        1: {
-                            'type': 'line',
-                            'color': 'blue',
-                            'curveType': 'function',
-                            'lineWidth': 1,
-                            'pointSize': 1,
-                            'view': { 'columns': [0, 2] },
-                            'targetAxisIndex': 1
-                        },
-                        2: {
-                            'type': 'scatter',
-                            'color': 'blue',
-                            //'curveType': 'function',
-                            //'lineWidth': 10,
-                            //'pointSize': 1,
+                    2: {
+                        'type': 'scatter',
+                        'color': 'blue',
+                        //'curveType': 'function',
+                        //'lineWidth': 10,
+                        //'pointSize': 1,
                         'crosshair': { 'trigger': 'both' },
-                            'view': { 'columns': [0, 4] },
-                            'targetAxisIndex': 1
-                        },
+                        'view': { 'columns': [0, 4] },
+                        'targetAxisIndex': 1
+                    },
                     3: {
                         'type': 'scatter',
                         'color': 'red',
@@ -115,20 +115,20 @@
                         'targetAxisIndex': 1
                     }
 
-                    },
-                    'tooltip': {
-                            'isHtml': 'true',
-                        'textStyle': {
-                            'fontSize': 10,
-                            'color': 'red'
-                        }
+                },
+                'tooltip': {
+                    'isHtml': 'true',
+                    'textStyle': {
+                        'fontSize': 10,
+                        'color': 'red'
                     }
                 }
-                //,
+            }
+            //,
 
-                //view: { columns: [0, 3] }
-            });
-        
+            //view: { columns: [0, 3] }
+        });
+
 
         // var lineChart = new google.visualization.ChartWrapper({
         //    chartType: 'AnnotationChart',
@@ -150,32 +150,47 @@
 
 
 <h4>@Model.ChartContent - @Model.CompanyName (@Model.Symbol)</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <form asp-page="./chartEntityHistoryValuation" method="get">
+                    <div class="form-actions no-color">
+                        <input name="stockid" value="@Model.CurrentID" type="hidden" />
+                        <input name="fromDate" value="@Model.FromDate" type="hidden" />
+                        <input name="quantity" value="@Model.QuantityHeld" type="hidden" />
+                        <input name="masterid" value="@Model.MasterID" type="hidden" />
+                        <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
+                            <option value="-1">Select Index to Compare</option>
+                        </select>
+                        <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
+
+                    </div>
+                </form>
+            </th>
+            <th>
+                <form asp-page="./chartEntityHistoryValuation" method="get">
+                    <div class="form-actions no-color">
+                        <input name="selectedindex" value="@Model.CurrentIndex" type="hidden" />
+                        <input name="fromDate" value="@Model.FromDate" type="hidden" />
+                        @*<input name="quantity" value="@Model.QuantityHeld" type="hidden" />*@
+                        <input name="masterid" value="@Model.MasterID" type="hidden" />
+                        <select name="stockid" asp-items="Model.symbolList" style="font-size:small">
+                        </select>
+                        <input type="submit" value="Select Entity" class="btn btn-sm btn-primary" style="font-size:small" />
+
+                    </div>
+                </form>
+            </th>
+            <th>
+                <div class="form-actions no-color">
+                    <a asp-page="/portfoliopages/portfolioTxnIndex" asp-route-masterId="@Model.MasterID" asp-route-stockid="@Model.CurrentID" class="btn btn-sm btn-primary"
+                       style="font-size:small">Back to full List</a>
+                </div>
+            </th>
+        </tr>
+</table>
 <div id="valuationchart_div" style="border: 1px solid #ccc">
-    <form asp-page="./chartEntityHistoryValuation" method="get">
-        <div class="form-actions no-color">
-            <input name="stockid" value="@Model.CurrentID" type="hidden" />
-            <input name="fromDate" value="@Model.FromDate" type="hidden" />
-            <input name="quantity" value="@Model.QuantityHeld" type="hidden" />
-            <input name="masterid" value="@Model.MasterID" type="hidden" />
-            <select name="selectedindex" asp-items="Model.indexList" style="font-size:small">
-                <option value="-1">Select Index to Compare</option>
-            </select>
-            <input type="submit" value="Select Index" class="btn btn-sm btn-primary" style="font-size:small" />
-
-        </div>
-    </form>
-    <form asp-page="./chartEntityHistoryValuation" method="get">
-        <div class="form-actions no-color">
-            <input name="selectedindex" value="@Model.CurrentIndex" type="hidden" />
-            <input name="fromDate" value="@Model.FromDate" type="hidden" />
-            @*<input name="quantity" value="@Model.QuantityHeld" type="hidden" />*@
-            <input name="masterid" value="@Model.MasterID" type="hidden" />
-            <select name="stockid" asp-items="Model.symbolList" style="font-size:small">
-            </select>
-            <input type="submit" value="Select Entity" class="btn btn-sm btn-primary" style="font-size:small" />
-
-        </div>
-    </form>
 
     <div id="filter_div" style="padding-left: 2em; padding-bottom:0em; min-width: 250px"></div>
     <div id="dashboard_candle_chart_div" style="border: 1px solid #ccc;padding-left: 0em; min-width: 250px;height: 700px;"></div>

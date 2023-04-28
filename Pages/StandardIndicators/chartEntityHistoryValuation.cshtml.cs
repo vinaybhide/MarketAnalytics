@@ -157,12 +157,13 @@ namespace MarketAnalytics.Pages.StandardIndicators
                 {
                     iqHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => a.StockMasterID == CurrentID).OrderBy(a => a.PriceDate);
+                        //.AsSplitQuery().Where(a => a.StockMasterID == CurrentID).OrderBy(a => a.PriceDate);
+                        .AsSplitQuery().Where(a => (a.StockMasterID == CurrentID) && (a.PriceDate.Date.CompareTo(firstTxnDate.Date) >=0)).OrderBy(a => a.PriceDate);
                     if ((selectedindex != null) && (selectedindex != -1))
                     {
                         iqIndexHistory = _context.StockPriceHistory
                         //.Include(a => a.StockMaster)
-                        .AsSplitQuery().Where(a => a.StockMasterID == selectedindex).OrderBy(a => a.PriceDate);
+                        .AsSplitQuery().Where(a => (a.StockMasterID == selectedindex) && (a.PriceDate.Date.CompareTo(firstTxnDate.Date) >=0)).OrderBy(a => a.PriceDate);
                     }
                 }
 
