@@ -1,4 +1,5 @@
-﻿using MarketAnalytics.Models;
+﻿//Test for sync
+using MarketAnalytics.Models;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
