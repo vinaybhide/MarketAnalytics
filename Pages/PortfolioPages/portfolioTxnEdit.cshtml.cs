@@ -104,7 +104,8 @@ namespace MarketAnalytics.Pages.PortfolioPages
             DbInitializer.GetQuote(existingTxn.stockMaster.Symbol + (existingTxn.stockMaster.Exchange.Length == 0 ? "" : ("." + existingTxn.stockMaster.Exchange)), out quoteDate, out open, out high, out low, out close,
                         out volume, out change, out changepercent, out prevclose);
 
-            if ((TxnPurchaseQty > 0) && (TxnCostPerUnit > 0))
+            //if ((TxnPurchaseQty > 0) && (TxnCostPerUnit > 0))
+            if (TxnPurchaseQty > 0)
             {
                 existingTxn.TXN_BUY_DATE = TxnDate;
                 existingTxn.PURCHASE_QUANTITY = TxnPurchaseQty;
