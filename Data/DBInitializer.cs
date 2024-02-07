@@ -10,6 +10,13 @@ using System.Net;
 using System.Text;
 using System.Xml;
 using System.Web;
+using System.Net.Http.Headers;
+using NuGet.Common;
+using Microsoft.CodeAnalysis.Elfie.Serialization;
+using System.Globalization;
+using System.Security.Policy;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System;
 
 namespace MarketAnalytics.Data
 {
@@ -35,16 +42,58 @@ namespace MarketAnalytics.Data
         public static async Task<string> FetchMasterData(string sourceURL = "http://www1.nseindia.com/content/equities/EQUITY_L.csv", string exchangeCode = "NS")
         {
             string responseBody = null;
+            sourceURL = @"https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv";
+
             // Call asynchronous network methods in a try/catch block to handle exceptions.
             try
             {
                 if (exchangeCode.Equals("NS"))
                 {
-                    HttpResponseMessage response = await client.GetAsync(sourceURL);
-                    response.EnsureSuccessStatusCode();
-                    responseBody = await response.Content.ReadAsStringAsync();
+                    //responseBody = await GetCSV(sourceURL);
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.DefaultRequestHeaders.Clear();
+                        httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("Encoding.UTF8"));
+                        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
+                        using (var httpResponse = await httpClient.GetStreamAsync(sourceURL)) //SendAsync(msg,))
+                        {
+                            if (httpResponse != null)
+                            {
+                                //using (var s = await resp.Content.ReadAsStreamAsync())
+                                using (var sr = new StreamReader(httpResponse))
+                                {
+                                    responseBody = sr.ReadToEnd();
+                                }
+                                //using (var futureoptionsreader = new CsvReader(sr, true)) //(sr, CultureInfo.CurrentCulture))
+                                //{
+                                //    futureoptionsreader.Configuration.RegisterClassMap<MappingNSEIndexes>();
+                                //    var list = futureoptionsreader.GetRecords<RawNSEIndexes>();
+                                //    var number = list.Count();
+                                //}
+                            }
+                        }
+                    }
+
+                    //var httpclient = new HttpClient();
+
+                    //httpclient.DefaultRequestHeaders.Clear();
+                    //httpclient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
+                    //httpclient.Timeout = TimeSpan.FromMinutes(10);
+
+                    //var httpResponse = httpclient.GetAsync(sourceURL);
+                    ////httpResponse.EnsureSuccessStatusCode();
+                    //if (httpResponse.Result.StatusCode == HttpStatusCode.OK)
+                    //{
+                    //    responseBody = httpResponse.Result.Content.ReadAsStringAsync().Result;
+                    //}
+                    //else
+                    //{
+                    //    responseBody = null;
+                    //}
+
                     // Above three lines can be replaced with new helper method below
-                    // string responseBody = await client.GetStringAsync(uri);
+                    //string responseBody = await client.GetStringAsync(uri);
 
                 }
                 else
@@ -56,7 +105,39 @@ namespace MarketAnalytics.Data
             {
                 //throw e;
             }
+            catch(Exception ex)
+            {
+
+            }
             return responseBody;
+        }
+
+        public static async Task<string> GetCSV(string url)
+        {
+            string data = null;
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Clear();
+                httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("Encoding.UTF8"));
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
+                using (var httpResponse = await httpClient.GetStreamAsync(url)) //SendAsync(msg,))
+                {
+                    //resp.EnsureSuccessStatusCode();
+
+                    //using (var s = await resp.Content.ReadAsStreamAsync())
+                    using (var sr = new StreamReader(httpResponse))
+                    {
+                        data = sr.ReadToEnd();
+                    }
+                    //using (var futureoptionsreader = new CsvReader(sr, true)) //(sr, CultureInfo.CurrentCulture))
+                    //{
+                    //    futureoptionsreader.Configuration.RegisterClassMap<MappingNSEIndexes>();
+                    //    var list = futureoptionsreader.GetRecords<RawNSEIndexes>();
+                    //    var number = list.Count();
+                    //}
+                }
+            }
+            return data;
         }
         public static string GetMutualFundName(string fundCode)
         {
