@@ -31,6 +31,31 @@ namespace MarketAnalytics.Data
         //https://finance.yahoo.com/quote/0P0001784M.BO?p=0P0001784M.BO
         public static string urlMFDetails = "https://finance.yahoo.com/quote/{0}?p={1}";
 
+        //ALL URL's for MF from AMFIIndia        
+
+        //Following URL will fetch latest NAV for ALL MF in following format
+        //Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
+        public static string urlAMFI_MF_MASTER_CURRENT = "https://www.amfiindia.com/spages/NAVAll.txt";
+
+        //Use following URL to get specific date NAV for ALL MF. The format is same as urlMF_MASTER_CURRENT
+        //Output is:
+        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+        //http://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt=01-Jan-2020
+        public static string urlMF_NAV_FOR_DATE = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt={0}";
+
+        //Use following URL to get NAV history between from dt & to dt for specific MF code. 
+        //Output is :
+        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+        //http://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf=27&frmdt=27-Sep-2020&todt=05-Oct-2020
+        public static string urlMF_NAV_HISTORY_FROM_TO = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}&todt={2}";
+        public static string urlMF_NAV_HISTORY_FROM = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}";
+
+
+        //Use folowwing URT to get NAV for FUNDHOUSE CODE, SCHEMETYEPE (1= open ended, 2 = Close Ended, 3 = Interval funds, From Date is mandatory, TO date is optional
+        //Output is - Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+        static string urlMF_TP_NAV_HISTORY_FROM_TO = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&tp={1}&frmdt={2}&todt={3}";
+        static string urlMF_TP_NAV_HISTORY_FROM = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&tp={1}&frmdt={2}";
+
         static readonly HttpClient client = new HttpClient();
 
         /// <summary>
@@ -105,7 +130,43 @@ namespace MarketAnalytics.Data
             {
                 //throw e;
             }
-            catch(Exception ex)
+            catch (Exception ex)
+            {
+
+            }
+            return responseBody;
+        }
+
+        /// <summary>
+        /// MEthod to fetch yesterday's AMFI MF NAV data from AMFI url
+        /// https://www.amfiindia.com/spages/NAVAll.txt
+        /// Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
+        /// </summary>
+        /// <returns>A string having NAV records terminated by \n and each field terminated by comma</returns>
+        public static async Task<string> FetchAMFIMFMasterData()
+        {
+            string responseBody = null;
+            // Call asynchronous network methods in a try/catch block to handle exceptions.
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Clear();
+                    using (var httpResponse = await httpClient.GetAsync(urlAMFI_MF_MASTER_CURRENT)) //SendAsync(msg,))
+                    {
+                        //httpResponse.EnsureSuccessStatusCode();
+                        if (httpResponse.IsSuccessStatusCode == true)
+                        {
+                            responseBody = httpResponse.Content.ReadAsStringAsync().Result;
+                        }
+                    }
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                //throw e;
+            }
+            catch (Exception ex)
             {
 
             }
@@ -408,6 +469,167 @@ namespace MarketAnalytics.Data
                 }
                 context.SaveChanges(true);
             }
+        }
+
+        public static void InitializeAMFIMF(DBContext context, string sourceFile)
+        {
+            StringBuilder recFormat1 = new StringBuilder("Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date");
+            StringBuilder recFormat2 = new StringBuilder("Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date");
+            string[] sourceLines;
+            string[] fields;
+            StringBuilder record = new StringBuilder(string.Empty);
+            int recCounter = 0;
+            double nav;
+            DateTime dateNAV = DateTime.MinValue;
+            DateTime dateMaxNAV = DateTime.MinValue;
+            StringBuilder newSchemeName = new StringBuilder(string.Empty), ISINDivPayoutISINGrowth = new StringBuilder(string.Empty), ISINDivReinvestment = new StringBuilder(string.Empty);
+            StringBuilder netAssetValue = new StringBuilder(string.Empty), navDate = new StringBuilder(string.Empty);
+            int newschemecode = -1;
+            IQueryable<StockMaster> currentMaster;
+            List<StockMaster> newRecords = new List<StockMaster>();
+
+            try
+            {
+                sourceLines = sourceFile.Split('\n');
+                if ((sourceLines[0].Contains(recFormat1.ToString())) || (sourceLines[0].Contains(recFormat2.ToString())))
+                {
+                    record.Clear();
+                    record.Append(sourceLines[recCounter++]);
+                    //Now read each line and fill the data in table. We have to skip lines which do not have ';' and hence fields will be empty
+                    //while (!reader.EndOfStream)
+                    while (recCounter < sourceLines.Length)
+                    {
+                        record.Clear();
+                        record.Append(sourceLines[recCounter++].Trim());
+                        if (record.Length == 0)
+                        {
+                            //means empty line
+                            continue;
+                        }
+                        else if (record.ToString().Contains(";") == false)
+                        {
+                            //means we encountered new scheme type or new company. FOllowing are examples of two lines
+                            //Open Ended Schemes(Debt Scheme - Banking and PSU Fund)
+                            //OR
+                            //Aditya Birla Sun Life Mutual Fund
+                            while (recCounter < sourceLines.Length)
+                            {
+                                record.Clear();
+                                record.Append(sourceLines[recCounter++].Trim());
+                                if (record.Length == 0)
+                                {
+                                    //means empty line
+                                    continue;
+                                }
+                                else if (record.ToString().Contains(";") == false)
+                                {
+                                    //we found a MF company name with in current scheme type or it can be a new schemy type line
+                                    continue;
+                                }
+                                else if (record.ToString().Contains(";") == true)
+                                {
+                                    //we found a line having actual MF record with NAV & scheme code
+                                    //we will need to split and insert a new record or update an existing one
+                                    break;
+                                }
+                            }
+                        }
+                        fields = record.ToString().Split(';');
+                        //record can be one of following
+                        //Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
+                        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+                        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+                        if ((fields.Length == 6) || (fields.Length == 8))
+                        {
+                            //if NetAssetValue = 0.00 then skip this record
+                            netAssetValue.Clear();
+                            netAssetValue.Append(fields[4]);
+                            try
+                            {
+                                nav = System.Convert.ToDouble(netAssetValue.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("insertRecordInDB NAV received as: " + netAssetValue.ToString() + " skipping this record due to exce[tion: " + ex.Message);
+                                nav = 0.00;
+                            }
+                            if (nav == 0)
+                            {
+                                //this means there is no update for this MF scheme. But we may have to check if this exisits
+                                //in our DB if not we may have to insert the record with 0 as current date NAV 
+                                continue;
+                            }
+
+                            newschemecode = int.Parse(fields[0]);
+                            ISINDivPayoutISINGrowth.Clear();
+                            ISINDivPayoutISINGrowth.Append(fields[1]); ;
+                            ISINDivReinvestment.Clear();
+                            ISINDivReinvestment.Append(fields[2]);
+                            newSchemeName.Clear();
+                            newSchemeName.Append(fields[3]);
+                            navDate.Clear();
+                            navDate.Append(fields[5]);
+                            if (fields.Length == 8)
+                            {
+                                newSchemeName.Clear();
+                                newSchemeName.Append(fields[1]);
+                                ISINDivPayoutISINGrowth.Clear();
+                                ISINDivPayoutISINGrowth.Append(fields[2]);
+                                ISINDivReinvestment.Clear();
+                                ISINDivReinvestment.Append(fields[3]);
+                                navDate.Clear();
+                                navDate.Append(fields[7]);
+                            }
+                            dateNAV = System.Convert.ToDateTime(navDate.ToString());
+
+                            //Now check if this MF exists in DB and if it does then update the NAV
+                            //else insert the new MF in StockMaster and then update the NAV
+
+                            var recTOAdd = new StockMaster();
+                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(newschemecode.ToString())
+                                                && s.CompName.ToUpper().Equals(newSchemeName.ToString().ToUpper()));
+                            if (currentMaster.Count() <= 0)
+                            {
+                                recTOAdd.Symbol = newschemecode.ToString();
+                                recTOAdd.CompName = newSchemeName.ToString();
+                                recTOAdd.Exchange = "AMFI-MF";
+
+                                recTOAdd.QuoteDateTime = dateNAV;
+                                recTOAdd.Open = nav;
+                                recTOAdd.High = nav;
+                                recTOAdd.Low = nav;
+                                recTOAdd.Close = nav;
+                                recTOAdd.Volume = 0.0;
+                                recTOAdd.ChangePercent = 0.0;
+                                recTOAdd.Change = 0.0;
+                                recTOAdd.PrevClose = nav;
+
+                                newRecords.Add(recTOAdd);
+                            }
+                            else
+                            {
+                                var selectedRecord = (StockMaster)(currentMaster.First());
+                                selectedRecord.QuoteDateTime = dateNAV;
+                                selectedRecord.Open = nav;
+                                selectedRecord.High = nav;
+                                selectedRecord.Low = nav;
+                                selectedRecord.PrevClose = selectedRecord.Close;
+                                selectedRecord.Close = nav;
+                                selectedRecord.Volume = 0.0;
+                                selectedRecord.ChangePercent = ((nav - selectedRecord.PrevClose) / selectedRecord.PrevClose) * 100;
+                                selectedRecord.Change = nav - selectedRecord.PrevClose;
+                                //context.StockMaster.Update(selectedRecord);
+                            }
+                        }
+                    }
+                    if (newRecords.Count > 0)
+                    {
+                        context.StockMaster.AddRange(newRecords);
+                    }
+                    context.SaveChanges(true);
+                }
+            }
+            catch (Exception ex) { }
         }
 
         /// <summary>

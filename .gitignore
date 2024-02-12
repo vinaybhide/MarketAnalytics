@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /Migrations/20230705064101_InitialCreate.cs
 /Migrations/20230705064101_InitialCreate.Designer.cs
+/NAVAll.txt

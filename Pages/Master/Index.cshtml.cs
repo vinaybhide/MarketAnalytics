@@ -159,7 +159,7 @@ namespace MarketAnalytics.Pages.Master
                 {
                     string fetchedData = await DbInitializer.FetchMasterData();
                     DbInitializer.Initialize(_context, fetchedData);
-
+                    //string fetchedMFDate = await DbInitializer.FetchAMFIMFMasterData();
                     //RefreshAllStockMaster();
                     //RefreshAllStocks = false;
                 }
