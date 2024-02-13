@@ -1,6 +1,5 @@
 ﻿//Test for sync
 using MarketAnalytics.Models;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -11,15 +10,14 @@ using System.Text;
 using System.Xml;
 using System.Web;
 using System.Net.Http.Headers;
-using NuGet.Common;
-using Microsoft.CodeAnalysis.Elfie.Serialization;
-using System.Globalization;
-using System.Security.Policy;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System;
 
 namespace MarketAnalytics.Data
 {
+    public class classFundHouseCode
+    {
+        public int fundHouseCode { get; set; }
+        public string fundHouseName { get; set; }
+    }
     public class DbInitializer
     {
         public static string urlNSEStockMaster = "http://www1.nseindia.com/content/equities/EQUITY_L.csv";
@@ -55,6 +53,9 @@ namespace MarketAnalytics.Data
         //Output is - Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
         static string urlMF_TP_NAV_HISTORY_FROM_TO = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&tp={1}&frmdt={2}&todt={3}";
         static string urlMF_TP_NAV_HISTORY_FROM = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&tp={1}&frmdt={2}";
+
+        //this URL will return page that displays the AMFI hostory download parameters
+        static string urlMF_FUNDHOUSECODE = @"https://www.amfiindia.com/nav-history-download";
 
         static readonly HttpClient client = new HttpClient();
 
@@ -137,6 +138,61 @@ namespace MarketAnalytics.Data
             return responseBody;
         }
 
+
+        public static Dictionary<string, int> FetchAMFIFundHouseCodes()
+        {
+            Dictionary<string, int> dictFundHouseCodes = new Dictionary<string, int>();
+            string responseStr = null, dataStr = null;
+            int startIndex = 0;
+            int endIndex = 0;
+            XmlDocument xmlResult = null;
+            string mfCompName = string.Empty, fundCode = string.Empty;//, lasttradeprice, category;
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Clear();
+                    using (var httpResponse = httpClient.GetAsync(urlMF_FUNDHOUSECODE).Result) //SendAsync(msg,))
+                    {
+                        //httpResponse.EnsureSuccessStatusCode();
+                        if (httpResponse.Content != null)
+                        {
+                            var responseContent = httpResponse.Content.ReadAsStringAsync();
+                            responseStr = responseContent.Result;
+                            if (string.IsNullOrEmpty(responseStr) == false)
+                            {
+                                startIndex = responseStr.IndexOf("<select");
+                                endIndex = responseStr.IndexOf("</select>") + 8;
+                                if (startIndex > 0 && endIndex > 0)
+                                {
+                                    dataStr = responseStr.Substring(startIndex, endIndex - startIndex + 1);
+                                    xmlResult = new XmlDocument();
+
+                                    xmlResult.LoadXml(dataStr);
+                                    for (int i = 2; i < xmlResult["select"].ChildNodes.Count; i++)
+                                    {
+                                        //we will skip first two lines as then contain combo header and ALL values
+                                        fundCode = xmlResult["select"].ChildNodes[i].Attributes["value"].Value;
+                                        mfCompName = xmlResult["select"].ChildNodes[i].InnerText;
+                                        if ((string.IsNullOrEmpty(fundCode) == false) && (string.IsNullOrEmpty(mfCompName) == false))
+                                        {
+                                            dictFundHouseCodes.Add(mfCompName, int.Parse(fundCode));
+                                        }
+                                    }
+                                    xmlResult = null;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                dictFundHouseCodes.Clear();
+            }
+            return dictFundHouseCodes;
+        }
         /// <summary>
         /// MEthod to fetch yesterday's AMFI MF NAV data from AMFI url
         /// https://www.amfiindia.com/spages/NAVAll.txt
@@ -443,6 +499,7 @@ namespace MarketAnalytics.Data
                                 recTOAdd.ChangePercent = changepercent[0];
                                 recTOAdd.Change = change[0];
                                 recTOAdd.PrevClose = prevclose[0];
+                                recTOAdd.INVESTMENT_TYPE = "Stocks";
 
                                 newRecords.Add(recTOAdd);
                             }
@@ -484,12 +541,15 @@ namespace MarketAnalytics.Data
             DateTime dateMaxNAV = DateTime.MinValue;
             StringBuilder newSchemeName = new StringBuilder(string.Empty), ISINDivPayoutISINGrowth = new StringBuilder(string.Empty), ISINDivReinvestment = new StringBuilder(string.Empty);
             StringBuilder netAssetValue = new StringBuilder(string.Empty), navDate = new StringBuilder(string.Empty);
+            StringBuilder tmp1 = new StringBuilder(string.Empty);
+            StringBuilder mfCompName = new StringBuilder(string.Empty);
             int newschemecode = -1;
             IQueryable<StockMaster> currentMaster;
             List<StockMaster> newRecords = new List<StockMaster>();
 
             try
             {
+                Dictionary<string, int> keyValuePairs = FetchAMFIFundHouseCodes();
                 sourceLines = sourceFile.Split('\n');
                 if ((sourceLines[0].Contains(recFormat1.ToString())) || (sourceLines[0].Contains(recFormat2.ToString())))
                 {
@@ -523,6 +583,8 @@ namespace MarketAnalytics.Data
                                 }
                                 else if (record.ToString().Contains(";") == false)
                                 {
+                                    mfCompName.Clear();
+                                    mfCompName.Append(record);
                                     //we found a MF company name with in current scheme type or it can be a new schemy type line
                                     continue;
                                 }
@@ -553,14 +615,18 @@ namespace MarketAnalytics.Data
                                 Console.WriteLine("insertRecordInDB NAV received as: " + netAssetValue.ToString() + " skipping this record due to exce[tion: " + ex.Message);
                                 nav = 0.00;
                             }
-                            if (nav == 0)
+                            if ((nav == 0) || (keyValuePairs.Count <= 0) || (string.IsNullOrEmpty(mfCompName.ToString())))
                             {
                                 //this means there is no update for this MF scheme. But we may have to check if this exisits
                                 //in our DB if not we may have to insert the record with 0 as current date NAV 
                                 continue;
                             }
 
-                            newschemecode = int.Parse(fields[0]);
+                            //newschemecode = int.Parse(fields[0]);
+                            newschemecode = -1;
+                            //string key = "360 ONE Mutual Fund (Formerly Known as IIFL Mutual Fund)";
+                            newschemecode = keyValuePairs.Where(code => code.Key.Equals(mfCompName.ToString())).Select(code => code.Value).FirstOrDefault();
+
                             ISINDivPayoutISINGrowth.Clear();
                             ISINDivPayoutISINGrowth.Append(fields[1]); ;
                             ISINDivReinvestment.Clear();
@@ -586,13 +652,13 @@ namespace MarketAnalytics.Data
                             //else insert the new MF in StockMaster and then update the NAV
 
                             var recTOAdd = new StockMaster();
-                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(newschemecode.ToString())
-                                                && s.CompName.ToUpper().Equals(newSchemeName.ToString().ToUpper()));
+                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(newSchemeName.ToString())
+                                                && s.CompName.ToUpper().Equals(newschemecode.ToString() + "?" + mfCompName.ToString()));
                             if (currentMaster.Count() <= 0)
                             {
-                                recTOAdd.Symbol = newschemecode.ToString();
-                                recTOAdd.CompName = newSchemeName.ToString();
-                                recTOAdd.Exchange = "AMFI-MF";
+                                recTOAdd.Symbol = newSchemeName.ToString();
+                                recTOAdd.CompName = newschemecode.ToString() + "?" + mfCompName.ToString();
+                                recTOAdd.Exchange = "AMFI";
 
                                 recTOAdd.QuoteDateTime = dateNAV;
                                 recTOAdd.Open = nav;
@@ -603,6 +669,7 @@ namespace MarketAnalytics.Data
                                 recTOAdd.ChangePercent = 0.0;
                                 recTOAdd.Change = 0.0;
                                 recTOAdd.PrevClose = nav;
+                                recTOAdd.INVESTMENT_TYPE = "Mutual Fund";
 
                                 newRecords.Add(recTOAdd);
                             }

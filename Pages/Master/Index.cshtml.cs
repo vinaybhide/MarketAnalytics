@@ -16,6 +16,13 @@ namespace MarketAnalytics.Pages.Master
         private const string constV200 = "-96";
         private const string constAll = "-95";
         private const string constMF = "-94";
+        private const string constBSEMF = "-93";
+        private const string constAMFIMF = "-92";
+        private const string constAllStocks = "-91";
+        private const string constAllETF = "-90";
+        private const string constAllFuture = "-89";
+        private const string constAllIndex = "-88";
+
 
         private const string constEditCategory = "0";
         private const string constShowDetails = "1";
@@ -89,7 +96,25 @@ namespace MarketAnalytics.Pages.Master
                 selectAll = new SelectListItem("Show V200", constV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("Show Mutual Funds", constMF);
+                selectAll = new SelectListItem("Show All Mutual Funds", constMF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show BSE Mutual Funds", constBSEMF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show AMFI Mutual Funds", constAMFIMF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Stocks", constAllStocks);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All ETF", constAllETF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Future", constAllFuture);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Indexes", constAllIndex);
                 groupList.Add(selectAll);
 
                 menuList.Clear();
@@ -159,7 +184,8 @@ namespace MarketAnalytics.Pages.Master
                 {
                     string fetchedData = await DbInitializer.FetchMasterData();
                     DbInitializer.Initialize(_context, fetchedData);
-                    //string fetchedMFDate = await DbInitializer.FetchAMFIMFMasterData();
+                    string fetchedMFData = await DbInitializer.FetchAMFIMFMasterData();
+                    DbInitializer.InitializeAMFIMF(_context, fetchedMFData);
                     //RefreshAllStockMaster();
                     //RefreshAllStocks = false;
                 }
@@ -206,6 +232,41 @@ namespace MarketAnalytics.Pages.Master
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constBSEMF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("BO"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAMFIMF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("AMFI"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllStocks)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Stocks"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllETF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("ETF"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllFuture)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Future"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllFuture)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
+                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllIndex)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Index"))).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else
