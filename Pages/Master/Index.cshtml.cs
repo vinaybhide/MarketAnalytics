@@ -184,7 +184,7 @@ namespace MarketAnalytics.Pages.Master
                 {
                     string fetchedData = await DbInitializer.FetchMasterData();
                     DbInitializer.Initialize(_context, fetchedData);
-                    string fetchedMFData = await DbInitializer.FetchAMFIMFMasterData();
+                    string fetchedMFData = DbInitializer.FetchAMFIMFMasterData();
                     DbInitializer.InitializeAMFIMF(_context, fetchedMFData);
                     //RefreshAllStockMaster();
                     //RefreshAllStocks = false;

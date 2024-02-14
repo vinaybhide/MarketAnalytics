@@ -20,6 +20,7 @@ namespace MarketAnalytics.Data
     }
     public class DbInitializer
     {
+        public static string separatorFundCode = "?";
         public static string urlNSEStockMaster = "http://www1.nseindia.com/content/equities/EQUITY_L.csv";
         public static string urlGetHistoryQuote = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?period1={1}&period2={2}&interval={3}&filter=history&frequency={4}&includeAdjustedClose={5}";
 
@@ -31,20 +32,24 @@ namespace MarketAnalytics.Data
 
         //ALL URL's for MF from AMFIIndia        
 
+        //---------AMFI: To get today's NAV for ALL MF----------------
         //Following URL will fetch latest NAV for ALL MF in following format
         //Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
         public static string urlAMFI_MF_MASTER_CURRENT = "https://www.amfiindia.com/spages/NAVAll.txt";
 
+        //-------------AMFI: To get NAV for ALL funds for all companies-------------
         //Use following URL to get specific date NAV for ALL MF. The format is same as urlMF_MASTER_CURRENT
         //Output is:
         //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
-        //http://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt=01-Jan-2020
+        //https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt=11-Feb-2024
         public static string urlMF_NAV_FOR_DATE = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt={0}";
 
-        //Use following URL to get NAV history between from dt & to dt for specific MF code. 
-        //Output is :
+        //-------AMFI: To get NAV for specific Fund Code with From and optional To date------
+        //Use following URL to get NAV history between from dt & to dt for specific MF code. This will return data for ALL funds
+        //https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf=3&frmdt=13-Feb-2024
+        //https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf=3&frmdt=11-Feb-2024&todt=14-Feb-2024
+        //Output is:
         //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
-        //http://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf=27&frmdt=27-Sep-2020&todt=05-Oct-2020
         public static string urlMF_NAV_HISTORY_FROM_TO = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}&todt={2}";
         public static string urlMF_NAV_HISTORY_FROM = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}";
 
@@ -199,21 +204,55 @@ namespace MarketAnalytics.Data
         /// Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
         /// </summary>
         /// <returns>A string having NAV records terminated by \n and each field terminated by comma</returns>
-        public static async Task<string> FetchAMFIMFMasterData()
+        //public static async Task<string> FetchAMFIMFMasterData(string mfFundCode = null, string fromDate = null, string toDate = null)
+        public static string FetchAMFIMFMasterData(string mfFundCode = null, string fromDate = null, string toDate = null)
         {
             string responseBody = null;
+            string url = string.Empty;
+
             // Call asynchronous network methods in a try/catch block to handle exceptions.
             try
             {
-                using (var httpClient = new HttpClient())
+                if (string.IsNullOrEmpty(fromDate) == true)
                 {
-                    httpClient.DefaultRequestHeaders.Clear();
-                    using (var httpResponse = await httpClient.GetAsync(urlAMFI_MF_MASTER_CURRENT)) //SendAsync(msg,))
+                    //this is NAVALL.txt case, where we get latest NAV for ALL MF's
+                    url = urlAMFI_MF_MASTER_CURRENT;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(mfFundCode) == false)
                     {
-                        //httpResponse.EnsureSuccessStatusCode();
-                        if (httpResponse.IsSuccessStatusCode == true)
+                        //this is the case to get NAV for specific Fund Code
+                        //http://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf=27&frmdt=27-Sep-2020&todt=05-Oct-2020
+                        //public static string urlMF_NAV_HISTORY_FROM_TO = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}&todt={2}";
+                        //public static string urlMF_NAV_HISTORY_FROM = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?mf={0}&frmdt={1}";
+                        if (string.IsNullOrEmpty(toDate) == false)
                         {
-                            responseBody = httpResponse.Content.ReadAsStringAsync().Result;
+                            url = string.Format(urlMF_NAV_HISTORY_FROM_TO, mfFundCode, fromDate, toDate);
+                        }
+                        else
+                        {
+                            url = string.Format(urlMF_NAV_HISTORY_FROM, mfFundCode, fromDate);
+                        }
+                    }
+                    else
+                    {
+                        //this is the case to get NAV for ALL funds for all fund codes
+                        url = string.Format(urlMF_NAV_FOR_DATE, fromDate);
+                    }
+                }
+                if (string.IsNullOrEmpty(url) == false)
+                {
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.DefaultRequestHeaders.Clear();
+                        using (var httpResponse = httpClient.GetAsync(url).Result) //SendAsync(msg,))
+                        {
+                            //httpResponse.EnsureSuccessStatusCode();
+                            if (httpResponse.IsSuccessStatusCode == true)
+                            {
+                                responseBody = httpResponse.Content.ReadAsStringAsync().Result;
+                            }
                         }
                     }
                 }
@@ -528,8 +567,337 @@ namespace MarketAnalytics.Data
             }
         }
 
-        public static void InitializeAMFIMF(DBContext context, string sourceFile)
+        public static bool InitializeAMFIMF(DBContext context, string sourceFile, string symbol = null)
         {
+            bool bStatus = false;
+            StringBuilder recFormat1 = new StringBuilder("Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date");
+            StringBuilder recFormat2 = new StringBuilder("Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date");
+            string[] sourceLines;
+            string[] fields;
+            StringBuilder record = new StringBuilder(string.Empty);
+            int recCounter = 0;
+            double nav;
+            DateTime dateNAV = DateTime.MinValue;
+            DateTime dateMaxNAV = DateTime.MinValue;
+            StringBuilder tmp1 = new StringBuilder(string.Empty);
+            StringBuilder newSchemeName = new StringBuilder(string.Empty), ISINDivPayoutISINGrowth = new StringBuilder(string.Empty), ISINDivReinvestment = new StringBuilder(string.Empty);
+            StringBuilder netAssetValue = new StringBuilder(string.Empty), navDate = new StringBuilder(string.Empty);
+            StringBuilder mfCompName = new StringBuilder(string.Empty);
+            int newschemecode = -1;
+            IQueryable<StockMaster> currentMaster;
+            List<StockMaster> newRecords = new List<StockMaster>();
+
+            try
+            {
+                Dictionary<string, int> keyValuePairs = FetchAMFIFundHouseCodes();
+                sourceLines = sourceFile.Split('\n');
+                if ((sourceLines[0].Contains(recFormat1.ToString())) || (sourceLines[0].Contains(recFormat2.ToString())))
+                {
+                    record.Clear();
+                    record.Append(sourceLines[recCounter++]);
+                    //Now read each line and fill the data in table. We have to skip lines which do not have ';' and hence fields will be empty
+                    //while (!reader.EndOfStream)
+                    while (recCounter < sourceLines.Length)
+                    {
+                        record.Clear();
+                        record.Append(sourceLines[recCounter++].Trim());
+                        if (record.Length == 0)
+                        {
+                            //means empty line
+                            continue;
+                        }
+                        else if (record.ToString().Contains(";") == false)
+                        {
+                            //means we encountered new scheme type or new company. FOllowing are examples of two lines
+                            //Open Ended Schemes(Debt Scheme - Banking and PSU Fund)
+                            //OR
+                            //Aditya Birla Sun Life Mutual Fund
+                            tmp1.Clear();
+                            tmp1.Append(record);
+                            while (recCounter < sourceLines.Length)
+                            {
+                                record.Clear();
+                                record.Append(sourceLines[recCounter++].Trim());
+                                if (record.Length == 0)
+                                {
+                                    //means empty line
+                                    continue;
+                                }
+                                else if (record.ToString().Contains(";") == false)
+                                {
+                                    mfCompName.Clear();
+                                    mfCompName.Append(record);
+                                    tmp1.Clear();
+                                    tmp1.Append(record);
+                                    //we found a MF company name with in current scheme type or it can be a new schemy type line
+                                    continue;
+                                }
+                                else if (record.ToString().Contains(";") == true)
+                                {
+                                    mfCompName.Clear();
+                                    mfCompName.Append(tmp1);
+                                    //we found a line having actual MF record with NAV & scheme code
+                                    //we will need to split and insert a new record or update an existing one
+                                    break;
+                                }
+                            }
+                        }
+                        fields = record.ToString().Split(';');
+                        //record can be one of following
+                        //Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
+                        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+                        //Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date
+                        if ((fields.Length == 6) || (fields.Length == 8))
+                        {
+                            //if NetAssetValue = 0.00 then skip this record
+                            netAssetValue.Clear();
+                            netAssetValue.Append(fields[4]);
+                            try
+                            {
+                                nav = System.Convert.ToDouble(netAssetValue.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("insertRecordInDB NAV received as: " + netAssetValue.ToString() + " skipping this record due to exce[tion: " + ex.Message);
+                                nav = 0.00;
+                            }
+                            if ((nav == 0) || (keyValuePairs.Count <= 0) || (string.IsNullOrEmpty(mfCompName.ToString())))
+                            {
+                                //this means there is no update for this MF scheme. But we may have to check if this exisits
+                                //in our DB if not we may have to insert the record with 0 as current date NAV 
+                                continue;
+                            }
+
+                            //newschemecode = int.Parse(fields[0]);
+                            newschemecode = -1;
+                            //string key = "360 ONE Mutual Fund (Formerly Known as IIFL Mutual Fund)";
+                            newschemecode = keyValuePairs.Where(code => code.Key.Equals(mfCompName.ToString())).Select(code => code.Value).FirstOrDefault();
+
+                            ISINDivPayoutISINGrowth.Clear();
+                            ISINDivPayoutISINGrowth.Append(fields[1]); ;
+                            ISINDivReinvestment.Clear();
+                            ISINDivReinvestment.Append(fields[2]);
+                            newSchemeName.Clear();
+                            newSchemeName.Append(fields[3]);
+                            navDate.Clear();
+                            navDate.Append(fields[5]);
+                            if (fields.Length == 8)
+                            {
+                                newSchemeName.Clear();
+                                newSchemeName.Append(fields[1]);
+                                ISINDivPayoutISINGrowth.Clear();
+                                ISINDivPayoutISINGrowth.Append(fields[2]);
+                                ISINDivReinvestment.Clear();
+                                ISINDivReinvestment.Append(fields[3]);
+                                navDate.Clear();
+                                navDate.Append(fields[7]);
+                            }
+                            dateNAV = System.Convert.ToDateTime(navDate.ToString());
+
+                            //Now check if this MF exists in DB and if it does then update the NAV
+                            //else insert the new MF in StockMaster and then update the NAV
+                            if ((string.IsNullOrEmpty(symbol) == false) && (symbol.Equals(newSchemeName.ToString()) == false))
+                            {
+                                continue;
+                            }
+                            var recTOAdd = new StockMaster();
+
+                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.Equals(newSchemeName.ToString())
+                                                && s.CompName.Equals(newschemecode.ToString() + separatorFundCode + mfCompName.ToString()));
+                            if (currentMaster.Count() <= 0)
+                            {
+                                recTOAdd.Symbol = newSchemeName.ToString();
+                                recTOAdd.CompName = newschemecode.ToString() + separatorFundCode + mfCompName.ToString();
+                                recTOAdd.Exchange = "AMFI";
+
+                                recTOAdd.QuoteDateTime = dateNAV;
+                                recTOAdd.Open = nav;
+                                recTOAdd.High = nav;
+                                recTOAdd.Low = nav;
+                                recTOAdd.Close = nav;
+                                recTOAdd.Volume = 0.0;
+                                recTOAdd.ChangePercent = 0.0;
+                                recTOAdd.Change = 0.0;
+                                recTOAdd.PrevClose = nav;
+                                recTOAdd.INVESTMENT_TYPE = "Mutual Fund";
+
+                                newRecords.Add(recTOAdd);
+                            }
+                            else
+                            {
+                                var selectedRecord = (StockMaster)(currentMaster.First());
+                                selectedRecord.QuoteDateTime = dateNAV;
+                                selectedRecord.Open = nav;
+                                selectedRecord.High = nav;
+                                selectedRecord.Low = nav;
+                                selectedRecord.PrevClose = selectedRecord.Close;
+                                selectedRecord.Close = nav;
+                                selectedRecord.Volume = 0.0;
+                                selectedRecord.ChangePercent = ((nav - selectedRecord.PrevClose) / selectedRecord.PrevClose) * 100;
+                                selectedRecord.Change = nav - selectedRecord.PrevClose;
+                                //context.StockMaster.Update(selectedRecord);
+                            }
+
+                            if ((string.IsNullOrEmpty(symbol) == false) && (symbol.Equals(newSchemeName.ToString()) == true))
+                            {
+                                break; ;
+                            }
+
+                        }
+                    }
+                    if (newRecords.Count > 0)
+                    {
+                        context.StockMaster.AddRange(newRecords);
+                    }
+                    context.SaveChanges(true);
+                    bStatus = true;
+                }
+            }
+            catch (Exception ex) { }
+            return bStatus;
+        }
+
+        /// <summary>
+        /// For given StockMaster record fetches historical price data from given fromdate. if fromdate is null then fetches last
+        /// 10 years price data
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="stockMaster"></param>
+        /// <param name="symbol"></param>
+        /// <param name="compname"></param>
+        /// <param name="exchange"></param>
+        /// <param name="fromDate"></param>
+        public static void InitializeHistory(DBContext context, StockMaster stockMaster, string fromDate = null)
+        {
+            //if (context.StockMaster.Any())
+            //{
+            //    return;   // DB has been seeded
+            //}
+            int recCounter = 0;
+            List<StockPriceHistory> newRecords = new List<StockPriceHistory>();
+            DateTime[] quoteDate;
+            double[] open, high, low, close, volume, change, changepercent, prevclose;
+
+            quoteDate = null;
+            open = high = low = close = volume = change = changepercent = prevclose = null;
+
+            try
+            {
+                //if (string.IsNullOrEmpty(fromDate))
+                //{
+                //    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                //                    out volume, out change, out changepercent, out prevclose);
+                //}
+                //else
+                //{
+                //    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
+                //                    out volume, out change, out changepercent, out prevclose);
+                //}
+
+
+                //GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)),
+                //Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                //DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                //out quoteDate, out open, out high, out low, out close,
+                //                out volume, out change, out changepercent, out prevclose);
+                if (stockMaster.Exchange.Equals("AMFI") == false)
+                {
+                    if (GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange,
+                    Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                    DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                    out quoteDate, out open, out high, out low, out close,
+                    out volume, out change, out changepercent, out prevclose) == false)
+                    {
+                        GetHistoryQuote(stockMaster.Symbol,
+                            Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                            DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
+                            out quoteDate, out open, out high, out low, out close, out volume,
+                            out change, out changepercent, out prevclose);
+                    }
+                    //read first line which is list of fields
+                    if ((quoteDate != null) && (quoteDate.Length > 0))
+                    {
+                        //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
+                        IQueryable<StockPriceHistory> currentPrice;
+                        for (int i = 0; i < quoteDate.Length; i++)
+                        {
+                            if (quoteDate[i].ToShortDateString().Contains("0001"))
+                            {
+                                //this means we skipped few rows due to null values in price
+                                continue;
+                            }
+                            //find if stock exist in StockMaster, if not add it to context
+                            var recTOAdd = new StockPriceHistory();
+
+                            //currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
+                            //                    (s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0)));
+                            currentPrice = stockMaster.collectionStockPriceHistory.AsQueryable().Where(s => s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0);
+                            if (currentPrice.Count() <= 0)
+                            {
+                                //this is new price history record
+                                recTOAdd.PriceDate = quoteDate[i];
+                                recTOAdd.Open = open[i];
+                                recTOAdd.High = high[i];
+                                recTOAdd.Low = low[i];
+                                recTOAdd.Close = close[i];
+                                recTOAdd.Volume = volume[i];
+                                recTOAdd.ChangePercent = changepercent[i];
+                                recTOAdd.Change = change[i];
+                                recTOAdd.PrevClose = prevclose[i];
+                                recTOAdd.StockMasterID = stockMaster.StockMasterID;
+                                //recTOAdd.StockMaster = stockMaster;
+                                newRecords.Add(recTOAdd);
+                            }
+                            else
+                            {
+                                recTOAdd = (StockPriceHistory)(currentPrice.First());
+
+                                recTOAdd.PriceDate = quoteDate[i];
+                                recTOAdd.Open = open[i];
+                                recTOAdd.High = high[i];
+                                recTOAdd.Low = low[i];
+                                recTOAdd.Close = close[i];
+                                recTOAdd.Volume = volume[i];
+                                recTOAdd.ChangePercent = changepercent[i];
+                                recTOAdd.Change = change[i];
+                                recTOAdd.PrevClose = prevclose[i];
+
+                                recTOAdd.StockMasterID = stockMaster.StockMasterID;
+                                //context.StockPriceHistory.Update(recTOAdd);
+                            }
+                        }
+                        if (newRecords.Count > 0)
+                        {
+                            context.StockPriceHistory.AddRange(newRecords);
+                        }
+                        context.SaveChanges(true);
+                    }
+                }
+                else
+                {
+
+                    //this is AMFI MF record
+                    //we need to split the symbol to get the fund code
+                    int indexOfSeparator = stockMaster.CompName.IndexOf(separatorFundCode);
+                    if (indexOfSeparator > 0)
+                    {
+                        string mfFundCode = stockMaster.CompName.Substring(0, indexOfSeparator);
+                        string fetchedMFData = FetchAMFIMFMasterData(mfFundCode, Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.ToString("yyyy-MM-dd"));
+                        DbInitializer.InitializeAMFIMFHistory(context, fetchedMFData, stockMaster);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //throw ex;
+
+            }
+        }
+
+        public static bool InitializeAMFIMFHistory(DBContext context, string sourceFile, StockMaster stockMaster)
+        {
+            bool bStatus = false;
             StringBuilder recFormat1 = new StringBuilder("Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date");
             StringBuilder recFormat2 = new StringBuilder("Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date");
             string[] sourceLines;
@@ -545,11 +913,12 @@ namespace MarketAnalytics.Data
             StringBuilder mfCompName = new StringBuilder(string.Empty);
             int newschemecode = -1;
             IQueryable<StockMaster> currentMaster;
-            List<StockMaster> newRecords = new List<StockMaster>();
+            List<StockPriceHistory> newRecords = new List<StockPriceHistory>();
 
             try
             {
                 Dictionary<string, int> keyValuePairs = FetchAMFIFundHouseCodes();
+
                 sourceLines = sourceFile.Split('\n');
                 if ((sourceLines[0].Contains(recFormat1.ToString())) || (sourceLines[0].Contains(recFormat2.ToString())))
                 {
@@ -646,164 +1015,41 @@ namespace MarketAnalytics.Data
                                 navDate.Clear();
                                 navDate.Append(fields[7]);
                             }
-                            dateNAV = System.Convert.ToDateTime(navDate.ToString());
-
-                            //Now check if this MF exists in DB and if it does then update the NAV
-                            //else insert the new MF in StockMaster and then update the NAV
-
-                            var recTOAdd = new StockMaster();
-                            currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.ToUpper().Equals(newSchemeName.ToString())
-                                                && s.CompName.ToUpper().Equals(newschemecode.ToString() + "?" + mfCompName.ToString()));
-                            if (currentMaster.Count() <= 0)
+                            if (newSchemeName.Equals(stockMaster.Symbol))
                             {
-                                recTOAdd.Symbol = newSchemeName.ToString();
-                                recTOAdd.CompName = newschemecode.ToString() + "?" + mfCompName.ToString();
-                                recTOAdd.Exchange = "AMFI";
-
-                                recTOAdd.QuoteDateTime = dateNAV;
-                                recTOAdd.Open = nav;
-                                recTOAdd.High = nav;
-                                recTOAdd.Low = nav;
-                                recTOAdd.Close = nav;
-                                recTOAdd.Volume = 0.0;
-                                recTOAdd.ChangePercent = 0.0;
-                                recTOAdd.Change = 0.0;
-                                recTOAdd.PrevClose = nav;
-                                recTOAdd.INVESTMENT_TYPE = "Mutual Fund";
-
-                                newRecords.Add(recTOAdd);
+                                if (bStatus == false)
+                                    continue;
+                                else
+                                    break;
                             }
                             else
                             {
-                                var selectedRecord = (StockMaster)(currentMaster.First());
-                                selectedRecord.QuoteDateTime = dateNAV;
-                                selectedRecord.Open = nav;
-                                selectedRecord.High = nav;
-                                selectedRecord.Low = nav;
-                                selectedRecord.PrevClose = selectedRecord.Close;
-                                selectedRecord.Close = nav;
-                                selectedRecord.Volume = 0.0;
-                                selectedRecord.ChangePercent = ((nav - selectedRecord.PrevClose) / selectedRecord.PrevClose) * 100;
-                                selectedRecord.Change = nav - selectedRecord.PrevClose;
-                                //context.StockMaster.Update(selectedRecord);
+                                bStatus = true;
+                                IQueryable<StockPriceHistory> currentPrice;
+
+                                dateNAV = System.Convert.ToDateTime(navDate.ToString());
+                                var recTOAdd = new StockPriceHistory();
+                                currentPrice = stockMaster.collectionStockPriceHistory.AsQueryable().Where(s => s.PriceDate.Date.CompareTo(dateNAV) == 0);
+                                if (currentPrice.Count() <= 0)
+                                {
+                                    //this is new price history record
+                                    recTOAdd.PriceDate = dateNAV;
+                                    recTOAdd.Open = nav;
+                                    recTOAdd.High = nav;
+                                    recTOAdd.Low = nav;
+                                    recTOAdd.Close = nav;
+                                    recTOAdd.Volume = 0.0;
+                                    recTOAdd.ChangePercent = 0.0;
+                                    recTOAdd.Change = 0.0;
+                                    recTOAdd.PrevClose = nav;
+                                    recTOAdd.StockMasterID = stockMaster.StockMasterID;
+                                    //recTOAdd.StockMaster = stockMaster;
+                                    newRecords.Add(recTOAdd);
+                                }
+
                             }
-                        }
-                    }
-                    if (newRecords.Count > 0)
-                    {
-                        context.StockMaster.AddRange(newRecords);
-                    }
-                    context.SaveChanges(true);
-                }
-            }
-            catch (Exception ex) { }
-        }
-
-        /// <summary>
-        /// For given StockMaster record fetches historical price data from given fromdate. if fromdate is null then fetches last
-        /// 10 years price data
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="stockMaster"></param>
-        /// <param name="symbol"></param>
-        /// <param name="compname"></param>
-        /// <param name="exchange"></param>
-        /// <param name="fromDate"></param>
-        public static void InitializeHistory(DBContext context, StockMaster stockMaster, string fromDate = null)
-        {
-            //if (context.StockMaster.Any())
-            //{
-            //    return;   // DB has been seeded
-            //}
-            int recCounter = 0;
-            List<StockPriceHistory> newRecords = new List<StockPriceHistory>();
-            DateTime[] quoteDate;
-            double[] open, high, low, close, volume, change, changepercent, prevclose;
-
-            quoteDate = null;
-            open = high = low = close = volume = change = changepercent = prevclose = null;
-
-            try
-            {
-                //if (string.IsNullOrEmpty(fromDate))
-                //{
-                //    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), DateTime.Today.Date.AddYears(-10).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
-                //                    out volume, out change, out changepercent, out prevclose);
-                //}
-                //else
-                //{
-                //    GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"), DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"), out quoteDate, out open, out high, out low, out close,
-                //                    out volume, out change, out changepercent, out prevclose);
-                //}
 
 
-                //GetHistoryQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)),
-                //Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
-                //DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
-                //out quoteDate, out open, out high, out low, out close,
-                //                out volume, out change, out changepercent, out prevclose);
-                if (GetHistoryQuote(stockMaster.Symbol + "." + stockMaster.Exchange,
-                    Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
-                    DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
-                    out quoteDate, out open, out high, out low, out close,
-                    out volume, out change, out changepercent, out prevclose) == false)
-                {
-                    GetHistoryQuote(stockMaster.Symbol,
-                        Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
-                        DateTime.Today.Date.AddDays(1).ToString("yyyy-MM-dd"),
-                        out quoteDate, out open, out high, out low, out close, out volume,
-                        out change, out changepercent, out prevclose);
-                }
-                //read first line which is list of fields
-                if ((quoteDate != null) && (quoteDate.Length > 0))
-                {
-                    //IQueryable<StockPriceHistory> stockpriceIQ = from s in context.StockPriceHistory select s;
-                    IQueryable<StockPriceHistory> currentPrice;
-                    for (int i = 0; i < quoteDate.Length; i++)
-                    {
-                        if (quoteDate[i].ToShortDateString().Contains("0001"))
-                        {
-                            //this means we skipped few rows due to null values in price
-                            continue;
-                        }
-                        //find if stock exist in StockMaster, if not add it to context
-                        var recTOAdd = new StockPriceHistory();
-
-                        //currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
-                        //                    (s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0)));
-                        currentPrice = stockMaster.collectionStockPriceHistory.AsQueryable().Where(s => s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0);
-                        if (currentPrice.Count() <= 0)
-                        {
-                            //this is new price history record
-                            recTOAdd.PriceDate = quoteDate[i];
-                            recTOAdd.Open = open[i];
-                            recTOAdd.High = high[i];
-                            recTOAdd.Low = low[i];
-                            recTOAdd.Close = close[i];
-                            recTOAdd.Volume = volume[i];
-                            recTOAdd.ChangePercent = changepercent[i];
-                            recTOAdd.Change = change[i];
-                            recTOAdd.PrevClose = prevclose[i];
-                            recTOAdd.StockMasterID = stockMaster.StockMasterID;
-                            //recTOAdd.StockMaster = stockMaster;
-                            newRecords.Add(recTOAdd);
-                        }
-                        else
-                        {
-                            recTOAdd = (StockPriceHistory)(currentPrice.First());
-
-                            recTOAdd.PriceDate = quoteDate[i];
-                            recTOAdd.Open = open[i];
-                            recTOAdd.High = high[i];
-                            recTOAdd.Low = low[i];
-                            recTOAdd.Close = close[i];
-                            recTOAdd.Volume = volume[i];
-                            recTOAdd.ChangePercent = changepercent[i];
-                            recTOAdd.Change = change[i];
-                            recTOAdd.PrevClose = prevclose[i];
-
-                            recTOAdd.StockMasterID = stockMaster.StockMasterID;
-                            //context.StockPriceHistory.Update(recTOAdd);
                         }
                     }
                     if (newRecords.Count > 0)
@@ -811,15 +1057,12 @@ namespace MarketAnalytics.Data
                         context.StockPriceHistory.AddRange(newRecords);
                     }
                     context.SaveChanges(true);
+                    bStatus = true;
                 }
             }
-            catch (Exception ex)
-            {
-                //throw ex;
-
-            }
+            catch (Exception ex) { }
+            return bStatus;
         }
-
         /// <summary>
         /// Gets CMP for given symbol and returns all values in arrays
         /// </summary>
@@ -835,46 +1078,58 @@ namespace MarketAnalytics.Data
         /// <param name="prevclose"></param>
         public static bool GetQuote(string symbol, out DateTime[] quoteDate, out double[] open, out double[] high,
                     out double[] low, out double[] close, out double[] volume, out double[] change, out double[] changepercent,
-                    out double[] prevclose)
+                    out double[] prevclose, DBContext context = null)//, string mfFundCode = null, string fromDate = null, string toDate = null)
         {
             bool bfound = false;
             quoteDate = null;
             open = high = low = close = volume = change = changepercent = prevclose = null;
+            string webservice_url = "";
             try
             {
-
-                string webservice_url = "";
-                //WebResponse wr;
-                //Stream receiveStream = null;
-                //StreamReader reader = null;
-
-                //https://query1.finance.yahoo.com/v7/finance/chart/HDFC.BO?range=1m&interval=1m&indicators=quote&timestamp=true
-                webservice_url = string.Format(DbInitializer.urlGlobalQuote, symbol);
-
-                var client = new HttpClient();
-                var httpResponse = client.GetAsync(webservice_url);
-
-                httpResponse.Wait();
-                if (httpResponse.Result.StatusCode == HttpStatusCode.OK)
+                //if ((context == null) && (string.IsNullOrEmpty(fromDate) == true))
+                if(context == null)
                 {
-                    var data = httpResponse.Result.Content.ReadAsStringAsync();
-                    bfound = getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
-                                        out change, out changepercent, out prevclose);
+                    //this is not a request for AMFI MF quote
+                    //WebResponse wr;
+                    //Stream receiveStream = null;
+                    //StreamReader reader = null;
+
+                    //https://query1.finance.yahoo.com/v7/finance/chart/HDFC.BO?range=1m&interval=1m&indicators=quote&timestamp=true
+                    webservice_url = string.Format(DbInitializer.urlGlobalQuote, symbol);
+
+                    var client = new HttpClient();
+                    var httpResponse = client.GetAsync(webservice_url);
+
+                    httpResponse.Wait();
+                    if (httpResponse.Result.StatusCode == HttpStatusCode.OK)
+                    {
+                        var data = httpResponse.Result.Content.ReadAsStringAsync();
+                        bfound = getQuoteTableFromJSON(data.Result, symbol, out quoteDate, out open, out high, out low, out close, out volume,
+                                            out change, out changepercent, out prevclose);
+                    }
+
+                    //Uri url = new Uri(webservice_url);
+                    //var webRequest = WebRequest.Create(url);
+                    //webRequest.Method = "GET";
+                    //webRequest.ContentType = "application/json";
+                    //wr = webRequest.GetResponseAsync().Result;
+                    //receiveStream = wr.GetResponseStream();
+                    //reader = new StreamReader(receiveStream);
+
+                    //getQuoteTableFromJSON(reader.ReadToEnd(), symbol, out quoteDate, out open, out high, out low, out close, out volume,
+                    //                        out change, out changepercent, out prevclose);
+                    //reader.Close();
+                    //if (receiveStream != null)
+                    //    receiveStream.Close();
                 }
-
-                //Uri url = new Uri(webservice_url);
-                //var webRequest = WebRequest.Create(url);
-                //webRequest.Method = "GET";
-                //webRequest.ContentType = "application/json";
-                //wr = webRequest.GetResponseAsync().Result;
-                //receiveStream = wr.GetResponseStream();
-                //reader = new StreamReader(receiveStream);
-
-                //getQuoteTableFromJSON(reader.ReadToEnd(), symbol, out quoteDate, out open, out high, out low, out close, out volume,
-                //                        out change, out changepercent, out prevclose);
-                //reader.Close();
-                //if (receiveStream != null)
-                //    receiveStream.Close();
+                else
+                {
+                    //string fetchedMFData = FetchAMFIMFMasterData(mfFundCode, 
+                    //    string.IsNullOrEmpty(fromDate) ? null : System.Convert.ToDateTime(fromDate).ToString("yyyy-MM-dd"),
+                    //    string.IsNullOrEmpty(toDate) ? null : System.Convert.ToDateTime(toDate).ToString("yyyy-MM-dd"));
+                    string fetchedMFData = FetchAMFIMFMasterData();
+                    bfound = DbInitializer.InitializeAMFIMF(context, fetchedMFData, symbol);
+                }
             }
             catch (Exception ex)
             {
@@ -948,6 +1203,7 @@ namespace MarketAnalytics.Data
                 //reader.Close();
                 //if (receiveStream != null)
                 //    receiveStream.Close();
+
             }
             catch (Exception ex)
             {
@@ -1051,29 +1307,49 @@ namespace MarketAnalytics.Data
             {
                 DateTime[] quoteDate = null;
                 double[] open, high, low, close, volume, change, changepercent, prevclose = null;
+                if (stockMaster.Exchange.Equals("AMFI") == false)
+                {
 
-                //DbInitializer.GetQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
-                //    out high, out low, out close,
-                //    out volume, out change, out changepercent, out prevclose);
-                if (DbInitializer.GetQuote(stockMaster.Symbol + "." + stockMaster.Exchange, out quoteDate, out open,
-                    out high, out low, out close, out volume, out change, out changepercent, out prevclose) == false)
-                {
-                    DbInitializer.GetQuote(stockMaster.Symbol, out quoteDate, out open,
-                    out high, out low, out close, out volume, out change, out changepercent, out prevclose);
+                    //DbInitializer.GetQuote(stockMaster.Symbol + (((stockMaster.Exchange == "NYQ") || (stockMaster.Exchange == "NMS")) ? "" : ("." + stockMaster.Exchange)), out quoteDate, out open,
+                    //    out high, out low, out close,
+                    //    out volume, out change, out changepercent, out prevclose);
+                    if (DbInitializer.GetQuote(stockMaster.Symbol + "." + stockMaster.Exchange, out quoteDate, out open,
+                        out high, out low, out close, out volume, out change, out changepercent, out prevclose) == false)
+                    {
+                        DbInitializer.GetQuote(stockMaster.Symbol, out quoteDate, out open,
+                        out high, out low, out close, out volume, out change, out changepercent, out prevclose);
+                    }
+                    if (quoteDate != null)
+                    {
+                        stockMaster.QuoteDateTime = quoteDate[0];
+                        stockMaster.Open = open[0];
+                        stockMaster.High = high[0];
+                        stockMaster.Low = low[0];
+                        stockMaster.Close = close[0];
+                        stockMaster.Volume = volume[0];
+                        stockMaster.ChangePercent = changepercent[0];
+                        stockMaster.Change = change[0];
+                        stockMaster.PrevClose = prevclose[0];
+                        //context.StockMaster.Update(stockMaster);
+                        context.SaveChanges(true);
+                    }
                 }
-                if (quoteDate != null)
+                else
                 {
-                    stockMaster.QuoteDateTime = quoteDate[0];
-                    stockMaster.Open = open[0];
-                    stockMaster.High = high[0];
-                    stockMaster.Low = low[0];
-                    stockMaster.Close = close[0];
-                    stockMaster.Volume = volume[0];
-                    stockMaster.ChangePercent = changepercent[0];
-                    stockMaster.Change = change[0];
-                    stockMaster.PrevClose = prevclose[0];
-                    //context.StockMaster.Update(stockMaster);
-                    context.SaveChanges(true);
+                    //this is AMFI MF record
+                    //we need to split the symbol to get the fund code
+                    //int indexOfSeparator = stockMaster.CompName.IndexOf(separatorFundCode);
+                    //if (indexOfSeparator > 0)
+                    //{
+                    //    string mfFundCode = stockMaster.CompName.Substring(0, indexOfSeparator);
+                    //    DbInitializer.GetQuote(stockMaster.Symbol, out quoteDate, out open,
+                    //    out high, out low, out close, out volume, out change, out changepercent, out prevclose,
+                    //    context: context, mfFundCode: mfFundCode, fromDate: DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd hh:mm:ss"));
+                    //}
+                    DbInitializer.GetQuote(stockMaster.Symbol, out quoteDate, out open,
+                        out high, out low, out close, out volume, out change, out changepercent, out prevclose,
+                        context: context);
+
                 }
             }
             catch (Exception ex)
