@@ -700,12 +700,12 @@ namespace MarketAnalytics.Data
                             {
                                 continue;
                             }
-                            var recTOAdd = new StockMaster();
 
                             currentMaster = context.StockMaster.AsSplitQuery().Where(s => s.Symbol.Equals(newSchemeName.ToString())
                                                 && s.CompName.Equals(newschemecode.ToString() + separatorFundCode + mfCompName.ToString()));
                             if (currentMaster.Count() <= 0)
                             {
+                                var recTOAdd = new StockMaster();
                                 recTOAdd.Symbol = newSchemeName.ToString();
                                 recTOAdd.CompName = newschemecode.ToString() + separatorFundCode + mfCompName.ToString();
                                 recTOAdd.Exchange = "AMFI";
@@ -726,16 +726,19 @@ namespace MarketAnalytics.Data
                             else
                             {
                                 var selectedRecord = (StockMaster)(currentMaster.First());
-                                selectedRecord.QuoteDateTime = dateNAV;
-                                selectedRecord.Open = nav;
-                                selectedRecord.High = nav;
-                                selectedRecord.Low = nav;
-                                selectedRecord.PrevClose = selectedRecord.Close;
-                                selectedRecord.Close = nav;
-                                selectedRecord.Volume = 0.0;
-                                selectedRecord.ChangePercent = ((nav - selectedRecord.PrevClose) / selectedRecord.PrevClose) * 100;
-                                selectedRecord.Change = nav - selectedRecord.PrevClose;
-                                //context.StockMaster.Update(selectedRecord);
+                                if (selectedRecord.QuoteDateTime.Value.CompareTo(dateNAV) < 0)
+                                {
+                                    selectedRecord.QuoteDateTime = dateNAV;
+                                    selectedRecord.Open = nav;
+                                    selectedRecord.High = nav;
+                                    selectedRecord.Low = nav;
+                                    selectedRecord.PrevClose = selectedRecord.Close;
+                                    selectedRecord.Close = nav;
+                                    selectedRecord.Volume = 0.0;
+                                    selectedRecord.ChangePercent = ((nav - selectedRecord.PrevClose) / selectedRecord.PrevClose) * 100;
+                                    selectedRecord.Change = nav - selectedRecord.PrevClose;
+                                    //context.StockMaster.Update(selectedRecord);
+                                }
                             }
 
                             if ((string.IsNullOrEmpty(symbol) == false) && (symbol.Equals(newSchemeName.ToString()) == true))
@@ -827,7 +830,6 @@ namespace MarketAnalytics.Data
                                 continue;
                             }
                             //find if stock exist in StockMaster, if not add it to context
-                            var recTOAdd = new StockPriceHistory();
 
                             //currentPrice = context.StockPriceHistory.Where(s => ((s.StockMasterID == stockMaster.StockMasterID) &&
                             //                    (s.PriceDate.Date.CompareTo(quoteDate[i].Date) == 0)));
@@ -835,6 +837,7 @@ namespace MarketAnalytics.Data
                             if (currentPrice.Count() <= 0)
                             {
                                 //this is new price history record
+                                var recTOAdd = new StockPriceHistory();
                                 recTOAdd.PriceDate = quoteDate[i];
                                 recTOAdd.Open = open[i];
                                 recTOAdd.High = high[i];
@@ -850,20 +853,22 @@ namespace MarketAnalytics.Data
                             }
                             else
                             {
-                                recTOAdd = (StockPriceHistory)(currentPrice.First());
+                                var recTOUpdate = (StockPriceHistory)(currentPrice.First());
+                                if (recTOUpdate.PriceDate.CompareTo(quoteDate[i]) < 0)
+                                {
+                                    recTOUpdate.PriceDate = quoteDate[i];
+                                    recTOUpdate.Open = open[i];
+                                    recTOUpdate.High = high[i];
+                                    recTOUpdate.Low = low[i];
+                                    recTOUpdate.Close = close[i];
+                                    recTOUpdate.Volume = volume[i];
+                                    recTOUpdate.ChangePercent = changepercent[i];
+                                    recTOUpdate.Change = change[i];
+                                    recTOUpdate.PrevClose = prevclose[i];
 
-                                recTOAdd.PriceDate = quoteDate[i];
-                                recTOAdd.Open = open[i];
-                                recTOAdd.High = high[i];
-                                recTOAdd.Low = low[i];
-                                recTOAdd.Close = close[i];
-                                recTOAdd.Volume = volume[i];
-                                recTOAdd.ChangePercent = changepercent[i];
-                                recTOAdd.Change = change[i];
-                                recTOAdd.PrevClose = prevclose[i];
-
-                                recTOAdd.StockMasterID = stockMaster.StockMasterID;
-                                //context.StockPriceHistory.Update(recTOAdd);
+                                    recTOUpdate.StockMasterID = stockMaster.StockMasterID;
+                                    //context.StockPriceHistory.Update(recTOAdd);
+                                }
                             }
                         }
                         if (newRecords.Count > 0)
@@ -895,9 +900,8 @@ namespace MarketAnalytics.Data
             }
         }
 
-        public static bool InitializeAMFIMFHistory(DBContext context, string sourceFile, StockMaster stockMaster)
+        public static void InitializeAMFIMFHistory(DBContext context, string sourceFile, StockMaster stockMaster)
         {
-            bool bStatus = false;
             StringBuilder recFormat1 = new StringBuilder("Scheme Code;Scheme Name;ISIN Div Payout/ISIN Growth;ISIN Div Reinvestment;Net Asset Value;Repurchase Price;Sale Price;Date");
             StringBuilder recFormat2 = new StringBuilder("Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date");
             string[] sourceLines;
@@ -941,6 +945,8 @@ namespace MarketAnalytics.Data
                             //Open Ended Schemes(Debt Scheme - Banking and PSU Fund)
                             //OR
                             //Aditya Birla Sun Life Mutual Fund
+                            tmp1.Clear();
+                            tmp1.Append(record);
                             while (recCounter < sourceLines.Length)
                             {
                                 record.Clear();
@@ -954,11 +960,15 @@ namespace MarketAnalytics.Data
                                 {
                                     mfCompName.Clear();
                                     mfCompName.Append(record);
+                                    tmp1.Clear();
+                                    tmp1.Append(record);
                                     //we found a MF company name with in current scheme type or it can be a new schemy type line
                                     continue;
                                 }
                                 else if (record.ToString().Contains(";") == true)
                                 {
+                                    mfCompName.Clear();
+                                    mfCompName.Append(tmp1);
                                     //we found a line having actual MF record with NAV & scheme code
                                     //we will need to split and insert a new record or update an existing one
                                     break;
@@ -1015,41 +1025,41 @@ namespace MarketAnalytics.Data
                                 navDate.Clear();
                                 navDate.Append(fields[7]);
                             }
-                            if (newSchemeName.Equals(stockMaster.Symbol))
+                            dateNAV = System.Convert.ToDateTime(navDate.ToString());
+                            if (newSchemeName.Equals(stockMaster.Symbol) == false)
                             {
-                                if (bStatus == false)
-                                    continue;
-                                else
-                                    break;
+                                continue;
+                            }
+
+                            IQueryable<StockPriceHistory> currentPrice;
+
+                            currentPrice = stockMaster.collectionStockPriceHistory.AsQueryable().Where(s => s.PriceDate.Date.CompareTo(dateNAV) == 0);
+                            if (currentPrice.Count() <= 0)
+                            {
+                                var recTOAdd = new StockPriceHistory();
+                                //this is new price history record
+                                recTOAdd.PriceDate = dateNAV;
+                                recTOAdd.Open = nav;
+                                recTOAdd.High = nav;
+                                recTOAdd.Low = nav;
+                                recTOAdd.Close = nav;
+                                recTOAdd.Volume = 0.0;
+                                recTOAdd.ChangePercent = 0.0;
+                                recTOAdd.Change = 0.0;
+                                recTOAdd.PrevClose = nav;
+                                recTOAdd.StockMasterID = stockMaster.StockMasterID;
+                                //recTOAdd.StockMaster = stockMaster;
+                                newRecords.Add(recTOAdd);
+                            }
+
+                            if (newSchemeName.Equals(stockMaster.Symbol) == true)
+                            {
+                                continue;
                             }
                             else
                             {
-                                bStatus = true;
-                                IQueryable<StockPriceHistory> currentPrice;
-
-                                dateNAV = System.Convert.ToDateTime(navDate.ToString());
-                                var recTOAdd = new StockPriceHistory();
-                                currentPrice = stockMaster.collectionStockPriceHistory.AsQueryable().Where(s => s.PriceDate.Date.CompareTo(dateNAV) == 0);
-                                if (currentPrice.Count() <= 0)
-                                {
-                                    //this is new price history record
-                                    recTOAdd.PriceDate = dateNAV;
-                                    recTOAdd.Open = nav;
-                                    recTOAdd.High = nav;
-                                    recTOAdd.Low = nav;
-                                    recTOAdd.Close = nav;
-                                    recTOAdd.Volume = 0.0;
-                                    recTOAdd.ChangePercent = 0.0;
-                                    recTOAdd.Change = 0.0;
-                                    recTOAdd.PrevClose = nav;
-                                    recTOAdd.StockMasterID = stockMaster.StockMasterID;
-                                    //recTOAdd.StockMaster = stockMaster;
-                                    newRecords.Add(recTOAdd);
-                                }
-
+                                break;
                             }
-
-
                         }
                     }
                     if (newRecords.Count > 0)
@@ -1057,11 +1067,9 @@ namespace MarketAnalytics.Data
                         context.StockPriceHistory.AddRange(newRecords);
                     }
                     context.SaveChanges(true);
-                    bStatus = true;
                 }
             }
             catch (Exception ex) { }
-            return bStatus;
         }
         /// <summary>
         /// Gets CMP for given symbol and returns all values in arrays
@@ -1087,7 +1095,7 @@ namespace MarketAnalytics.Data
             try
             {
                 //if ((context == null) && (string.IsNullOrEmpty(fromDate) == true))
-                if(context == null)
+                if (context == null)
                 {
                     //this is not a request for AMFI MF quote
                     //WebResponse wr;
