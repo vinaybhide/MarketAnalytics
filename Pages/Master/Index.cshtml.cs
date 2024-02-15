@@ -84,7 +84,7 @@ namespace MarketAnalytics.Pages.Master
                 SelectListItem selectAll = new SelectListItem("-- Show All --", constAll, true);
                 groupList.Insert(0, selectAll);
 
-                selectAll = new SelectListItem("-- Show: V40, V40N, V200 --", constV40V40NV200);
+                selectAll = new SelectListItem("Show: V40, V40N, V200", constV40V40NV200);
                 groupList.Add(selectAll);
 
                 selectAll = new SelectListItem("Show V40", constV40);
@@ -257,11 +257,6 @@ namespace MarketAnalytics.Pages.Master
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllFuture)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Future"))).AsNoTracking();
-                    groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
-                }
-                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllFuture)))
-                {
-                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
                     groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllIndex)))

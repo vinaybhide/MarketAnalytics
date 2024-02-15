@@ -23,6 +23,12 @@ namespace MarketAnalytics.Pages.History
         private const string constV200 = "-96";
         private const string constAll = "-95";
         private const string constMF = "-94";
+        private const string constBSEMF = "-93";
+        private const string constAMFIMF = "-92";
+        private const string constAllStocks = "-91";
+        private const string constAllETF = "-90";
+        private const string constAllFuture = "-89";
+        private const string constAllIndex = "-88";
 
         private readonly MarketAnalytics.Data.DBContext _context;
         private readonly IConfiguration Configuration;
@@ -60,22 +66,40 @@ namespace MarketAnalytics.Pages.History
             {
                 groupList.Clear();
 
-                SelectListItem selectAll = new SelectListItem("V40+V40N+V200", constV40V40NV200);
+                SelectListItem selectAll = new SelectListItem("-- Show All --", constAll, true);
+                groupList.Insert(0, selectAll);
+
+                selectAll = new SelectListItem("Show: V40, V40N, V200", constV40V40NV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("V40", constV40);
+                selectAll = new SelectListItem("Show V40", constV40);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("V40N", constV40N);
+                selectAll = new SelectListItem("Show V40N", constV40N);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("V200", constV200);
+                selectAll = new SelectListItem("Show V200", constV200);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("All Stocks", constAll);
+                //selectAll = new SelectListItem("Show All Mutual Funds", constMF);
+                //groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show BSE Mutual Funds", constBSEMF);
                 groupList.Add(selectAll);
 
-                selectAll = new SelectListItem("All Mutual Funds", constMF);
+                selectAll = new SelectListItem("Show AMFI Mutual Funds", constAMFIMF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Stocks", constAllStocks);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All ETF", constAllETF);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Future", constAllFuture);
+                groupList.Add(selectAll);
+
+                selectAll = new SelectListItem("Show All Indexes", constAllIndex);
                 groupList.Add(selectAll);
 
                 IQueryable<StockPriceHistory> stockpriceIQ = null;
@@ -106,39 +130,76 @@ namespace MarketAnalytics.Pages.History
                 if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40V40NV200)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => ((s.V40 == true) || (s.V40N == true) || (s.V200 == true))).AsNoTracking();
-                    CompanyName = "History for V40+V40N+V200";
+                    CompanyName = "History - V40+V40N+V200 Stocks";
 
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40 == true)).AsNoTracking();
-                    CompanyName = "History for V40";
+                    CompanyName = "History - V40 Stocks";
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV40N)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V40N == true)).AsNoTracking();
-                    CompanyName = "History for V40N";
+                    CompanyName = "History - V40N Stocks";
                 }
                 else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constV200)))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.V200 == true)).AsNoTracking();
-                    CompanyName = "History for V200";
+                    CompanyName = "History - V200 Stocks";
                 }
-                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                //else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                //{
+                //    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
+                //    CompanyName = "History - all Mutual Funds";
+                //}
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constBSEMF)))
                 {
-                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund"))).AsNoTracking();
-                    CompanyName = "History for all Mutual Funds";
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("BO"))).AsNoTracking();
+                    CompanyName = "History - All BSE Mutual Funds";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAMFIMF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("AMFI"))).AsNoTracking();
+                    CompanyName = "History - All AMFI Mutual Funds";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllStocks)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Stocks"))).AsNoTracking();
+                    CompanyName = "History - All Stocks";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllETF)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("ETF"))).AsNoTracking();
+                    CompanyName = "History - All ETF";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllFuture)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Future"))).AsNoTracking();
+                    CompanyName = "History - All Futures";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
+                }
+                else if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constAllIndex)))
+                {
+                    stockmasterIQ = _context.StockMaster.AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Index"))).AsNoTracking();
+                    CompanyName = "History - All Indexes";
+                    //groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
                 }
                 else //if (id == Int32.Parse(constAll))
                 {
                     stockmasterIQ = _context.StockMaster.AsSplitQuery().AsNoTracking();
-                    CompanyName = "History for all stocks";
+                    CompanyName = "History - All entities";
                 }
                 
                 groupList.FirstOrDefault(a => a.Value.Equals(CurrentGroup.ToString())).Selected = true;
 
                 symbolList.Clear();
-                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                //if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constMF)))
+                if ((CurrentGroup != null) && (CurrentGroup == Int32.Parse(constBSEMF)))
                 {
                     symbolList = stockmasterIQ.OrderBy(a => a.Symbol)
                                             .Select(a =>

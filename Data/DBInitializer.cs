@@ -13,13 +13,21 @@ using System.Net.Http.Headers;
 
 namespace MarketAnalytics.Data
 {
-    public class classFundHouseCode
-    {
-        public int fundHouseCode { get; set; }
-        public string fundHouseName { get; set; }
-    }
     public class DbInitializer
     {
+        public static string constV40V40NV200 = "-99";
+        public static string constV40 = "-98";
+        public static string constV40N = "-97";
+        public static string constV200 = "-96";
+        public static string constAll = "-95";
+        public static string constMF = "-94";
+        public static string constBSEMF = "-93";
+        public static string constAMFIMF = "-92";
+        public static string constAllStocks = "-91";
+        public static string constAllETF = "-90";
+        public static string constAllFuture = "-89";
+        public static string constAllIndex = "-88";
+
         public static string separatorFundCode = "?";
         public static string urlNSEStockMaster = "http://www1.nseindia.com/content/equities/EQUITY_L.csv";
         public static string urlGetHistoryQuote = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?period1={1}&period2={2}&interval={3}&filter=history&frequency={4}&includeAdjustedClose={5}";
@@ -1515,7 +1523,12 @@ namespace MarketAnalytics.Data
                 {
                     //if (Convert.ToDateTime(lastHistoryRec.PriceDate).Date.CompareTo(DateTime.Today.Date) < 0)
                     //if (lastHistoryRec.PriceDate.CompareTo(DateTime.Now) < 0)
-                    if (Convert.ToDateTime(lastHistoryRec.PriceDate.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.ToShortDateString())) < 0)
+                    if((stockMaster.INVESTMENT_TYPE.Equals("Mutual Fund")) &&
+                        (Convert.ToDateTime(lastHistoryRec.PriceDate.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.AddDays(-1).ToShortDateString())) < 0))
+                    {
+                        lastPriceDate = lastHistoryRec.PriceDate.ToString("yyyy-MM-dd");
+                    }
+                    else if (Convert.ToDateTime(lastHistoryRec.PriceDate.ToShortDateString()).CompareTo(Convert.ToDateTime(DateTime.Today.ToShortDateString())) < 0)
                     {
                         lastPriceDate = lastHistoryRec.PriceDate.ToString("yyyy-MM-dd");
                     }
@@ -3617,31 +3630,55 @@ namespace MarketAnalytics.Data
             string lastPriceDate = string.Empty;
             try
             {
-                if (groupId == -99)
+                if (groupId == Int32.Parse(constV40V40NV200)) //- 99) 
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => ((s.V200 == true) || (s.V40 == true) || (s.V40N == true)));
                 }
-                else if (groupId == -98)
+                else if (groupId == Int32.Parse(constV40))//-98) //constV40
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V40 == true));
                 }
-                else if (groupId == -97)
+                else if (groupId == Int32.Parse(constV40N))//-97) //constV40N
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V40N == true));
                 }
-                else if (groupId == -96)
+                else if (groupId == Int32.Parse(constV200))//-96) //constV200
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.V200 == true));
                 }
-                else if (groupId == -95)
+                else if (groupId == Int32.Parse(constAll))//-95) //constAll : This should be avoided!!!
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().AsQueryable();
                 }
-                else if (groupId == -94)
+                else if (groupId == Int32.Parse(constMF))//-94) //constMF
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")));
                 }
-                else if (groupId > 0)
+                else if (groupId == Int32.Parse(constBSEMF))//-93) //constBSEMF
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("BO")));
+                }
+                else if (groupId == Int32.Parse(constAMFIMF))//-92) //constAMFIMF
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Mutual Fund")) && (s.Exchange.Equals("AMFI")));
+                }
+                else if (groupId == Int32.Parse(constAllStocks)) //-91) //constAllStocks
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Stocks")));
+                }
+                else if (groupId == Int32.Parse(constAllETF)) //-90) //constAllETF
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("ETF")));
+                }
+                else if (groupId == Int32.Parse(constAllFuture))//-89) //constAllFuture
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Future")));
+                }
+                else if (groupId == Int32.Parse(constAllIndex))//-88) //constAllIndex
+                {
+                    stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.INVESTMENT_TYPE.Equals("Index")));
+                }
+                else if (groupId > 0) //Specific entity
                 {
                     stockmasterIQ = context.StockMaster.Include(a => a.collectionStockPriceHistory).AsSplitQuery().Where(s => (s.StockMasterID == groupId));
                 }
