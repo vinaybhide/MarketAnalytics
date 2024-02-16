@@ -124,8 +124,11 @@
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].LIFETIME_LOW)
             </th>
+
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].DIFF_FROM_LIFETIME_HIGH)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.pctChangeLTHigh" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].DIFF_FROM_LIFETIME_HIGH)
+                </a>
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.StockMaster[0].YEAR_HI)
@@ -134,9 +137,10 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].YEAR_LO)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].DIFF_FROM_YEAR_HI)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.pctChangeYearHigh" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].DIFF_FROM_YEAR_HI)
+                </a>
             </th>
-
             <th>
                 <a asp-page="./Index" asp-route-sortOrder="@Model.V40Sort" asp-route-currentFilter="@Model.CurrentFilter">
                     @Html.DisplayNameFor(model => model.StockMaster[0].V40)
@@ -162,40 +166,67 @@
                 @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SLOW)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_BUY_SIGNAL)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.smaBuy" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].SMA_BUY_SIGNAL)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SELL_SIGNAL)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.smaSell" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].SMA_SELL_SIGNAL)
+                </a>
+            </th>
+
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.rsiClose" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].RSI_CLOSE)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_CLOSE)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.rsiOverbought" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERBOUGHT)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERBOUGHT)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.rsiOversold" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERSOLD)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].RSI_OVERSOLD)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.lessthan67Pct" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].LESSTHAN_67PCT_ON)
+                </a>
+            </th>
+
+            <th>
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochSlowD" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].SlowD)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].LESSTHAN_67PCT_ON)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochFastK" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].FastK)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].SlowD)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochBuy" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_SIGNAL)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].FastK)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochBuyPrice" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_PRICE)
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_SIGNAL)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochSell" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_SIGNAL)
+                </a>
             </th>
+
             <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_BUY_PRICE)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_SIGNAL)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_PRICE)
+                <a asp-page="./Index" asp-route-sortOrder="@Model.stochSellPrice" asp-route-currentFilter="@Model.CurrentFilter">
+                    @Html.DisplayNameFor(model => model.StockMaster[0].STOCH_SELL_PRICE)
+                </a>
             </th>
         </tr>
     </thead>

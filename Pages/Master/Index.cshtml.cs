@@ -58,6 +58,21 @@ namespace MarketAnalytics.Pages.Master
         public string V40Sort { get; set; }
         public string V40NSort { get; set; }
         public string V200Sort { get; set; }
+        public string pctChangeLTHigh { get; set; }
+        public string pctChangeYearHigh { get; set; }
+        public string smaBuy { get; set; }
+        public string smaSell { get; set; }
+        public string rsiClose { get; set; }
+        public string rsiOverbought { get; set; }
+        public string rsiOversold { get; set; }
+        public string lessthan67Pct { get; set; }
+        public string stochSlowD { get; set; }
+        public string stochFastK { get; set; }
+        public string stochBuy { get; set; }
+        public string stochSell { get; set; }
+        public string stochBuyPrice { get; set; }
+        public string stochSellPrice { get; set; }
+
         [BindProperty]
         public string CurrentFilter { get; set; }
         [BindProperty]
@@ -159,6 +174,20 @@ namespace MarketAnalytics.Pages.Master
                 V40Sort = sortOrder == "V40" ? "v40_desc" : "V40";
                 V40NSort = sortOrder == "V40N" ? "v40n_desc" : "V40N";
                 V200Sort = sortOrder == "V200" ? "v200_desc" : "V200";
+                pctChangeLTHigh = sortOrder == "PCTCHANGELTHIGH" ? "PCTCHANGELTHIGH_desc" : "PCTCHANGELTHIGH";
+                pctChangeYearHigh = sortOrder == "PCTCHANGEYEARHIGH" ? "PCTCHANGEYEARHIGH_desc" : "PCTCHANGEYEARHIGH";
+                smaBuy = sortOrder == "SMABUY" ? "SMABUY_desc" : "SMABUY";
+                smaSell = sortOrder == "SMASELL" ? "SMASELL_desc" : "SMASELL";
+                rsiClose = sortOrder == "RSICLOSE" ? "RSICLOSE_desc" : "RSICLOSE";
+                rsiOverbought = sortOrder == "RSIOVERBOUGHT" ? "RSIOVERBOUGHT_desc" : "RSIOVERBOUGHT";
+                rsiOversold = sortOrder == "RSIOVERSOLD" ? "RSIOVERSOLD_desc" : "RSIOVERSOLD";
+                lessthan67Pct = sortOrder == "LESSTHAN67PCT" ? "LESSTHAN67PCT_desc" : "LESSTHAN67PCT";
+                stochSlowD = sortOrder == "STOCHSLOWD" ? "STOCHSLOWD_desc" : "STOCHSLOWD";
+                stochFastK = sortOrder == "STOCHFASTK" ? "STOCHFASTK_desc" : "STOCHFASTK";
+                stochBuy = sortOrder == "STOCHBUY" ? "STOCHBUY_desc" : "STOCHBUY";
+                stochSell = sortOrder == "STOCHSELL" ? "STOCHSELL_desc" : "STOCHSELL";
+                stochBuyPrice = sortOrder == "STOCHBUYPRICE" ? "STOCHBUYPRICE_desc" : "STOCHBUYPRICE";
+                stochSellPrice = sortOrder == "STOCHSELLPRICE" ? "STOCHSELLPRICE_desc" : "STOCHSELLPRICE";
 
                 if (searchString != null)
                 {
@@ -343,7 +372,90 @@ namespace MarketAnalytics.Pages.Master
                     case "v200_desc":
                         stockmasterIQ = stockmasterIQ.OrderBy(s => s.V200).AsNoTracking();
                         break;
-
+                    case "PCTCHANGELTHIGH":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.DIFF_FROM_LIFETIME_HIGH).AsNoTracking();
+                        break;
+                    case "PCTCHANGELTHIGH_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.DIFF_FROM_LIFETIME_HIGH).AsNoTracking();
+                        break;
+                    case "PCTCHANGEYEARHIGH":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.DIFF_FROM_YEAR_HI).AsNoTracking();
+                        break;
+                    case "PCTCHANGEYEARHIGH_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.DIFF_FROM_YEAR_HI).AsNoTracking();
+                        break;
+                    case "SMABUY":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.SMA_BUY_SIGNAL).AsNoTracking();
+                        break;
+                    case "SMABUY_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.SMA_BUY_SIGNAL).AsNoTracking();
+                        break;
+                    case "SMASELL":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.SMA_SELL_SIGNAL).AsNoTracking();
+                        break;
+                    case "SMASELL_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.SMA_SELL_SIGNAL).AsNoTracking();
+                        break;
+                    case "RSICLOSE":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.RSI_CLOSE).AsNoTracking();
+                        break;
+                    case "RSICLOSE_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.RSI_CLOSE).AsNoTracking();
+                        break;
+                    case "RSIOVERBOUGHT":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.RSI_OVERBOUGHT).AsNoTracking();
+                        break;
+                    case "RSIOVERBOUGHT_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.RSI_OVERBOUGHT).AsNoTracking();
+                        break;
+                    case "RSIOVERSOLD":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.RSI_OVERSOLD).AsNoTracking();
+                        break;
+                    case "RSIOVERSOLD_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.RSI_OVERSOLD).AsNoTracking();
+                        break;
+                    case "LESSTHAN67PCT":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.LESSTHAN_67PCT_ON).AsNoTracking();
+                        break;
+                    case "LESSTHAN67PCT_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.LESSTHAN_67PCT_ON).AsNoTracking();
+                        break;
+                    case "STOCHSLOWD":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.SlowD).AsNoTracking();
+                        break;
+                    case "STOCHSLOWD_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.SlowD).AsNoTracking();
+                        break;
+                    case "STOCHFASTK":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.FastK).AsNoTracking();
+                        break;
+                    case "STOCHFASTK_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.FastK).AsNoTracking();
+                        break;
+                    case "STOCHBUY":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_BUY_SIGNAL).AsNoTracking();
+                        break;
+                    case "STOCHBUY_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_BUY_SIGNAL).AsNoTracking();
+                        break;
+                    case "STOCHSELL":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_SELL_SIGNAL).AsNoTracking();
+                        break;
+                    case "STOCHSELL_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_SELL_SIGNAL).AsNoTracking();
+                        break;
+                    case "STOCHBUYPRICE":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_BUY_PRICE).AsNoTracking();
+                        break;
+                    case "STOCHBUYPRICE_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_BUY_PRICE).AsNoTracking();
+                        break;
+                    case "STOCHSELLPRICE":
+                        stockmasterIQ = stockmasterIQ.OrderByDescending(s => s.STOCH_SELL_PRICE).AsNoTracking();
+                        break;
+                    case "STOCHSELLPRICE_desc":
+                        stockmasterIQ = stockmasterIQ.OrderBy(s => s.STOCH_SELL_PRICE).AsNoTracking();
+                        break;
                     default:
                         stockmasterIQ = stockmasterIQ.OrderBy(s => s.Symbol).AsNoTracking();
                         break;
