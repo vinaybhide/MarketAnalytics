@@ -128,7 +128,9 @@ namespace MarketAnalytics.Models
             {
                 if (this.stockMaster == null)
                 {
-                    stockMaster = context.StockMaster.Where(s => s.StockMasterID == this.StockMasterID).FirstOrDefault();//Find(this.StockMasterID);//.First(s => s.StockMasterID == this.StockMasterID);
+                    //stockMaster = context.StockMaster.FirstOrDefault(s => s.StockMasterID == this.StockMasterID);
+                    stockMaster = context.StockMaster.Find(this.StockMasterID);
+                    //stockMaster = context.StockMaster.Where(s => s.StockMasterID == this.StockMasterID).SingleOrDefault(); //.FirstOrDefault();//Find(this.StockMasterID);//.First(s => s.StockMasterID == this.StockMasterID);
                 }
                 else
                 {
